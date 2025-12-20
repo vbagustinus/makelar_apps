@@ -1,0 +1,30 @@
+<svg width="200" height="300" viewBox="0 0 200 300" xmlns="http://www.w3.org/2000/svg">
+  <path fill="#1A73E8" d="M100 10c-33 0-60 26-60 58 0 44 52 104 57 110a5 5 0 0 0 7 0c5-6 57-66 57-110 0-32-27-58-61-58z"/>
+  <circle cx="100" cy="75" r="25" fill="#FFFFFF"/>
+  <path fill="#4FC3F7" d="M80 120 L100 100 L120 120 L120 145 L80 145 Z"/>
+
+  <text
+    x="100"
+    y="235"
+    text-anchor="middle"
+    font-family="Poppins, Inter Tight, sans-serif"
+    font-size="34"
+    font-weight="700"
+    fill="#1A73E8"
+  >
+    MAKELAR
+  </text>
+
+  <text
+    x="100"
+    y="265"
+    text-anchor="middle"
+    font-family="Poppins, Inter Tight, sans-serif"
+    font-size="14"
+    font-weight="500"
+    letter-spacing="4"
+    fill="#1A73E8"
+  >
+    JUAL BELI
+  </text>
+</svg>

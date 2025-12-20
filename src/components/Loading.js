@@ -1,0 +1,61 @@
+import React from 'react';
+import { View, Text, ActivityIndicator } from 'react-native';
+import LottieView from 'lottie-react-native';
+import { Colors } from '../styles';
+import { Fonts } from '../constants';
+
+const Loading = () => {
+  return (
+    <View
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        zIndex: 1000,
+      }}
+    >
+      <View
+        style={{
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 10,
+          borderRadius: 20,
+          backgroundColor: 'rgba(0, 0, 0, 0.0)',
+        }}
+      >
+        <LottieView
+          source={require('../assets/images/loading.json')}
+          style={{ width: 200, height: 200 }}
+          autoPlay
+          loop
+        />
+        {/* <ActivityIndicator size="large" color={Colors.PURPLE} /> */}
+        <View
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <Text
+            style={{
+              marginTop: -10,
+              marginBottom: 10,
+              fontSize: 16,
+              color: Colors.WHITE,
+              fontFamily: Fonts.fontRegular,
+            }}
+          >
+            Waiting...
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+};
+
+export { Loading };

@@ -1,0 +1,268 @@
+import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Alert,
+  Linking,
+} from 'react-native';
+import MaterialCommunityIcons from '@react-native-vector-icons/material-design-icons';
+import Clipboard from '@react-native-clipboard/clipboard';
+import LinearGradient from 'react-native-linear-gradient';
+import { BaseView } from '../../components';
+import { Colors, Sizes } from '../../styles';
+import { Fonts } from '../../constants';
+import {
+  binance,
+  bitcoin,
+  etherium,
+  paypal,
+  solana,
+  usdt,
+} from '../../assets/images';
+import FastImage from '@d11/react-native-fast-image';
+import { useNavigation } from '@react-navigation/native';
+
+/// --- DATA DONASI ---
+const DONATION_OPTIONS = [
+  {
+    name: 'PayPal',
+    // Ikon untuk PayPal di MaterialCommunityIcons adalah 'paypal'
+    icon: paypal,
+    color: '#00457C',
+    actionType: 'link',
+    link: 'https://paypal.me/vbagustinus',
+    description: 'Donate quickly and securely via PayPal.',
+  },
+  {
+    name: 'Bitcoin (BTC)',
+    // Ikon untuk Bitcoin di MaterialCommunityIcons adalah 'bitcoin'
+    icon: bitcoin,
+    color: '#F7931A', // Warna Bitcoin
+    actionType: 'copy',
+    address: 'bc1pcxspvgxqv0zek2s585d6gsnr6uh39xp5hsl8gtqr5fjn8tu4tmnqkhmfu7',
+    description: 'Support us with Bitcoin.',
+  },
+  {
+    name: 'Ethereum (ETH)',
+    // Ikon untuk Ethereum di MaterialCommunityIcons adalah 'ethereum'
+    icon: etherium,
+    color: '#627EEA', // Warna Ethereum
+    actionType: 'copy',
+    address: '0xF11477A7F562D30f11E8a4d1F3818fe1805b6FC5',
+    description: 'Support us with Ethereum (ERC-20/Native).', // Diperjelas
+  },
+  {
+    name: 'Binance Coin (BNB)',
+    // Ikon untuk Binance (BNB)
+    icon: binance, // Pilihan ikon: 'currency-bdt', 'layers'
+    color: '#F3BA2F', // Warna Binance
+    actionType: 'copy',
+    address: '0xF11477A7F562D30f11E8a4d1F3818fe1805b6FC5', // **GANTI**
+    description: 'Support us using BNB (BSC/BEP-20).', // Diperjelas
+  },
+  {
+    name: 'Solana (SOL)',
+    // Ikon untuk Solana
+    icon: solana, // Pilihan ikon: 'currency-inr', 'sitemap'
+    color: '#9945FF', // Warna Solana
+    actionType: 'copy',
+    address: 'GstFpH6kB99e1f3S2Eq53BrCKUhL8d7oDrVxJBq9JZSL', // **GANTI**
+    description: 'Support us using Solana Network (Fast & Low Fee).', // Diperjelas
+  },
+  {
+    name: 'Tether USD (USDT)',
+    // Ikon untuk USDT (Stablecoin)
+    icon: usdt,
+    color: '#50AF95', // Warna Tether
+    actionType: 'copy',
+    address: '0xF11477A7F562D30f11E8a4d1F3818fe1805b6FC5', // **GANTI**
+    description: 'Stable donation via USDT (BEP20 Recommended).', // Diperjelas
+  },
+  // Tambahkan mata uang kripto lain jika diperlukan (misal: Litecoin, Dogecoin)
+];
+
+const DonationScreen = () => {
+  const navigation = useNavigation();
+
+  // Fungsi untuk menangani aksi donasi (link atau copy)
+  const handleDonationAction = option => {
+    if (option.actionType === 'link') {
+      // 1. Aksi Link (Untuk PayPal)
+      Linking.openURL(option.link).catch(err => {
+        Alert.alert('Error', `Failed to open link: ${err.message}`);
+      });
+    } else if (option.actionType === 'copy') {
+      // 2. Aksi Copy (Untuk Kripto)
+      Clipboard.setString(option.address);
+      Alert.alert(
+        `${option.name} Address Copied`,
+        `The address has been copied to your clipboard. Please paste it into your crypto wallet to complete the donation.`,
+        [{ text: 'OK' }],
+      );
+    }
+  };
+
+  const renderDonationOption = (option, index) => (
+    <TouchableOpacity
+      key={option.name}
+      style={[styles.cardContainer, { borderColor: option.color }]}
+      onPress={() => handleDonationAction(option)}
+    >
+      <LinearGradient
+        colors={[option.color, '#ffffff20', '#ffffff00']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.gradientCard}
+      >
+        {/* <MaterialCommunityIcons 
+          name={option.icon} 
+          size={40} 
+          color={option.color} 
+          style={styles.icon} 
+        /> */}
+        <FastImage
+          source={option.icon}
+          style={styles.icon}
+          resizeMode={FastImage.resizeMode.stretch}
+        />
+
+        <View style={styles.textWrapper}>
+          <Text style={styles.cardTitle}>{option.name}</Text>
+          <Text style={styles.cardDescription}>{option.description}</Text>
+
+          {option.actionType === 'copy' && (
+            <Text style={styles.addressText} numberOfLines={1}>
+              {option.address.substring(0, 10)}... (Tap to copy)
+            </Text>
+          )}
+        </View>
+
+        <View style={styles.actionButton}>
+          <MaterialCommunityIcons
+            name={option.actionType === 'link' ? 'open-in-new' : 'content-copy'}
+            size={20}
+            color={Colors.WHITE}
+          />
+        </View>
+      </LinearGradient>
+    </TouchableOpacity>
+  );
+
+  return (
+    <BaseView
+      title='Support & Donations'
+      isScrollable={false}
+      onBackPress={() => navigation.pop()}
+    >
+      <LinearGradient
+        colors={Colors.GRADIENT_ROYAL} // Gunakan gradient yang sesuai
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.screen}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={styles.headerTitle}>Help Us Keep Going! 💖</Text>
+          <Text style={styles.headerSubtitle}>
+            Your donation helps cover server costs and ongoing development for
+            this app.
+          </Text>
+
+          <View style={styles.optionsList}>
+            {DONATION_OPTIONS.map(renderDonationOption)}
+          </View>
+
+          <Text style={styles.footerNote}>
+            Thank you for your generous support!
+          </Text>
+        </ScrollView>
+      </LinearGradient>
+    </BaseView>
+  );
+};
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    padding: 20,
+  },
+  scrollContent: {
+    paddingBottom: 40,
+  },
+  headerTitle: {
+    fontFamily: Fonts.fontBold,
+    fontSize: Sizes.CUSTOM_SIZE(18),
+    color: Colors.WHITE,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  headerSubtitle: {
+    fontFamily: Fonts.fontRegular,
+    fontSize: Sizes.CUSTOM_SIZE(12),
+    color: Colors.WHITE_80,
+    textAlign: 'center',
+    marginBottom: 20,
+    paddingHorizontal: 10,
+  },
+  optionsList: {
+    marginTop: 10,
+  },
+  cardContainer: {
+    borderRadius: 12,
+    marginVertical: 8,
+    overflow: 'hidden',
+    borderWidth: 0.5,
+    borderColor: Colors.WHITE_20,
+  },
+  gradientCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+  },
+  icon: {
+    width: 40,
+    height: 40,
+    textAlign: 'center',
+  },
+  textWrapper: {
+    flex: 1,
+    marginLeft: 15,
+  },
+  cardTitle: {
+    fontFamily: Fonts.fontSemiBold,
+    fontSize: Sizes.CUSTOM_SIZE(14),
+    color: Colors.WHITE,
+  },
+  cardDescription: {
+    fontFamily: Fonts.fontRegular,
+    fontSize: Sizes.CUSTOM_SIZE(10),
+    color: Colors.WHITE,
+    marginTop: 2,
+  },
+  addressText: {
+    fontFamily: Fonts.fontItalic,
+    fontSize: Sizes.CUSTOM_SIZE(10),
+    color: Colors.WHITE_80,
+    marginTop: 5,
+  },
+  actionButton: {
+    padding: 8,
+    borderRadius: 50,
+    backgroundColor: Colors.PRIMARY_DARK,
+    marginLeft: 10,
+  },
+  footerNote: {
+    fontFamily: Fonts.fontMedium,
+    fontSize: Sizes.CUSTOM_SIZE(12),
+    color: Colors.WHITE,
+    textAlign: 'center',
+    marginTop: 30,
+  },
+});
+
+export default DonationScreen;
