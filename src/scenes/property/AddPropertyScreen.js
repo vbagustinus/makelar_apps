@@ -92,25 +92,70 @@ const AddPropertyScreen = () => {
   const [selectedSeller, setSelectedSeller] = useState(null);
   const [sellerName, setSellerName] = useState('');
 
-  // --- FIELDS YANG DITAMBAHKAN ---
+  // --- FIELDS RUMAH (HOUSE) ---
   const [bedrooms, setBedrooms] = useState('');
   const [bathrooms, setBathrooms] = useState('');
   const [floors, setFloors] = useState('');
   const [garage, setGarage] = useState('');
   const [builtYear, setBuiltYear] = useState('');
+  const [electricPower, setElectricPower] = useState('');
+  const [waterSource, setWaterSource] = useState('');
+  const [facing, setFacing] = useState('');
+  const [furnished, setFurnished] = useState(null);
+  const [roadWidth, setRoadWidth] = useState('');
+  const [carAccess, setCarAccess] = useState('');
+  const [environmentType, setEnvironmentType] = useState('');
+  const [condition, setCondition] = useState('');
+  const [renovationYear, setRenovationYear] = useState('');
+  const [legalOwnerName, setLegalOwnerName] = useState('');
+  const [imbNumber, setImbNumber] = useState('');
+  const [monthlyFee, setMonthlyFee] = useState('');
 
-  const [electricPower, setElectricPower] = useState(''); // daya listrik (Watt)
-  const [waterSource, setWaterSource] = useState(''); // PDAM / Sumur / Lainnya
-  const [facing, setFacing] = useState(''); // arah hadap
-  const [furnished, setFurnished] = useState(''); // furnished level
-  const [roadWidth, setRoadWidth] = useState(''); // lebar jalan
-  const [carAccess, setCarAccess] = useState(''); // akses kendaraan
-  const [environmentType, setEnvironmentType] = useState(''); // perumahan/cluster/dll
-  const [condition, setCondition] = useState(''); // kondisi rumah
-  const [renovationYear, setRenovationYear] = useState(''); // tahun renovasi jika ada
-  const [legalOwnerName, setLegalOwnerName] = useState(''); // nama pemilik sertifikat
-  const [imbNumber, setImbNumber] = useState(''); // nomor IMB jika ada
-  const [monthlyFee, setMonthlyFee] = useState(''); // iuran lingkungan / security fee
+  // --- FIELDS APARTEMEN ---
+  const [tower, setTower] = useState('');
+  const [floorNumber, setFloorNumber] = useState('');
+  const [unitNumber, setUnitNumber] = useState('');
+  const [unitType, setUnitType] = useState(null);
+  const [maintenanceFee, setMaintenanceFee] = useState('');
+  const [balcony, setBalcony] = useState('');
+  const [apartmentFacilities, setApartmentFacilities] = useState('');
+
+  // --- FIELDS TANAH (LAND) ---
+  const [landShape, setLandShape] = useState('');
+  const [frontageWidth, setFrontageWidth] = useState('');
+  const [zoning, setZoning] = useState('');
+  const [contour, setContour] = useState('');
+  const [roadType, setRoadType] = useState('');
+
+  // --- FIELDS RUKO ---
+  const [buildingWidth, setBuildingWidth] = useState('');
+  const [buildingLength, setBuildingLength] = useState('');
+  const [parkingSpace, setParkingSpace] = useState('');
+  const [restroomCount, setRestroomCount] = useState('');
+  const [electricityType, setElectricityType] = useState('');
+  const [businessSuitableFor, setBusinessSuitableFor] = useState('');
+
+  // --- FIELDS KANTOR (OFFICE) ---
+  const [officeType, setOfficeType] = useState('');
+  const [meetingRoomCount, setMeetingRoomCount] = useState('');
+  const [workspaceCapacity, setWorkspaceCapacity] = useState('');
+  const [pantry, setPantry] = useState('');
+  const [toiletType, setToiletType] = useState('');
+
+  // --- FIELDS KOS/KONTRAKAN ---
+  const [totalRooms, setTotalRooms] = useState('');
+  const [occupiedRooms, setOccupiedRooms] = useState('');
+  const [roomFacilities, setRoomFacilities] = useState('');
+  const [bathroomInside, setBathroomInside] = useState('');
+  const [incomePerMonth, setIncomePerMonth] = useState('');
+  const [rules, setRules] = useState('');
+
+  // --- FIELDS INDUSTRI/GUDANG ---
+  const [ceilingHeight, setCeilingHeight] = useState('');
+  const [loadingDock, setLoadingDock] = useState('');
+  const [truckAccess, setTruckAccess] = useState('');
+  const [powerCapacity, setPowerCapacity] = useState('');
+  const [floorStrength, setFloorStrength] = useState('');
 
   const [longitude, setLongitude] = useState(0);
   const [latitude, setLatitude] = useState(0);
@@ -365,6 +410,7 @@ const AddPropertyScreen = () => {
 
     savePropertyData({
       propertyTypeId: propertyType?.id,
+      propertyTypeName: propertyType?.name,
       propertyName,
       statusId: status?.id,
       certificateTypeId: certificateType?.id,
@@ -385,7 +431,7 @@ const AddPropertyScreen = () => {
       electricPower,
       waterSource,
       facing,
-      furnished,
+      furnished: furnished?.name,
       roadWidth,
       carAccess,
       environmentType,
@@ -394,6 +440,46 @@ const AddPropertyScreen = () => {
       legalOwnerName,
       imbNumber,
       monthlyFee,
+      // APARTEMEN
+      tower,
+      floorNumber,
+      unitNumber,
+      unitType: unitType?.name,
+      maintenanceFee,
+      balcony,
+      apartmentFacilities,
+      // TANAH
+      landShape: landShape?.name,
+      frontageWidth,
+      zoning: zoning?.name,
+      contour: contour?.name,
+      roadType: roadType?.name,
+      // RUKO
+      buildingWidth,
+      buildingLength,
+      parkingSpace,
+      restroomCount,
+      electricityType: electricityType?.name,
+      businessSuitableFor,
+      // KANTOR
+      officeType: officeType?.name,
+      meetingRoomCount,
+      workspaceCapacity,
+      pantry,
+      toiletType: toiletType?.name,
+      // KOS/KONTRAKAN
+      totalRooms,
+      occupiedRooms,
+      roomFacilities,
+      bathroomInside: bathroomInside?.name,
+      incomePerMonth,
+      rules: rules?.name,
+      // INDUSTRI/GUDANG
+      ceilingHeight,
+      loadingDock: loadingDock?.name,
+      truckAccess: truckAccess?.name,
+      powerCapacity,
+      floorStrength,
       // Data Pihak Terkait (Pembeli)
       selectedRBPurchaser,
       purchaserName:
@@ -408,6 +494,13 @@ const AddPropertyScreen = () => {
       notes,
       images: images,
       uid: token,
+      // LOKASI
+      province: province?.name,
+      city: city?.name,
+      district: district?.name,
+      village: village?.name,
+      latitude,
+      longitude,
       owner: {
         displayName: user?.displayName || null,
         photoURL: user?.photoURL || null,
@@ -430,7 +523,7 @@ const AddPropertyScreen = () => {
     setPrice('');
     setLandArea('');
     setBuildingArea('');
-    // reset fields baru
+    // reset RUMAH fields
     setBedrooms('');
     setBathrooms('');
     setFloors('');
@@ -448,6 +541,47 @@ const AddPropertyScreen = () => {
     setLegalOwnerName('');
     setImbNumber('');
     setMonthlyFee('');
+    // reset APARTEMEN fields
+    setTower('');
+    setFloorNumber('');
+    setUnitNumber('');
+    setUnitType(null);
+    setMaintenanceFee('');
+    setBalcony('');
+    setApartmentFacilities('');
+    // reset TANAH fields
+    setLandShape('');
+    setFrontageWidth('');
+    setZoning('');
+    setContour('');
+    setRoadType('');
+    // reset RUKO fields
+    setBuildingWidth('');
+    setBuildingLength('');
+    setParkingSpace('');
+    setRestroomCount('');
+    setElectricityType('');
+    setBusinessSuitableFor('');
+    // reset KANTOR fields
+    setOfficeType('');
+    setMeetingRoomCount('');
+    setWorkspaceCapacity('');
+    setPantry('');
+    setToiletType('');
+    // reset KOS fields
+    setTotalRooms('');
+    setOccupiedRooms('');
+    setRoomFacilities('');
+    setBathroomInside('');
+    setIncomePerMonth('');
+    setRules('');
+    // reset GUDANG fields
+    setCeilingHeight('');
+    setLoadingDock('');
+    setTruckAccess('');
+    setPowerCapacity('');
+    setFloorStrength('');
+    // reset location
     setSelectedRBPurchaseDate('Select Purchase Date');
     setSelectedRBPurchaser('Enter Manually');
     setSelectedPurchaser(null);
@@ -474,6 +608,18 @@ const AddPropertyScreen = () => {
       showAd();
     }
   }, [savePropertySuccess]);
+
+  useEffect(() => {
+    if (furnished) {
+      console.log('Furnished status changed:', furnished?.name || furnished);
+    }
+  }, [furnished]);
+
+  useEffect(() => {
+    if (propertyType) {
+      console.log('Property type selected:', propertyType?.name);
+    }
+  }, [propertyType]);
 
   // FUNGSI MEMILIH GAMBAR (Sama seperti sebelumnya)
 
@@ -601,12 +747,17 @@ const AddPropertyScreen = () => {
             onChangeText={setFacing}
           />
 
-          <Input
-            label='Furnished'
-            placeholder='Contoh: Unfurnished / Semi / Full'
+          <DropdownSearchable
+            label='Status Furnitur'
+            placeholder='Pilih Status Furnitur'
             iconName='sofa'
+            options={[
+              { id: 1, name: 'Unfurnished' },
+              { id: 2, name: 'Semi Furnished' },
+              { id: 3, name: 'Full Furnished' }
+            ]}
             value={furnished}
-            onChangeText={setFurnished}
+            onSelect={setFurnished}
           />
 
           <Input
@@ -682,90 +833,497 @@ const AddPropertyScreen = () => {
   const renderApartmentForm = () => {
     return (
       <>
-        {/* ======= INPUT TAMBAHAN (Spesifikasi Apartement) ======= */}
-          <Input
-            label='Luas Bangunan (m²)'
-            placeholder='Contoh: 90'
-            iconName='home-floor-1'
-            keyboardType='numeric'
-            value={buildingArea}
-            onChangeText={setBuildingArea}
-          />
+        {/* ======= INPUT APARTEMEN ======= */}
+        <Input
+          label='Luas Unit (m²)'
+          placeholder='Contoh: 90'
+          iconName='home-floor-1'
+          keyboardType='numeric'
+          value={buildingArea}
+          onChangeText={setBuildingArea}
+        />
 
-          <Input
-            label='Tower (jika ada)'
-            placeholder='Contoh: Melati'
-            iconName='bed-double-outline'
-            keyboardType='numeric'
-            value={bedrooms}
-            onChangeText={setBedrooms}
-          />
+        <Input
+          label='Tower / Blok'
+          placeholder='Contoh: Melati, A, Tower 1'
+          iconName='building'
+          value={tower}
+          onChangeText={setTower}
+        />
 
-          <Input
-            label='Lantai'
-            placeholder='Contoh: 2'
-            iconName='shower-head'
-            keyboardType='numeric'
-            value={bathrooms}
-            onChangeText={setBathrooms}
-          />
+        <Input
+          label='Lantai'
+          placeholder='Contoh: 2'
+          iconName='layers'
+          keyboardType='numeric'
+          value={floorNumber}
+          onChangeText={setFloorNumber}
+        />
 
-          <Input
-            label='Nomor Unit'
-            placeholder='Contoh: 2'
-            iconName='stairs'
-            keyboardType='numeric'
-            value={floors}
-            onChangeText={setFloors}
-          />
+        <Input
+          label='Nomor Unit'
+          placeholder='Contoh: 201'
+          iconName='door'
+          value={unitNumber}
+          onChangeText={setUnitNumber}
+        />
 
-          {/* INPUT: Tipe Unit */}
-          <DropdownSearchable
-            label='Tipe Unit'
-            placeholder='Pilih Tipe Unit'
-            iconName='account-check-outline'
-            options={[{id: 1, name: 'Studio'},{id: 2, name: '1BR'},{id: 2, name: '2BR'},{id: 2, name: '3BR'},{id: 2, name: 'Penthouse'}, {id: 2, name: 'Lainnya'}]}
-            value={status} // Tambahkan value
-            onSelect={setStatus}
-          />
+        <DropdownSearchable
+          label='Tipe Unit'
+          placeholder='Pilih Tipe Unit'
+          iconName='sofa'
+          options={[
+            { id: 1, name: 'Studio' },
+            { id: 2, name: '1 Kamar Tidur' },
+            { id: 3, name: '2 Kamar Tidur' },
+            { id: 4, name: '3 Kamar Tidur' },
+            { id: 5, name: 'Penthouse' },
+            { id: 6, name: 'Lainnya' }
+          ]}
+          value={unitType}
+          onSelect={setUnitType}
+        />
 
-          <Input
-            label='Biaya IPL'
-            placeholder='Contoh: 2'
-            iconName='stairs'
-            keyboardType='numeric'
-            value={floors}
-            onChangeText={setFloors}
-          />
+        <Input
+          label='Biaya IPL/Maintenance (Rp)'
+          placeholder='Contoh: 500000'
+          iconName='cash'
+          keyboardType='numeric'
+          value={maintenanceFee}
+          onChangeText={setMaintenanceFee}
+        />
 
-          {/* INPUT: Furnitur */}
-          <DropdownSearchable
-            label='Furnitur'
-            placeholder='Pilih Furnitur'
-            iconName='account-check-outline'
-            options={[{id: 1, name: 'Unfurnished'},{id: 2, name: 'Semi'},{id: 2, name: 'Full'}, {id: 2, name: 'Lainnya'}]}
-            value={status} // Tambahkan value
-            onSelect={setStatus}
-          />
+        <DropdownSearchable
+          label='Status Furnitur'
+          placeholder='Pilih Status Furnitur'
+          iconName='sofa'
+          options={[
+            { id: 1, name: 'Unfurnished' },
+            { id: 2, name: 'Semi Furnished' },
+            { id: 3, name: 'Full Furnished' }
+          ]}
+          value={furnished}
+          onSelect={setFurnished}
+        />
 
-          <Input
-            label='Balkon'
-            placeholder='Contoh: Ada'
-            iconName='car'
-            value={garage}
-            onChangeText={setGarage}
-          />
+        <Input
+          label='Balkon'
+          placeholder='Contoh: Ada / Tidak Ada'
+          iconName='window-open'
+          value={balcony}
+          onChangeText={setBalcony}
+        />
 
-          <Input
-            label='Fasilitas'
-            placeholder='Contoh: Gym, Pool, Security 24h, Lift'
-            iconName='calendar-range'
-            keyboardType='default'
-            value={builtYear}
-            onChangeText={setBuiltYear}
-          />
+        <Input
+          label='Fasilitas'
+          placeholder='Contoh: Gym, Pool, Security 24h, Lift'
+          iconName='star'
+          value={apartmentFacilities}
+          onChangeText={setApartmentFacilities}
+        />
       </>
-    )
+    );
+  };
+
+  const renderLandForm = () => {
+    return (
+      <>
+        {/* ======= INPUT TANAH ======= */}
+        <Input
+          label='Luas Tanah (m²)'
+          placeholder='Contoh: 500'
+          iconName='ruler-square'
+          keyboardType='numeric'
+          value={landArea}
+          onChangeText={setLandArea}
+        />
+
+        <DropdownSearchable
+          label='Bentuk Tanah'
+          placeholder='Pilih Bentuk Tanah'
+          iconName='shape'
+          options={[
+            { id: 1, name: 'Kotak / Persegi' },
+            { id: 2, name: 'Segitiga' },
+            { id: 3, name: 'Trapesium' },
+            { id: 4, name: 'Tidak Beraturan' }
+          ]}
+          value={landShape}
+          onSelect={setLandShape}
+        />
+
+        <Input
+          label='Lebar Muka Tanah (m)'
+          placeholder='Contoh: 20'
+          iconName='ruler'
+          keyboardType='numeric'
+          value={frontageWidth}
+          onChangeText={setFrontageWidth}
+        />
+
+        <DropdownSearchable
+          label='Zona / Tujuan Lahan'
+          placeholder='Pilih Zona'
+          iconName='map'
+          options={[
+            { id: 1, name: 'Permukiman' },
+            { id: 2, name: 'Komersial' },
+            { id: 3, name: 'Industri' },
+            { id: 4, name: 'Pertanian' },
+            { id: 5, name: 'Campuran' }
+          ]}
+          value={zoning}
+          onSelect={setZoning}
+        />
+
+        <DropdownSearchable
+          label='Kontur Tanah'
+          placeholder='Pilih Kontur'
+          iconName='terrain'
+          options={[
+            { id: 1, name: 'Datar' },
+            { id: 2, name: 'Miring Ringan' },
+            { id: 3, name: 'Miring Sedang' },
+            { id: 4, name: 'Miring Curam' }
+          ]}
+          value={contour}
+          onSelect={setContour}
+        />
+
+        <DropdownSearchable
+          label='Jenis Jalan'
+          placeholder='Pilih Jenis Jalan'
+          iconName='road'
+          options={[
+            { id: 1, name: 'Aspal' },
+            { id: 2, name: 'Beton' },
+            { id: 3, name: 'Tanah' },
+            { id: 4, name: 'Macadam' }
+          ]}
+          value={roadType}
+          onSelect={setRoadType}
+        />
+      </>
+    );
+  };
+
+  const renderRukoForm = () => {
+    return (
+      <>
+        {/* ======= INPUT RUKO ======= */}
+        <Input
+          label='Luas Tanah (m²)'
+          placeholder='Contoh: 120'
+          iconName='ruler-square'
+          keyboardType='numeric'
+          value={landArea}
+          onChangeText={setLandArea}
+        />
+
+        <Input
+          label='Luas Bangunan (m²)'
+          placeholder='Contoh: 80'
+          iconName='home-floor-1'
+          keyboardType='numeric'
+          value={buildingArea}
+          onChangeText={setBuildingArea}
+        />
+
+        <Input
+          label='Jumlah Lantai'
+          placeholder='Contoh: 2'
+          iconName='layers'
+          keyboardType='numeric'
+          value={floors}
+          onChangeText={setFloors}
+        />
+
+        <Input
+          label='Lebar Bangunan (m)'
+          placeholder='Contoh: 6'
+          iconName='ruler'
+          keyboardType='numeric'
+          value={buildingWidth}
+          onChangeText={setBuildingWidth}
+        />
+
+        <Input
+          label='Panjang Bangunan (m)'
+          placeholder='Contoh: 20'
+          iconName='ruler'
+          keyboardType='numeric'
+          value={buildingLength}
+          onChangeText={setBuildingLength}
+        />
+
+        <Input
+          label='Tempat Parkir'
+          placeholder='Contoh: 2 Mobil'
+          iconName='parking'
+          value={parkingSpace}
+          onChangeText={setParkingSpace}
+        />
+
+        <Input
+          label='Jumlah Kamar Mandi'
+          placeholder='Contoh: 2'
+          iconName='shower-head'
+          keyboardType='numeric'
+          value={restroomCount}
+          onChangeText={setRestroomCount}
+        />
+
+        <DropdownSearchable
+          label='Jenis Listrik'
+          placeholder='Pilih Jenis Listrik'
+          iconName='flash'
+          options={[
+            { id: 1, name: 'Toko (900 VA)' },
+            { id: 2, name: 'Toko Besar (1300 VA)' },
+            { id: 3, name: 'Industri' }
+          ]}
+          value={electricityType}
+          onSelect={setElectricityType}
+        />
+
+        <Input
+          label='Cocok Untuk Bisnis'
+          placeholder='Contoh: Toko, Salon, Warung'
+          iconName='briefcase'
+          value={businessSuitableFor}
+          onChangeText={setBusinessSuitableFor}
+        />
+      </>
+    );
+  };
+
+  const renderOfficeForm = () => {
+    return (
+      <>
+        {/* ======= INPUT KANTOR ======= */}
+        <Input
+          label='Luas Bangunan (m²)'
+          placeholder='Contoh: 500'
+          iconName='home-floor-1'
+          keyboardType='numeric'
+          value={buildingArea}
+          onChangeText={setBuildingArea}
+        />
+
+        <Input
+          label='Lantai / Floor'
+          placeholder='Contoh: 5'
+          iconName='layers'
+          keyboardType='numeric'
+          value={floorNumber}
+          onChangeText={setFloorNumber}
+        />
+
+        <DropdownSearchable
+          label='Tipe Kantor'
+          placeholder='Pilih Tipe Kantor'
+          iconName='briefcase'
+          options={[
+            { id: 1, name: 'Bare (Kosong)' },
+            { id: 2, name: 'Semi Furnished' },
+            { id: 3, name: 'Full Furnished' }
+          ]}
+          value={officeType}
+          onSelect={setOfficeType}
+        />
+
+        <Input
+          label='Jumlah Ruang Rapat'
+          placeholder='Contoh: 3'
+          iconName='door-multiple'
+          keyboardType='numeric'
+          value={meetingRoomCount}
+          onChangeText={setMeetingRoomCount}
+        />
+
+        <Input
+          label='Kapasitas Workspace'
+          placeholder='Contoh: 50 orang'
+          iconName='seat'
+          value={workspaceCapacity}
+          onChangeText={setWorkspaceCapacity}
+        />
+
+        <Input
+          label='Pantry / Dapur'
+          placeholder='Contoh: Ada / Tidak Ada'
+          iconName='food'
+          value={pantry}
+          onChangeText={setPantry}
+        />
+
+        <DropdownSearchable
+          label='Jenis Toilet'
+          placeholder='Pilih Jenis Toilet'
+          iconName='toilet'
+          options={[
+            { id: 1, name: 'Internal (Dalam Unit)' },
+            { id: 2, name: 'Shared (Bersama)' }
+          ]}
+          value={toiletType}
+          onSelect={setToiletType}
+        />
+      </>
+    );
+  };
+
+  const renderKosForm = () => {
+    return (
+      <>
+        {/* ======= INPUT KOS/KONTRAKAN ======= */}
+        <Input
+          label='Total Kamar'
+          placeholder='Contoh: 10'
+          iconName='door-multiple'
+          keyboardType='numeric'
+          value={totalRooms}
+          onChangeText={setTotalRooms}
+        />
+
+        <Input
+          label='Kamar Terisi'
+          placeholder='Contoh: 8'
+          iconName='door-open'
+          keyboardType='numeric'
+          value={occupiedRooms}
+          onChangeText={setOccupiedRooms}
+        />
+
+        <Input
+          label='Fasilitas Kamar'
+          placeholder='Contoh: AC, WiFi, KM Dalam'
+          iconName='star'
+          value={roomFacilities}
+          onChangeText={setRoomFacilities}
+        />
+
+        <DropdownSearchable
+          label='Kamar Mandi'
+          placeholder='Pilih Tipe KM'
+          iconName='shower-head'
+          options={[
+            { id: 1, name: 'Dalam Kamar' },
+            { id: 2, name: 'Bersama' },
+            { id: 3, name: 'Campuran' }
+          ]}
+          value={bathroomInside}
+          onSelect={setBathroomInside}
+        />
+
+        <Input
+          label='Pendapatan Per Bulan (Rp)'
+          placeholder='Contoh: 4000000'
+          iconName='cash'
+          keyboardType='numeric'
+          value={incomePerMonth}
+          onChangeText={setIncomePerMonth}
+        />
+
+        <DropdownSearchable
+          label='Aturan Penghuni'
+          placeholder='Pilih Aturan'
+          iconName='file-document'
+          options={[
+            { id: 1, name: 'Bebas (Putra/Putri)' },
+            { id: 2, name: 'Putra Saja' },
+            { id: 3, name: 'Putri Saja' }
+          ]}
+          value={rules}
+          onSelect={setRules}
+        />
+      </>
+    );
+  };
+
+  const renderWarehouseForm = () => {
+    return (
+      <>
+        {/* ======= INPUT INDUSTRI/GUDANG ======= */}
+        <Input
+          label='Luas Bangunan (m²)'
+          placeholder='Contoh: 1000'
+          iconName='home-floor-1'
+          keyboardType='numeric'
+          value={buildingArea}
+          onChangeText={setBuildingArea}
+        />
+
+        <Input
+          label='Lebar Bangunan (m)'
+          placeholder='Contoh: 30'
+          iconName='ruler'
+          keyboardType='numeric'
+          value={buildingWidth}
+          onChangeText={setBuildingWidth}
+        />
+
+        <Input
+          label='Panjang Bangunan (m)'
+          placeholder='Contoh: 50'
+          iconName='ruler'
+          keyboardType='numeric'
+          value={buildingLength}
+          onChangeText={setBuildingLength}
+        />
+
+        <Input
+          label='Tinggi Ruangan (m)'
+          placeholder='Contoh: 6'
+          iconName='layers'
+          keyboardType='numeric'
+          value={ceilingHeight}
+          onChangeText={setCeilingHeight}
+        />
+
+        <DropdownSearchable
+          label='Loading Dock'
+          placeholder='Pilih Ketersediaan'
+          iconName='truck-loading'
+          options={[
+            { id: 1, name: 'Ada' },
+            { id: 2, name: 'Tidak Ada' }
+          ]}
+          value={loadingDock}
+          onSelect={setLoadingDock}
+        />
+
+        <DropdownSearchable
+          label='Akses Kendaraan'
+          placeholder='Pilih Tipe Akses'
+          iconName='truck'
+          options={[
+            { id: 1, name: 'Tronton' },
+            { id: 2, name: 'Kontainer' },
+            { id: 3, name: 'Keduanya' }
+          ]}
+          value={truckAccess}
+          onSelect={setTruckAccess}
+        />
+
+        <Input
+          label='Kapasitas Listrik (kVA)'
+          placeholder='Contoh: 100'
+          iconName='flash'
+          keyboardType='numeric'
+          value={powerCapacity}
+          onChangeText={setPowerCapacity}
+        />
+
+        <Input
+          label='Daya Tampung Lantai (Ton/m²)'
+          placeholder='Contoh: 5'
+          iconName='weight'
+          keyboardType='numeric'
+          value={floorStrength}
+          onChangeText={setFloorStrength}
+        />
+      </>
+    );
   };
 
   return (
@@ -1013,9 +1571,14 @@ const AddPropertyScreen = () => {
             onSelect={setCertificateType}
           />
 
-          {propertyType?.name === 'Rumah' && (
-            renderHomeForm()
-          )}
+          {propertyType?.name === 'Rumah' && renderHomeForm()}
+          {propertyType?.name === 'Apartemen' && renderApartmentForm()}
+          {propertyType?.name === 'Tanah' && renderLandForm()}
+          {propertyType?.name === 'Ruko' && renderRukoForm()}
+          {propertyType?.name === 'Kantor' && renderOfficeForm()}
+          {propertyType?.name === 'Kos/Kontrakan' && renderKosForm()}
+          {propertyType?.name === 'Industri/Gudang' && renderWarehouseForm()}
+
           {/* TOMBOL SIMPAN */}
           <TouchableOpacity
             onPress={handleSubmit}

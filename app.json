@@ -1,4 +1,7 @@
 {
   "name": "Makelar",
-  "displayName": "Makelar"
+  "displayName": "Makelar",
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-2729357311903669~5948961716"
+  }
 }

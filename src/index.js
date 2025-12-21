@@ -257,7 +257,7 @@ function App() {
     android_version: {
       mandatory: false,
       version: DeviceInfo.getVersion(),
-      link: 'https://play.google.com/store/apps/details?id=com.pigeon_apps',
+      link: 'https://play.google.com/store/apps/details?id=com.makelar',
     },
   });
   const [newVersionAvailable, setNewVersionAvailable] = React.useState(false);
