@@ -286,26 +286,26 @@ const usePropertyStore = create((set, get) => ({
   },
 
   // fetchGlobalProperties, fetchMoreGlobalProperties
-  // 🔥 Global pagination function (ambil semua burung, bukan hanya user)
-  fetchGlobalProperties: async ({ pigeonTypeId = null }) => {
+  // 🔥 Global pagination function (ambil semua properti, bukan hanya user)
+  fetchGlobalProperties: async ({ propertyTypeId = null }) => {
     // <-- TAMBAHKAN PARAMETER
     set({
-      listGlobalPigeonsLoading: true,
-      listGlobalPigeonsError: null,
+      listGlobalPropertiesLoading: true,
+      listGlobalPropertiesError: null,
       globalHasMore: true,
       globalLastVisible: null,
     });
 
     try {
-      let query = firestore().collection('pigeons');
+      let query = firestore().collection(COLLECTION_NAME);
 
       // 1. APLIKASIKAN FILTER .WHERE()
-      if (pigeonTypeId !== null) {
-        console.log('pigeonTypeId', pigeonTypeId);
-        // Pastikan 'pigeonTypeId' di Firestore adalah number jika Anda menggunakan perbandingan number
+      if (propertyTypeId !== null) {
+        console.log('propertyTypeId', propertyTypeId);
+        // Pastikan 'propertyTypeId' di Firestore adalah number jika Anda menggunakan perbandingan number
         // Jika Anda menyimpannya sebagai string, gunakan string di sini.
         // Saya asumsikan Anda menyimpannya sebagai number (atau string yang sama dengan ID di database).
-        query = query.where('pigeonTypeId', '==', pigeonTypeId);
+        query = query.where('propertyTypeId', '==', propertyTypeId);
       }
 
       // 2. APLIKASIKAN PENGURUTAN DAN BATAS
@@ -314,49 +314,49 @@ const usePropertyStore = create((set, get) => ({
         .limit(PAGE_SIZE)
         .get();
 
-      const pigeons = snapshot.docs.map(doc => ({
+      const properties = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       }));
 
-      const newHasMore = pigeons.length === PAGE_SIZE;
+      const newHasMore = properties.length === PAGE_SIZE;
       const newLastVisible = snapshot.docs[snapshot.docs.length - 1] || null;
 
       set({
-        listGlobalPigeons: pigeons,
+        listGlobalProperties: properties,
         globalHasMore: newHasMore,
         globalLastVisible: newLastVisible,
       });
 
-      console.log('Fetched global pigeons (first 10):', pigeons);
+      console.log('Fetched global properties (first 10):', properties);
     } catch (error) {
-      console.error('Error fetching global pigeons:', error);
-      set({ listGlobalPigeonsError: error.message });
+      console.error('Error fetching global properties:', error);
+      set({ listGlobalPropertiesError: error.message });
     } finally {
-      set({ listGlobalPigeonsLoading: false });
+      set({ listGlobalPropertiesLoading: false });
     }
   },
 
-  fetchMoreGlobalProperties: async ({ pigeonTypeId = null }) => {
+  fetchMoreGlobalProperties: async ({ propertyTypeId = null }) => {
     // <-- TAMBAHKAN PARAMETER
     const {
       globalHasMore,
       globalIsFetchingMore,
       globalLastVisible,
-      listGlobalPigeons,
+      listGlobalProperties,
     } = get();
 
     if (!globalHasMore || globalIsFetchingMore) return;
 
     set({ globalIsFetchingMore: true });
     try {
-      let query = firestore().collection('pigeons');
+      let query = firestore().collection(COLLECTION_NAME);
 
       // 1. APLIKASIKAN FILTER .WHERE()
-      if (pigeonTypeId !== null) {
-        console.log('pigeonTypeId', pigeonTypeId);
+      if (propertyTypeId !== null) {
+        console.log('propertyTypeId', propertyTypeId);
 
-        query = query.where('pigeonTypeId', '==', pigeonTypeId);
+        query = query.where('propertyTypeId', '==', propertyTypeId);
       }
 
       // 2. APLIKASIKAN PENGURUTAN, START AFTER, DAN BATAS
@@ -366,25 +366,25 @@ const usePropertyStore = create((set, get) => ({
         .limit(PAGE_SIZE)
         .get();
 
-      const newPigeons = snapshot.docs.map(doc => ({
+      const newProperties = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       }));
 
-      const combined = [...listGlobalPigeons, ...newPigeons];
-      const newHasMore = newPigeons.length === PAGE_SIZE;
+      const combined = [...listGlobalProperties, ...newProperties];
+      const newHasMore = newProperties.length === PAGE_SIZE;
       const newLastVisible = snapshot.docs[snapshot.docs.length - 1] || null;
 
       set({
-        listGlobalPigeons: combined,
+        listGlobalProperties: combined,
         globalHasMore: newHasMore,
         globalLastVisible: newLastVisible,
       });
 
-      console.log('Fetched more global pigeons:', newPigeons);
+      console.log('Fetched more global properties:', newProperties);
     } catch (error) {
-      console.error('Error fetching more global pigeons:', error);
-      set({ listGlobalPigeonsError: error.message });
+      console.error('Error fetching more global properties:', error);
+      set({ listGlobalPropertiesError: error.message });
     } finally {
       set({ globalIsFetchingMore: false });
     }

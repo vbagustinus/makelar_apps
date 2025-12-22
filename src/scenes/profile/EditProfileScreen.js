@@ -14,7 +14,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { Colors, Sizes, FontSize } from '../../styles';
 import { Fonts } from '../../constants';
 import { logo } from '../../assets/images';
-import { BaseView, DropdownSearchableCountry, Input } from '../../components';
+import { BaseView, Input } from '../../components';
 import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
 import useAuthStore from '../../store/useAuthStore';
 import LinearGradient from 'react-native-linear-gradient';
@@ -23,8 +23,7 @@ function EditProfileScreen() {
   const navigation = useNavigation();
   const user = useAuthStore(state => state.user);
   const [photo, setPhoto] = useState(user?.photoURL || null);
-  const [teamName, setTeamName] = useState(user?.displayName || '');
-  const [country, setCountry] = useState(null);
+  const [propertyName, setPropertyName] = useState(user?.displayName || '');
   const [city, setCity] = useState(user?.city || '');
   const { updateUserDataWithPhoto, userLoading, fetchUserData } =
     useAuthStore();
@@ -41,36 +40,35 @@ function EditProfileScreen() {
   };
 
   const handleSave = async () => {
-    if (!teamName || !city) {
-      Alert.alert('Oops', 'Team name and city are required.');
+    if (!propertyName || !city) {
+      Alert.alert('Oops', 'Nama properti dan kota harus diisi.');
       return;
     }
 
     try {
       await updateUserDataWithPhoto(user.uid, {
-        displayName: teamName,
-        photoURL: photo, // can be a local path (from image picker) or keep the existing URL
+        displayName: propertyName,
+        photoURL: photo,
         city,
-        country,
       });
       fetchUserData(user.uid);
       navigation.goBack();
     } catch (error) {
       console.error('Update failed:', error);
-      Alert.alert('Oops', 'An error occurred while updating your profile.');
+      Alert.alert('Oops', 'Terjadi kesalahan saat memperbarui profil Anda.');
     }
   };
 
   return (
     <BaseView
       onBackPress={navigation.pop}
-      title='Edit Profile'
+      title='Edit Profil'
       containerStyle={styles.container}
       loading={userLoading}
     >
       <KeyboardAwareScrollView
         enableOnAndroid={true}
-        extraScrollHeight={80} // prevents input fields from being hidden by the keyboard
+        extraScrollHeight={80}
         contentContainerStyle={{
           paddingBottom: 40,
           paddingHorizontal: Sizes.SIZE_20,
@@ -93,29 +91,20 @@ function EditProfileScreen() {
           </View>
         </TouchableOpacity>
 
-        {/* Team / Shop / Owner Name Input */}
+        {/* Property Name Input */}
         <Input
-          label='Team / Store / Owner Name'
-          placeholder='Enter team, store, or owner name'
-          iconName='logo-web-component'
-          value={teamName}
-          onChangeText={setTeamName}
-        />
-
-        {/* Country Selector */}
-        <DropdownSearchableCountry
-          label='Country'
-          placeholder='Select a Country'
-          iconName='flag-outline'
-          onSelect={setCountry}
-          value={country}
+          label='Nama Properti'
+          placeholder='Masukkan nama properti'
+          iconName='home-outline'
+          value={propertyName}
+          onChangeText={setPropertyName}
         />
 
         {/* City Input */}
         <Input
-          label='City Name'
-          placeholder='Enter your city name'
-          iconName='business-outline'
+          label='Kota Asal'
+          placeholder='Masukkan nama kota'
+          iconName='map-marker-outline'
           value={city}
           onChangeText={setCity}
         />
@@ -128,7 +117,7 @@ function EditProfileScreen() {
             end={{ x: 0, y: 0 }}
             style={styles.buttonGradient}
           >
-            <Text style={styles.saveText}>Save</Text>
+            <Text style={styles.saveText}>Simpan</Text>
           </LinearGradient>
         </TouchableOpacity>
       </KeyboardAwareScrollView>

@@ -12,73 +12,65 @@ export default function AboutAppScreen({ navigation: { pop } }) {
       onBackPress={pop}
       noshadow
       isScrollable
-      title='About My Pigeon App'
+      title='Tentang Aplikasi Makelar'
       containerStyle={styles.container}
     >
       <StatusBar translucent backgroundColor='transparent' />
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.sectionTitle}>About My Pigeon App</Text>
+        <Text style={styles.sectionTitle}>Tentang Aplikasi Makelar</Text>
 
         <Text style={styles.text}>
-          Welcome to{' '}
-          <Text style={{ fontFamily: Fonts.fontSemiBold }}>My Pigeon</Text>, an
-          app built to connect and empower pigeon enthusiasts around the world.
-          We believe this hobby is more than just enjoyment—it’s about
-          dedication, knowledge, and community. My Pigeon is here to support all
-          of that, from tracking your pigeons’ data to helping you connect with
-          fellow pigeon lovers worldwide.
+          Selamat datang di{' '}
+          <Text style={{ fontFamily: Fonts.fontSemiBold }}>Makelar</Text>, aplikasi yang dirancang untuk menghubungkan dan memberdayakan para profesional properti di seluruh dunia.
+          Kami percaya bahwa bisnis properti lebih dari sekadar transaksi—ini adalah tentang
+          kepercayaan, pengetahuan, dan komunitas. Makelar hadir untuk mendukung semua itu,
+          dari mengelola data properti Anda hingga membantu Anda terhubung dengan
+          para profesional real estate di seluruh dunia.
         </Text>
 
-        <Text style={styles.subtitle}>Key Features:</Text>
+        <Text style={styles.subtitle}>Fitur Utama:</Text>
         <Text style={styles.bulletText}>
-          1. **Pigeon Data Management**: Easily store and manage important data
-          for each of your pigeons, including breed, lineage, genealogy, and
-          performance history. The app helps you monitor your pigeons’ progress
-          in detail.
+          1. **Manajemen Data Properti**: Dengan mudah menyimpan dan mengelola data penting
+          untuk setiap properti Anda, termasuk lokasi, harga, tipe, dan riwayat penjualan.
+          Aplikasi membantu Anda memantau portofolio properti Anda secara detail.
         </Text>
         <Text style={styles.bulletText}>
-          2. **Event & Competition Schedules**: Stay up to date with pigeon
-          races and events happening around the world. Receive notifications so
-          you never miss an important competition.
+          2. **Penelusuran & Filter Lanjutan**: Tetap terdepan dengan fitur pencarian canggih
+          yang memungkinkan Anda menemukan properti berdasarkan lokasi, harga, tipe, dan kriteria lainnya.
         </Text>
         <Text style={styles.bulletText}>
-          3. **Community Forum**: Interact with pigeon enthusiasts globally,
-          share tips and experiences, and discuss everything related to pigeon
-          care, breeding, and training.
+          3. **Forum Komunitas**: Berinteraksi dengan profesional real estate secara global,
+          bagikan tips dan pengalaman, serta diskusikan segala hal terkait properti.
         </Text>
         <Text style={styles.bulletText}>
-          4. **Gallery**: Upload and share stunning photos of your pigeons with
-          the community. The gallery also serves as a visual portfolio for your
-          birds.
+          4. **Galeri Properti**: Unggah dan bagikan foto berkualitas tinggi dari properti Anda
+          kepada komunitas. Galeri juga berfungsi sebagai portofolio visual untuk bisnis Anda.
         </Text>
         <Text style={styles.bulletText}>
-          5. **Articles & Guides**: Access a growing library of exclusive
-          articles and expert guides on pigeon care, training, and health from
-          experienced breeders and hobbyists worldwide.
+          5. **Artikel & Panduan**: Akses perpustakaan artikel eksklusif dan panduan ahli tentang
+          tren pasar properti, strategi penjualan, dan tips investasi dari para profesional berpengalaman.
         </Text>
         <Text style={styles.bulletText}>
-          6. **Search Feature**: Find pigeons by specific characteristics such
-          as feather color, breed, or lineage, helping you locate relevant
-          information quickly.
+          6. **Fitur Lokasi Interaktif**: Temukan properti berdasarkan karakteristik spesifik seperti
+          lokasi geografis, fasilitas sekitar, dan zona, membantu Anda menemukan informasi yang relevan dengan cepat.
         </Text>
 
-        <Text style={styles.subtitle}>Our Vision & Mission:</Text>
+        <Text style={styles.subtitle}>Visi & Misi Kami:</Text>
         <Text style={styles.text}>
-          Our vision is to make{' '}
-          <Text style={{ fontFamily: Fonts.fontSemiBold }}>My Pigeon</Text>
-          the leading global platform that supports and develops the pigeon
-          hobby community. Our mission is to provide innovative, user-friendly
-          tools while fostering an active, supportive, and passionate worldwide
-          community of pigeon lovers.
+          Visi kami adalah membuat{' '}
+          <Text style={{ fontFamily: Fonts.fontSemiBold }}>Makelar</Text>
+          menjadi platform global terkemuka yang mendukung dan mengembangkan komunitas real estate.
+          Misi kami adalah menyediakan alat yang inovatif dan user-friendly sambil memupuk komunitas
+          global yang aktif, suportif, dan bersemangat dalam bisnis properti.
         </Text>
 
-        <Text style={styles.subtitle}>User Support:</Text>
+        <Text style={styles.subtitle}>Dukungan Pengguna:</Text>
         <Text style={styles.text}>
-          We’re always open to feedback and suggestions. If you have questions
-          or need help, please contact our support team through the contact
-          feature in the app. We’re committed to continuously improving
-          <Text style={{ fontFamily: Fonts.fontSemiBold }}> My Pigeon</Text>
-          to give you the best experience possible.
+          Kami selalu terbuka terhadap umpan balik dan saran. Jika Anda memiliki pertanyaan
+          atau memerlukan bantuan, silakan hubungi tim dukungan kami melalui fitur kontak di aplikasi.
+          Kami berkomitmen untuk terus meningkatkan
+          <Text style={{ fontFamily: Fonts.fontSemiBold }}> Makelar</Text>
+          untuk memberikan pengalaman terbaik bagi Anda.
         </Text>
       </ScrollView>
     </BaseView>

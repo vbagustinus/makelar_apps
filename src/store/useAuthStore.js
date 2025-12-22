@@ -12,7 +12,7 @@ const useAuthStore = create((set, get) => ({
   user: null,
   userLoading: false,
   userError: null,
-  token: getString('token') || 'null',
+  token: getString('token') || null,
   listUser: [],
 
   // Actions

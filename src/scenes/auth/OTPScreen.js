@@ -101,7 +101,7 @@ const OtpScreen = ({ route, navigation }) => {
             size={50}
             color={Colors.PRIMARY}
           />
-          <Text style={styles.googleButtonText}>Verifikasi OTP</Text>
+          <Text style={styles.googleButtonText}>Verifikasi Kode OTP</Text>
         </TouchableOpacity>
         <View unflex style={{ height: 100 }} />
         <GlobalBannerAd />

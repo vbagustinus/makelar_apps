@@ -21,14 +21,14 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import LinearGradient from 'react-native-linear-gradient';
 import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
 import { zustandMMKVStorage } from '../../helpers';
-import useBloodlineStore from '../../store/usePropertyStore';
+import usePropertyStore from '../../store/usePropertyStore';
 
 function ProfileScreen() {
   const navigation = useNavigation();
   const fetchUserData = useAuthStore(state => state.fetchUserData);
   const user = useAuthStore(state => state.user);
   const clearToken = useAuthStore(state => state.clearToken);
-  const resetAllData = useBloodlineStore(state => state.resetAllData);
+  const resetAllData = usePropertyStore(state => state.resetAllData);
   const [deviceInfo, setDeviceInfo] = React.useState({
     appName: '',
     appVersion: '',
@@ -50,12 +50,12 @@ function ProfileScreen() {
       }
       clearToken();
       resetAllData();
-      Alert.alert('Goodbye 👋', 'You have successfully logged out.');
+      Alert.alert('Sampai Jumpa 👋', 'Anda berhasil keluar dari aplikasi.');
     } catch (error) {
       clearToken();
       resetAllData();
       console.error('Logout failed:', error.message);
-      Alert.alert('Goodbye 👋', 'You have successfully logged out.');
+      Alert.alert('Sampai Jumpa 👋', 'Anda berhasil keluar dari aplikasi.');
     }
   };
 
@@ -155,10 +155,10 @@ function ProfileScreen() {
             }}
           >
             <Text style={styles.userName}>
-              {user?.displayName || 'Team Name'}
+              {user?.displayName || 'Nama Pengguna'}
             </Text>
             <Text style={styles.userEmail}>
-              {user?.email || user?.phoneNumber || 'Contact'}
+              {user?.email || user?.phoneNumber || 'Kontak'}
             </Text>
           </LinearGradient>
         </ImageBackground>
@@ -173,34 +173,34 @@ function ProfileScreen() {
           {/* Account Settings */}
           <SettingItem
             icon='settings-outline'
-            label='Account Settings'
+            label='Pengaturan Akun'
             onPress={() => navigation.push('UnderConstructionScreen')}
           />
           <SettingItem
             icon='shield-outline'
-            label='Privacy Policy'
+            label='Kebijakan Privasi'
             onPress={() => navigation.push('PrivacyScreen')}
           />
           <SettingItem
             icon='gift-outline'
-            label='Donation'
+            label='Dukungan'
             onPress={() => navigation.push('DonationScreen')}
           />
           <SettingItem
             icon='information-circle-outline'
-            label='About App'
+            label='Tentang Aplikasi'
             onPress={() => navigation.push('AboutAppScreen')}
           />
           <SettingItem
             icon='log-out-outline'
-            label='Logout'
+            label='Keluar'
             color={Colors.RED}
             onPress={doLogout}
             backgroundColor={Colors.BLACK_50}
           />
           <View style={styles.card}>
             <View style={styles.infoContainer}>
-              <Text style={styles.label}>Version</Text>
+              <Text style={styles.label}>Versi</Text>
               <Text style={styles.value}>{deviceInfo.appVersion}</Text>
             </View>
           </View>

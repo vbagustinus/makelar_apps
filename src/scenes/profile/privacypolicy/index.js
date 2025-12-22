@@ -13,29 +13,28 @@ export default function PrivacyScreen({ navigation: { pop } }) {
       onBackPress={pop}
       noshadow
       isScrollable
-      title='My Pigeon Privacy Policy'
+      title='Kebijakan Privasi Makelar'
       containerStyle={styles.container}
     >
       <StatusBar translucent backgroundColor='transparent' />
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.sectionTitle}>Effective Date: January 1, 2025</Text>
+        <Text style={styles.sectionTitle}>Tanggal Berlaku: 1 Januari 2025</Text>
         <Text style={styles.text}>
-          Welcome to the My Pigeon mobile application ("App"). Your privacy is
-          important to us. This Privacy Policy explains how we collect, use, and
-          protect your personal information when you use our App and related
-          services.
+          Selamat datang di aplikasi mobile Makelar ("Aplikasi"). Privasi Anda adalah
+          prioritas kami. Kebijakan Privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, dan
+          melindungi informasi pribadi Anda ketika Anda menggunakan aplikasi kami dan layanan terkait.
         </Text>
 
-        <Text style={styles.subtitle}>1. Information We Collect</Text>
+        <Text style={styles.subtitle}>1. Informasi yang Kami Kumpulkan</Text>
         <Text style={styles.text}>
-          We may collect the following types of information when you use My
-          Pigeon:
+          Kami dapat mengumpulkan jenis informasi berikut ketika Anda menggunakan
+          Makelar:
         </Text>
         <Text style={styles.bulletText}>
-          • **Information You Provide:** When you register or use certain
-          features, we may collect information such as your name, email address,
-          country, and any details you enter about your pigeons (e.g., name,
-          gender, color, eye color, lineage).
+          • **Informasi yang Anda Berikan:** Ketika Anda mendaftar atau menggunakan fitur tertentu,
+          kami dapat mengumpulkan informasi seperti nama Anda, alamat email,
+          negara, dan detail apa pun yang Anda masukkan tentang properti Anda (misalnya, nama,
+          lokasi, harga, tipe properti, dan deskripsi).
         </Text>
         <Text style={styles.bulletText}>
           • **Automatically Collected Information:** We may automatically
@@ -43,38 +42,38 @@ export default function PrivacyScreen({ navigation: { pop } }) {
           system, device ID), IP address, app usage statistics, and crash logs.
         </Text>
 
-        <Text style={styles.subtitle}>2. How We Use Your Information</Text>
-        <Text style={styles.text}>The information we collect is used to:</Text>
+        <Text style={styles.subtitle}>2. Cara Kami Menggunakan Informasi Anda</Text>
+        <Text style={styles.text}>Informasi yang kami kumpulkan digunakan untuk:</Text>
         <Text style={styles.bulletText}>
-          • Provide, maintain, and improve the functionality of the App.
+          • Menyediakan, memelihara, dan meningkatkan fungsionalitas Aplikasi.
         </Text>
         <Text style={styles.bulletText}>
-          • Personalize your experience and enable features like profile
-          management and pigeon data storage.
+          • Mempersonalisasi pengalaman Anda dan mengaktifkan fitur seperti
+          manajemen profil dan penyimpanan data properti.
         </Text>
         <Text style={styles.bulletText}>
-          • Communicate with you about important updates, bug fixes, or support
-          requests.
+          • Berkomunikasi dengan Anda tentang pembaruan penting, perbaikan bug, atau permintaan
+          dukungan.
         </Text>
         <Text style={styles.bulletText}>
-          • Analyze usage patterns to improve performance and user experience.
+          • Menganalisis pola penggunaan untuk meningkatkan kinerja dan pengalaman pengguna.
         </Text>
 
-        <Text style={styles.subtitle}>3. Third-Party Services</Text>
+        <Text style={styles.subtitle}>3. Layanan Pihak Ketiga</Text>
         <Text style={styles.text}>
-          My Pigeon uses third-party services to provide authentication,
-          analytics, and cloud data storage. These may include:
+          Makelar menggunakan layanan pihak ketiga untuk menyediakan autentikasi,
+          analitik, dan penyimpanan data cloud. Ini mungkin termasuk:
         </Text>
         <Text style={styles.bulletText}>
-          • **Firebase (Google LLC):** Used for authentication, database, and
-          analytics.
+          • **Firebase (Google LLC):** Digunakan untuk autentikasi, database, dan
+          analitik.
         </Text>
         <Text style={styles.bulletText}>
-          • **Google Sign-In:** Used for secure and simplified login.
+          • **Google Sign-In:** Digunakan untuk login yang aman dan disederhanakan.
         </Text>
         <Text style={styles.text}>
-          Please review their respective privacy policies for more information
-          on how they manage your data.
+          Silakan tinjau kebijakan privasi mereka masing-masing untuk informasi lebih lanjut
+          tentang bagaimana mereka mengelola data Anda.
         </Text>
 
         <Text style={styles.subtitle}>4. Data Storage and Transfers</Text>
@@ -128,11 +127,11 @@ export default function PrivacyScreen({ navigation: { pop } }) {
           information to third parties.
         </Text>
 
-        <Text style={styles.subtitle}>9. Children's Privacy</Text>
+        <Text style={styles.subtitle}>9. Privasi Anak-Anak</Text>
         <Text style={styles.text}>
-          My Pigeon is not intended for children under the age of 13. We do not
-          knowingly collect personal data from children. If we learn that we
-          have collected such data, we will delete it promptly.
+          Makelar tidak ditujukan untuk anak-anak di bawah usia 13 tahun. Kami tidak
+          dengan sengaja mengumpulkan data pribadi dari anak-anak. Jika kami mengetahui bahwa kami
+          telah mengumpulkan data tersebut, kami akan menghapusnya segera.
         </Text>
 
         <Text style={styles.subtitle}>10. Changes to This Policy</Text>

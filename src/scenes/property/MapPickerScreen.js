@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Image, TouchableOpacity, Text } from 'react-native';
+import { View, StyleSheet, Image, TouchableOpacity, Text, Alert } from 'react-native';
 import MapView from 'react-native-maps';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import MaterialIcon from '@react-native-vector-icons/material-design-icons';
+import Geolocation from '@react-native-community/geolocation';
 import Logo from '../../assets/images/logos/logo.svg';
 import FastImage from '@d11/react-native-fast-image';
 
@@ -27,6 +29,25 @@ const MapPickerScreen = () => {
     navigation.goBack();
   };
 
+  const handleCurrentLocation = () => {
+    Geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setRegion({
+          latitude,
+          longitude,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        });
+      },
+      (error) => {
+        Alert.alert('Kesalahan', 'Gagal mendapatkan lokasi. Pastikan GPS aktif.');
+        console.log(error);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+    );
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <MapView
@@ -39,6 +60,11 @@ const MapPickerScreen = () => {
       <View style={styles.pinContainer}>
         <Logo width={40} height={40} />
       </View>
+
+      {/* Current Location Button */}
+      <TouchableOpacity style={styles.locationButton} onPress={handleCurrentLocation}>
+        <MaterialIcon name="crosshairs-gps" size={24} color="#fff" />
+      </TouchableOpacity>
 
       {/* Tombol pilih */}
       <View style={styles.footer}>
@@ -57,6 +83,22 @@ const styles = StyleSheet.create({
     left: '50%',
     marginLeft: -20,
     marginTop: -40,
+  },
+  locationButton: {
+    position: 'absolute',
+    bottom: 100,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#000',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   footer: {
     position: 'absolute',

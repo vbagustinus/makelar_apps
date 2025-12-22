@@ -1,15 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   Alert,
   Image,
   TouchableOpacity,
-  TextInput,
-  KeyboardAvoidingView,
 } from 'react-native';
 import {
   BaseView,
-  GlobalBottomSheet,
   Loading,
   Text,
   View,
@@ -18,84 +15,54 @@ import { logo } from '../../assets/images';
 import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
 import { Colors, Sizes } from '../../styles';
 import { Fonts } from '../../constants';
-import {
-  GoogleSignin,
-  statusCodes,
-} from '@react-native-google-signin/google-signin';
 import { authorize } from 'react-native-app-auth';
 import auth from '@react-native-firebase/auth';
 import analytics from '@react-native-firebase/analytics';
 import useAuthStore from '../../store/useAuthStore';
-import { isValidPhoneNumber } from 'libphonenumber-js';
-import { useNavigation } from '@react-navigation/native';
 import { GlobalBannerAd } from '../ads';
-import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 
 const AuthScreen = () => {
-  const navigation = useNavigation();
   const fetchUserData = useAuthStore(state => state.fetchUserData);
   const saveUserData = useAuthStore(state => state.saveUserData);
   const setUser = useAuthStore(state => state.setUser);
   const userLoading = useAuthStore(state => state.userLoading);
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('+62');
-  const [isPhoneValid, setIsPhoneValid] = useState(true);
-  const [isEmailValid, setIsEmailValid] = useState(email !== '');
-  const [isPasswordValid, setIsPasswordValid] = useState(email !== '');
-  const [showPassword, setShowPassword] = useState(false);
-  const bottomSheetNoHPRef = useRef(null);
 
-  const openNoHPBottomSheet = () => {
-    bottomSheetNoHPRef.current?.present();
-  };
-
-  const closeNoHPBottomSheet = () => {
-    bottomSheetNoHPRef.current?.dismiss();
-  };
-
-  const isNotEmptyFields = () => {
-    return email !== '' || password !== '';
-  };
-
-  const isButtonRegisterValid = () => {
-    return (
-      email.length > 3 && password.length > 3 && isEmailValid && isPasswordValid
-    );
-  };
-
-  useEffect(() => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    // Only validate when input has more than 4 characters
-    if (email?.length > 3) {
-      setIsEmailValid(emailRegex.test(email));
-    } else {
-      setIsEmailValid(true); // Assume valid until long enough
-    }
-
-    if (password?.length > 3) {
-      setIsPasswordValid(password.length >= 8);
-    } else {
-      setIsPasswordValid(true); // Assume valid to avoid early red error
-    }
-  }, [email, password]);
+  // const config = {
+  //   issuer: 'https://accounts.google.com',
+  //   clientId:
+  //     '87496731262-l3i9a00h5ursfc8t1l5pbt09jal0phjj.apps.googleusercontent.com',
+  //   redirectUrl:
+  //     'com.googleusercontent.apps.87496731262-l3i9a00h5ursfc8t1l5pbt09jal0phjj://oauth2redirect/google',
+  //   scopes: ['openid', 'profile', 'email'],
+  //   AdditionalHeaders: {
+  //     'User-Agent':
+  //       'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0Cobalt/Version',
+  //   },
+  //   usePKCE: true,
+  //   serviceConfiguration: {
+  //     authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
+  //     tokenEndpoint: 'https://www.googleapis.com/oauth2/v4/token',
+  //   },
+  // };
   const config = {
-    issuer: 'https://accounts.google.com',
+  issuer: 'https://accounts.google.com',
+
+    // WEB CLIENT ID (tetap)
     clientId:
-      '548706959315-5uvfbefvt8u2m13aqfo9l93hp3e5nk2g.apps.googleusercontent.com',
-    redirectUrl:
-      'com.googleusercontent.apps.548706959315-5uvfbefvt8u2m13aqfo9l93hp3e5nk2g:/oauth2redirect/google',
+      '87496731262-l3i9a00h5ursfc8t1l5pbt09jal0phjj.apps.googleusercontent.com',
+
+    // CUSTOM SCHEME APP (WAJIB)
+    redirectUrl: 'com.makelar:/oauthredirect',
+
     scopes: ['openid', 'profile', 'email'],
-    AdditionalHeaders: {
-      'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0Cobalt/Version',
-    },
-  };
+    usePKCE: true,
+};
+
 
   const signInWithGoogle = async () => {
     try {
+      setLoading(true);
       const result = await authorize(config);
 
       if (!result.idToken) {
@@ -122,108 +89,14 @@ const AuthScreen = () => {
         };
         await saveUserData(user.uid, newUserData);
         analytics().setUserProperty('email', profile.email);
-        return;
       } else {
         setUser(existingUserData);
-        return;
       }
+      setLoading(false);
     } catch (error) {
       console.error('Error during Google Sign-In:', error);
+      setLoading(false);
       Alert.alert('Error', error.message);
-    }
-  };
-
-  const handlePhoneChange = text => {
-    setPhoneNumber(text);
-    setIsPhoneValid(phoneNumber.length > 6 && isValidPhoneNumber(text));
-  };
-
-  const handleSendOtp = async () => {
-    if (!isValidPhoneNumber(phoneNumber)) {
-      Alert.alert(
-        'Invalid number',
-        'Please enter a valid international format number. Example: +628123456789',
-      );
-      return;
-    }
-    try {
-      setLoading(true);
-      Alert.alert('OTP sent to', phoneNumber);
-      const confirmation = await auth().signInWithPhoneNumber(phoneNumber);
-      console.log('OTP sent successfully');
-      closeNoHPBottomSheet();
-      setLoading(false);
-      navigation.navigate('OTPScreen', { confirmation });
-    } catch (error) {
-      console.log('Error sending OTP:', error);
-      setLoading(false);
-      Alert.alert('Failed to send OTP', 'The number might be incorrect.');
-    }
-  };
-
-  const smartAuth = async () => {
-    setLoading(true);
-    try {
-      // Try to sign in first
-      const userCredential = await auth().signInWithEmailAndPassword(
-        email,
-        password,
-      );
-      const user = userCredential.user;
-
-      const existingUserData = await fetchUserData(user.uid);
-
-      if (!existingUserData) {
-        const newUserData = {
-          uid: user.uid,
-          displayName: user.displayName || '',
-          email: user.email || '',
-          photoURL: user.photoURL || '',
-          createdAt: new Date().toISOString(),
-        };
-        await saveUserData(user.uid, newUserData);
-        analytics().setUserProperty('email', user.email);
-        setUser(newUserData);
-      } else {
-        setUser(existingUserData);
-      }
-    } catch (error) {
-      console.log('Auth error 1:', error);
-
-      // Add invalid credential check
-      if (
-        error.code === 'auth/user-not-found' ||
-        error.code === 'auth/invalid-credential'
-      ) {
-        try {
-          const userCredential = await auth().createUserWithEmailAndPassword(
-            email,
-            password,
-          );
-          const user = userCredential.user;
-
-          const newUserData = {
-            uid: user.uid,
-            displayName: user.displayName || '',
-            email: user.email || '',
-            phoneNumber: '',
-            photoURL: user.photoURL || '',
-            createdAt: new Date().toISOString(),
-          };
-
-          await saveUserData(user.uid, newUserData);
-          analytics().setUserProperty('email', user.email);
-          setUser(newUserData);
-        } catch (signUpError) {
-          console.error('Registration failed:', signUpError.message);
-          Alert.alert('Registration Failed', signUpError.message);
-        }
-      } else {
-        console.error('Login failed:', error.message);
-        Alert.alert('Login Failed', error.message);
-      }
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -240,92 +113,32 @@ const AuthScreen = () => {
       <View centering style={styles.container}>
         {(userLoading || loading) && <Loading />}
         <Image source={logo} style={styles.image} />
-        <Text style={styles.title}>Welcome</Text>
-        <Text style={styles.subtitle}>Please sign in / register</Text>
+        <Text style={styles.title}>Selamat Datang</Text>
+        <Text style={styles.subtitle}>Silahkan masuk dengan Google</Text>
+        
+        {/* Google Login Button */}
         <View
           style={{
-            justifyContent: 'space-between',
-            marginBottom: 10,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginTop: 30,
           }}
         >
           <TouchableOpacity
-            style={[
-              styles.googleButtonBox,
-              isNotEmptyFields() && {
-                opacity: 0.9,
-                backgroundColor: Colors.GRAY_MEDIUM,
-              },
-            ]}
+            style={styles.googleButtonBox}
             onPress={signInWithGoogle}
-            disabled={isNotEmptyFields()}
+            disabled={loading}
           >
             <MaterialDesignIcons
               name={'google'}
-              size={35}
+              size={28}
               color={Colors.PRIMARY}
             />
-            <Text style={styles.googleButtonText}> Login with Google</Text>
+            <Text style={styles.googleButtonText}>Login dengan Google</Text>
           </TouchableOpacity>
         </View>
       </View>
       <GlobalBannerAd />
-      <GlobalBottomSheet
-        title='Sign in with phone number'
-        ref={bottomSheetNoHPRef}
-        onClose={closeNoHPBottomSheet}
-      >
-        <Text
-          style={[
-            styles.subtitle,
-            { marginTop: 10, color: Colors.BLACK_FONT, textAlign: 'left' },
-          ]}
-        >
-          Use an active phone number to receive an OTP code. Please use the
-          correct format starting with{' '}
-          <Text style={{ color: Colors.WARNING, fontFamily: Fonts.fontBold }}>
-            +62 XXXX
-          </Text>
-        </Text>
-        <BottomSheetTextInput
-          style={[styles.input, !isPhoneValid && { borderColor: Colors.RED }]}
-          placeholder='Example: +628123456789'
-          placeholderTextColor={Colors.GRAY_BLACK}
-          keyboardType='phone-pad'
-          value={phoneNumber}
-          onChangeText={handlePhoneChange}
-        />
-
-        {!isPhoneValid && (
-          <Text style={styles.errorText}>Invalid phone number</Text>
-        )}
-
-        <View
-          style={{
-            width: '100%',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <TouchableOpacity
-            style={[
-              styles.googleButton,
-              !isPhoneValid && {
-                opacity: 0.9,
-                backgroundColor: Colors.GRAY_MEDIUM,
-              },
-            ]}
-            onPress={handleSendOtp}
-            disabled={!isPhoneValid}
-          >
-            <MaterialDesignIcons
-              name={'cellphone'}
-              size={30}
-              color={Colors.PRIMARY}
-            />
-            <Text style={styles.googleButtonText}>Send OTP</Text>
-          </TouchableOpacity>
-        </View>
-      </GlobalBottomSheet>
     </BaseView>
   );
 };
@@ -349,7 +162,7 @@ const styles = StyleSheet.create({
     marginTop: -100,
   },
   title: {
-    fontSize: 16,
+    fontSize: 28,
     fontFamily: Fonts.fontSemiBold,
     color: Colors.WHITE,
     marginVertical: 8,
@@ -359,76 +172,28 @@ const styles = StyleSheet.create({
     color: Colors.WHITE,
     textAlign: 'center',
     fontFamily: Fonts.fontRegular,
-  },
-  errorText: {
-    color: Colors.WARNING,
-    marginTop: 8,
-    fontSize: 14,
-    fontFamily: Fonts.fontRegular,
-  },
-  input: {
-    height: 50,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    marginTop: 12,
-    color: Colors.BLACK_FONT,
-    fontFamily: Fonts.fontRegular,
-    minWidth: '50%',
-  },
-  googleButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-    borderColor: '#ddd',
-    borderWidth: 1,
-    marginTop: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    width: '70%',
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3,
+    marginBottom: 20,
   },
   googleButtonBox: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',
-    borderColor: '#ddd',
+    borderColor: '#e0e0e0',
     borderWidth: 1,
-    marginTop: 20,
-    padding: 20,
-    borderRadius: 10,
+    padding: 16,
+    borderRadius: 12,
     width: Sizes.widthScreen - 80,
     shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
-    elevation: 3,
-    marginHorizontal: 20,
+    elevation: 2,
   },
   googleButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     color: Colors.PRIMARY,
     fontFamily: Fonts.fontMedium,
-    marginLeft: 12,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    width: '85%',
-    flex: 0,
-    marginTop: 15,
+    marginLeft: 10,
   },
 });

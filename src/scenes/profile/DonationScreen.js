@@ -34,7 +34,7 @@ const DONATION_OPTIONS = [
     color: '#00457C',
     actionType: 'link',
     link: 'https://paypal.me/vbagustinus',
-    description: 'Donate quickly and securely via PayPal.',
+    description: 'Berdonasi dengan cepat dan aman melalui PayPal.',
   },
   {
     name: 'Bitcoin (BTC)',
@@ -43,7 +43,7 @@ const DONATION_OPTIONS = [
     color: '#F7931A', // Warna Bitcoin
     actionType: 'copy',
     address: 'bc1pcxspvgxqv0zek2s585d6gsnr6uh39xp5hsl8gtqr5fjn8tu4tmnqkhmfu7',
-    description: 'Support us with Bitcoin.',
+    description: 'Dukung kami dengan Bitcoin.',
   },
   {
     name: 'Ethereum (ETH)',
@@ -52,7 +52,7 @@ const DONATION_OPTIONS = [
     color: '#627EEA', // Warna Ethereum
     actionType: 'copy',
     address: '0xF11477A7F562D30f11E8a4d1F3818fe1805b6FC5',
-    description: 'Support us with Ethereum (ERC-20/Native).', // Diperjelas
+    description: 'Dukung kami dengan Ethereum (ERC-20/Native).', // Diperjelas
   },
   {
     name: 'Binance Coin (BNB)',
@@ -61,7 +61,7 @@ const DONATION_OPTIONS = [
     color: '#F3BA2F', // Warna Binance
     actionType: 'copy',
     address: '0xF11477A7F562D30f11E8a4d1F3818fe1805b6FC5', // **GANTI**
-    description: 'Support us using BNB (BSC/BEP-20).', // Diperjelas
+    description: 'Dukung kami menggunakan BNB (BSC/BEP-20).', // Diperjelas
   },
   {
     name: 'Solana (SOL)',
@@ -70,7 +70,7 @@ const DONATION_OPTIONS = [
     color: '#9945FF', // Warna Solana
     actionType: 'copy',
     address: 'GstFpH6kB99e1f3S2Eq53BrCKUhL8d7oDrVxJBq9JZSL', // **GANTI**
-    description: 'Support us using Solana Network (Fast & Low Fee).', // Diperjelas
+    description: 'Dukung kami menggunakan Solana Network (Cepat & Biaya Rendah).', // Diperjelas
   },
   {
     name: 'Tether USD (USDT)',
@@ -79,7 +79,7 @@ const DONATION_OPTIONS = [
     color: '#50AF95', // Warna Tether
     actionType: 'copy',
     address: '0xF11477A7F562D30f11E8a4d1F3818fe1805b6FC5', // **GANTI**
-    description: 'Stable donation via USDT (BEP20 Recommended).', // Diperjelas
+    description: 'Donasi stabil melalui USDT (BEP20 Direkomendasikan).', // Diperjelas
   },
   // Tambahkan mata uang kripto lain jika diperlukan (misal: Litecoin, Dogecoin)
 ];
@@ -98,8 +98,8 @@ const DonationScreen = () => {
       // 2. Aksi Copy (Untuk Kripto)
       Clipboard.setString(option.address);
       Alert.alert(
-        `${option.name} Address Copied`,
-        `The address has been copied to your clipboard. Please paste it into your crypto wallet to complete the donation.`,
+        `${option.name} Alamat Disalin`,
+        `Alamat telah disalin ke papan klip Anda. Silakan tempel ke dompet kripto Anda untuk menyelesaikan donasi.`,
         [{ text: 'OK' }],
       );
     }
@@ -135,7 +135,7 @@ const DonationScreen = () => {
 
           {option.actionType === 'copy' && (
             <Text style={styles.addressText} numberOfLines={1}>
-              {option.address.substring(0, 10)}... (Tap to copy)
+              {option.address.substring(0, 10)}... (Ketuk untuk salin)
             </Text>
           )}
         </View>
@@ -153,7 +153,7 @@ const DonationScreen = () => {
 
   return (
     <BaseView
-      title='Support & Donations'
+      title='Dukungan & Donasi'
       isScrollable={false}
       onBackPress={() => navigation.pop()}
     >
@@ -167,10 +167,10 @@ const DonationScreen = () => {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.headerTitle}>Help Us Keep Going! 💖</Text>
+          <Text style={styles.headerTitle}>Bantu Kami Terus Berkembang! 💖</Text>
           <Text style={styles.headerSubtitle}>
-            Your donation helps cover server costs and ongoing development for
-            this app.
+            Donasi Anda membantu menutup biaya server dan pengembangan berkelanjutan
+            untuk aplikasi ini.
           </Text>
 
           <View style={styles.optionsList}>
@@ -178,7 +178,7 @@ const DonationScreen = () => {
           </View>
 
           <Text style={styles.footerNote}>
-            Thank you for your generous support!
+            Terima kasih atas dukungan murah hati Anda!
           </Text>
         </ScrollView>
       </LinearGradient>

@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:name=".MainApplication"
@@ -52,8 +53,12 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="com.makelar" />
-                <data android:scheme="com.googleusercontent.apps.548706959315-5uvfbefvt8u2m13aqfo9l93hp3e5nk2g" />
+                <!-- <data 
+                    android:scheme="com.googleusercontent.apps.87496731262-l3i9a00h5ursfc8t1l5pbt09jal0phjj" 
+                    android:host="oauth2redirect" 
+                    android:path="/google" /> -->
+                    <data android:scheme="com.makelar" />
+                    <data android:scheme="com.googleusercontent.apps.87496731262-l3i9a00h5ursfc8t1l5pbt09jal0phjj" />
             </intent-filter>
         </activity>
 
