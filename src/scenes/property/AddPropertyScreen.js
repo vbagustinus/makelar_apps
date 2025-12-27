@@ -1,4 +1,4 @@
-import React, { use, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import {
   BaseView,
@@ -7,7 +7,6 @@ import {
   InputMaps,
   Text,
 } from '../../components';
-import LinearGradient from 'react-native-linear-gradient';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { Colors, FontSize, Sizes } from '../../styles';
@@ -17,7 +16,6 @@ import {
   certificateTypes,
   Fonts,
 } from '../../constants';
-import { DatePicker } from '../../components/DatePicker';
 import { useNavigation } from '@react-navigation/native';
 import { useInterstitialAd } from '../ads';
 import usePropertyStore from '../../store/usePropertyStore';
@@ -35,6 +33,8 @@ const AddPropertyScreen = () => {
   // Mengasumsikan Anda memiliki Store Properti yang sesuai
   const token = useAuthStore(state => state.token);
   const user = useAuthStore(state => state.user);
+  const userPhone = user?.phoneNumber;
+  const userWa = user?.whatsapp;
   const savePropertyData = usePropertyStore(state => state.savePropertyData);
   const fetchProperties = usePropertyStore(state => state.fetchProperties);
   const resetFlags = usePropertyStore(state => state.resetFlags);
@@ -56,24 +56,13 @@ const AddPropertyScreen = () => {
     locationError,
   } = usePropertyStore();
 
-  // Data Master yang MUNGKIN diperlukan (Contoh: Daftar pemilik sebelumnya/developer/agen)
-  const listDevelopers = usePropertyStore(state => state.listDevelopers); // Contoh data master
-  const listAgents = usePropertyStore(state => state.listAgents); // Contoh data master
-
   // --- STATE LOKAL UNTUK FORM PROPERTI ---
   const [images, setImages] = useState([]);
   const [propertyType, setPropertyType] = useState(null);
   const [propertyName, setPropertyName] = useState('');
   const [status, setStatus] = useState(null);
   const [certificateType, setCertificateType] = useState(null);
-  const [purchaseDate, setPurchaseDate] = useState(new Date());
-  const [selectedRBPurchaseDate, setSelectedRBPurchaseDate] = useState(
-    'Select Purchase Date',
-  );
-  const [certificateNumber, setCertificateNumber] = useState('');
   const [address, setAddress] = useState('');
-
-  const [notes, setNotes] = useState('');
 
   // State untuk Data Keuangan/Harga
   const [price, setPrice] = useState('');
@@ -83,14 +72,7 @@ const AddPropertyScreen = () => {
   const [buildingArea, setBuildingArea] = useState('');
 
   // State untuk Pihak Terkait (Mengganti Silsilah Jantan/Betina)
-  const [selectedRBPurchaser, setSelectedRBPurchaser] =
-    useState('Enter Manually');
-  const [selectedPurchaser, setSelectedPurchaser] = useState(null);
-  const [purchaserName, setPurchaserName] = useState('');
-
-  const [selectedRBSeller, setSelectedRBSeller] = useState('Enter Manually');
-  const [selectedSeller, setSelectedSeller] = useState(null);
-  const [sellerName, setSellerName] = useState('');
+  // (saat ini tidak digunakan di UI)
 
   // --- FIELDS RUMAH (HOUSE) ---
   const [bedrooms, setBedrooms] = useState('');
@@ -127,7 +109,7 @@ const AddPropertyScreen = () => {
   const [contour, setContour] = useState('');
   const [roadType, setRoadType] = useState('');
 
-  // --- FIELDS RUKO ---
+  // --- FIELDS RUKO --- 
   const [buildingWidth, setBuildingWidth] = useState('');
   const [buildingLength, setBuildingLength] = useState('');
   const [parkingSpace, setParkingSpace] = useState('');
@@ -164,103 +146,92 @@ const AddPropertyScreen = () => {
   const [city, setCity] = useState(null);
   const [district, setDistrict] = useState(null);
   const [village, setVillage] = useState(null);
-  const [form, setForm] = useState({
-    title: '',
-    description: '',
-    location: {
-      address: '',
-      latitude: null,
-      longitude: null,
-      province: null,
-      city: null,
-      district: null,
-      village: null,
-    },
-    price: '',
-    images: [],
-    // RUMAH
-    landSize: '', // luas tanah
-    buildingSize: '', // luas bangunan
-    bedrooms: '',
-    bathrooms: '',
-    garage: '',
-    floors: '',
-    certificate: '', // SHM/HGB/dll
-    builtYear: '', // tahun bangun
-    category: 'Rumah',
-    // APARTEMENT
-    tower: '',
-    floorNumber: '',
-    unitNumber: '',
-    unitType: '', // (Studio / 1BR / 2BR / 3BR / Penthouse)
-    maintenanceFee: '', // (IPL)
-    furnished: '',
-    balcony: '', // (boolean)
-    apartmentFacilities: '', // (Gym, Pool, 24h Security, dll)
-    // TANAH
-    landShape: '', // (Kotak / Tidak Beraturan)
-    frontageWidth: '', // (Lebar muka)
-    zoning: '', // (Permukiman / Komersial / Industri)
-    contour: '', // (Datar / Miring)
-    roadType: '', // (Aspal / Beton / Tanah)
-    // RUKO
-    floors: '',
-    buildingWidth: '',
-    buildingLength: '',
-    parkingSpace: '',
-    restroomCount: '',
-    electricityType: '', // (Listrik industri/toko)
-    businessSuitableFor: '', // (opsional)
-    // KANTOR
-    floorNumber: '',
-    officeType: '', // (Bare / Semi Furnished / Full Furnished)
-    meetingRoomCount: '',
-    workspaceCapacity: '',
-    pantry: '', // (boolean)
-    toiletType: '', // (Internal / Shared)
-    // KOS/KONTRAKAN
-    totalRooms: '',
-    occupiedRooms: '',
-    roomFacilities: '', // (AC, KM Dalam, WiFi)
-    bathroomInside: '', // (boolean)
-    incomePerMonth: '', // (estimasi pemasukan)
-    rules: '', // (bebas/putra/putri)
-    // INDUSTRI / GUDANG
-    ceilingHeight: '', // (tinggi gudang)
-    loadingDock: '', // (boolean)
-    truckAccess: '', // (Tronton / Kontainer)
-    powerCapacity: '', // (Daya listrik industri)
-    buildingLength: '',
-    buildingWidth: '',
-    floorStrength: '', // (berapa ton/m²)
-  });
 
-  // Cek apakah semua form wajib telah terisi
+  const checkTypeSpecificFields = () => {
+    switch (propertyType?.name) {
+      case 'Rumah':
+        return (
+          landArea.trim() !== '' &&
+          buildingArea.trim() !== '' &&
+          bedrooms.trim() !== '' &&
+          bathrooms.trim() !== '' &&
+          floors.trim() !== '' &&
+          builtYear.trim() !== ''
+        );
+      case 'Apartemen':
+        return (
+          buildingArea.trim() !== '' &&
+          floorNumber.trim() !== '' &&
+          unitNumber.trim() !== '' &&
+          unitType?.id
+        );
+      case 'Tanah':
+        return (
+          landArea.trim() !== '' &&
+          landShape?.id &&
+          frontageWidth.trim() !== '' &&
+          zoning?.id &&
+          contour?.id &&
+          roadType?.id
+        );
+      case 'Ruko':
+        return (
+          landArea.trim() !== '' &&
+          buildingArea.trim() !== '' &&
+          floors.trim() !== '' &&
+          buildingWidth.trim() !== '' &&
+          buildingLength.trim() !== '' &&
+          restroomCount.trim() !== '' &&
+          electricityType?.id
+        );
+      case 'Kantor':
+        return (
+          buildingArea.trim() !== '' &&
+          floorNumber.trim() !== '' &&
+          officeType?.id &&
+          meetingRoomCount.trim() !== '' &&
+          workspaceCapacity.trim() !== '' &&
+          toiletType?.id
+        );
+      case 'Kos/Kontrakan':
+        return (
+          totalRooms.trim() !== '' &&
+          occupiedRooms.trim() !== '' &&
+          roomFacilities.trim() !== '' &&
+          bathroomInside?.id &&
+          incomePerMonth.trim() !== '' &&
+          rules?.id
+        );
+      case 'Industri/Gudang':
+        return (
+          buildingArea.trim() !== '' &&
+          buildingWidth.trim() !== '' &&
+          buildingLength.trim() !== '' &&
+          ceilingHeight.trim() !== '' &&
+          loadingDock?.id &&
+          truckAccess?.id &&
+          powerCapacity.trim() !== '' &&
+          floorStrength.trim() !== ''
+        );
+      default:
+        return false;
+    }
+  };
+
+  // Cek apakah semua form wajib telah terisi sesuai tipe properti
   const isFormComplete =
     propertyType?.id &&
     propertyName.trim() !== '' &&
     status?.id &&
     certificateType?.id &&
-    (selectedRBPurchaseDate === 'Select Purchase Date' ? purchaseDate : true) &&
     address.trim() !== '' &&
     price.trim() !== '' &&
-    landArea.trim() !== '' &&
-    buildingArea.trim() !== '' &&
-    bedrooms.trim() !== '' &&
-    bathrooms.trim() !== '' &&
-    floors.trim() !== '' &&
-    builtYear.trim() !== '' &&
-    (selectedRBPurchaser === 'Enter Manually'
-      ? purchaserName.trim() !== ''
-      : selectedPurchaser?.id) &&
-    (selectedRBSeller === 'Enter Manually'
-      ? sellerName.trim() !== ''
-      : selectedSeller?.id) &&
     images.length >= 1 &&
-    province?.id && // WAJIB LOKASI
+    province?.id &&
     city?.id &&
     district?.id &&
-    village?.id;
+    village?.id &&
+    checkTypeSpecificFields();
 
   // ===============================================
   // HOOKS FORMATTING DATA LOKASI (Solusi Anda)
@@ -315,6 +286,9 @@ const AddPropertyScreen = () => {
     }
     return [];
   }, [listVillages]);
+
+  const getOptionName = option =>
+    option && option.name ? option.name : null;
 
   // ===============================================
   // HOOKS PENGAMBILAN DATA LOKASI
@@ -382,6 +356,20 @@ const AddPropertyScreen = () => {
       );
       return;
     }
+    if (!userPhone && !userWa) {
+      Alert.alert(
+        'Lengkapi Kontak',
+        'Isi dulu nomor HP atau WhatsApp di Edit Profil sebelum menambah properti.',
+        [
+          { text: 'Batal', style: 'cancel' },
+          {
+            text: 'Ke Edit Profil',
+            onPress: () => navigation.navigate('Profil', { screen: 'EditProfileScreen' }),
+          },
+        ],
+      );
+      return;
+    }
 
     // VALIDASI format Gambar
 
@@ -409,14 +397,13 @@ const AddPropertyScreen = () => {
     // Panggil fungsi simpan data properti
 
     savePropertyData({
+      phoneNumber: user?.phoneNumber || null,
+      whatsapp: user?.whatsapp || null,
       propertyTypeId: propertyType?.id,
       propertyTypeName: propertyType?.name,
       propertyName,
       statusId: status?.id,
       certificateTypeId: certificateType?.id,
-      purchaseDate:
-        selectedRBPurchaseDate === 'Select Purchase Date' ? purchaseDate : null,
-      certificateNumber,
       address,
       price: formattedPrice,
       landArea: formattedLandArea,
@@ -431,7 +418,7 @@ const AddPropertyScreen = () => {
       electricPower,
       waterSource,
       facing,
-      furnished: furnished?.name,
+      furnished: getOptionName(furnished),
       roadWidth,
       carAccess,
       environmentType,
@@ -444,61 +431,49 @@ const AddPropertyScreen = () => {
       tower,
       floorNumber,
       unitNumber,
-      unitType: unitType?.name,
+      unitType: getOptionName(unitType),
       maintenanceFee,
       balcony,
       apartmentFacilities,
       // TANAH
-      landShape: landShape?.name,
+      landShape: getOptionName(landShape),
       frontageWidth,
-      zoning: zoning?.name,
-      contour: contour?.name,
-      roadType: roadType?.name,
+      zoning: getOptionName(zoning),
+      contour: getOptionName(contour),
+      roadType: getOptionName(roadType),
       // RUKO
       buildingWidth,
       buildingLength,
       parkingSpace,
       restroomCount,
-      electricityType: electricityType?.name,
+      electricityType: getOptionName(electricityType),
       businessSuitableFor,
       // KANTOR
-      officeType: officeType?.name,
+      officeType: getOptionName(officeType),
       meetingRoomCount,
       workspaceCapacity,
       pantry,
-      toiletType: toiletType?.name,
+      toiletType: getOptionName(toiletType),
       // KOS/KONTRAKAN
       totalRooms,
       occupiedRooms,
       roomFacilities,
-      bathroomInside: bathroomInside?.name,
+      bathroomInside: getOptionName(bathroomInside),
       incomePerMonth,
-      rules: rules?.name,
+      rules: getOptionName(rules),
       // INDUSTRI/GUDANG
       ceilingHeight,
-      loadingDock: loadingDock?.name,
-      truckAccess: truckAccess?.name,
+      loadingDock: getOptionName(loadingDock),
+      truckAccess: getOptionName(truckAccess),
       powerCapacity,
       floorStrength,
-      // Data Pihak Terkait (Pembeli)
-      selectedRBPurchaser,
-      purchaserName:
-        selectedRBPurchaser === 'Enter Manually' ? purchaserName : '',
-      purchaserId:
-        selectedRBPurchaser === 'Enter Manually' ? null : selectedPurchaser?.id,
-      // Data Pihak Terkait (Penjual)
-      selectedRBSeller,
-      sellerName: selectedRBSeller === 'Enter Manually' ? sellerName : '',
-      sellerId:
-        selectedRBSeller === 'Enter Manually' ? null : selectedSeller?.id,
-      notes,
       images: images,
       uid: token,
       // LOKASI
-      province: province?.name,
-      city: city?.name,
-      district: district?.name,
-      village: village?.name,
+      province: province,
+      city: city,
+      district: district,
+      village: village,
       latitude,
       longitude,
       owner: {
@@ -515,10 +490,7 @@ const AddPropertyScreen = () => {
     setPropertyName('');
     setStatus(null);    
     setCertificateType(null);
-    setPurchaseDate(new Date());
-    setCertificateNumber('');
     setAddress('');
-    setNotes('');
     setImages([]);
     setPrice('');
     setLandArea('');
@@ -582,13 +554,6 @@ const AddPropertyScreen = () => {
     setPowerCapacity('');
     setFloorStrength('');
     // reset location
-    setSelectedRBPurchaseDate('Select Purchase Date');
-    setSelectedRBPurchaser('Enter Manually');
-    setSelectedPurchaser(null);
-    setSelectedRBSeller('Enter Manually');
-    setSelectedSeller(null);
-    setPurchaserName('');
-    setSellerName('');
     setProvince(null);
     setCity(null);
     setDistrict(null);
@@ -614,6 +579,22 @@ const AddPropertyScreen = () => {
       console.log('Furnished status changed:', furnished?.name || furnished);
     }
   }, [furnished]);
+
+  useEffect(() => {
+    if (!userPhone && !userWa) {
+      Alert.alert(
+        'Lengkapi Kontak',
+        'Nomor HP atau WhatsApp Anda belum diisi. Lengkapi dulu di Edit Profil.',
+        [
+          { text: 'Nanti', style: 'cancel' },
+          {
+            text: 'Ke Edit Profil',
+            onPress: () => navigation.navigate('Profil', { screen: 'EditProfileScreen' }),
+          },
+        ],
+      );
+    }
+  }, [userPhone, userWa, navigation]);
 
   useEffect(() => {
     if (propertyType) {
@@ -1471,12 +1452,6 @@ const AddPropertyScreen = () => {
                   const lngNum = longitude;
                   setLatitude(latNum);
                   setLongitude(lngNum);
-                  setForm({
-                    ...form.location,
-                    latitude: latNum,
-                    longitude: lngNum,
-                  });
-                  console.log('????', latNum, lngNum);
                 },
               })
             }
@@ -1561,6 +1536,15 @@ const AddPropertyScreen = () => {
             value={status} // Tambahkan value
             onSelect={setStatus}
           />
+          {/* INPUT: Harga */}
+          <Input
+            label='Harga (Rp)'
+            placeholder='Contoh: 500000000'
+            iconName='cash-multiple'
+            keyboardType='numeric'
+            value={price}
+            onChangeText={setPrice}
+          />
           {/* INPUT: Jenis Sertifikat */}
           <DropdownSearchable
             label='Jenis Sertifikat'
@@ -1583,7 +1567,7 @@ const AddPropertyScreen = () => {
           <TouchableOpacity
             onPress={handleSubmit}
             disabled={!isFormComplete}
-            style={[styles.submitButton, { opacity: isFormComplete ? 1 : 0.8 }]}
+            style={[styles.submitButton, { opacity: isFormComplete ? 1 : 0.5 }]}
           >
             <Text style={styles.submitText}>Simpan Aset</Text>
           </TouchableOpacity>

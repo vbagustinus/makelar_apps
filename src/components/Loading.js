@@ -50,7 +50,7 @@ const Loading = () => {
               fontFamily: Fonts.fontRegular,
             }}
           >
-            Waiting...
+            Tunggu sebentar...
           </Text>
         </View>
       </View>

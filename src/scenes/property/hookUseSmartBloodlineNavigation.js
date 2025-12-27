@@ -5,12 +5,12 @@ const hookUseSmartBloodlineNavigation = () => {
   const route = useRoute();
 
   const goToBloodlineDetail = id => {
-    if (route.name === 'GlobalDetailBloodlineScreen') {
+    if (route.name === 'GlobalDetailPropertyScreen') {
       // Sudah di halaman detail, tambahkan stack baru
-      navigation.push('GlobalDetailBloodlineScreen', { id });
+      navigation.push('GlobalDetailPropertyScreen', { id });
     } else {
       // Belum di halaman detail, navigasi biasa
-      navigation.navigate('GlobalDetailBloodlineScreen', { id });
+      navigation.navigate('GlobalDetailPropertyScreen', { id });
     }
   };
 

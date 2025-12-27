@@ -34,8 +34,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import AddPropertyScreen from './scenes/property/AddPropertyScreen';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import AboutAppScreen from './scenes/profile/AboutAppScreen';
-import EditBloodlineScreen from './scenes/property/EditBloodlineScreen';
-import DetailBloodlineScreen from './scenes/property/DetailBloodlineScreen';
+import EditPropertyScreen from './scenes/property/EditPropertyScreen';
+import DetailPropertyScreen from './scenes/property/DetailPropertyScreen';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import UnderConstructionScreen from './scenes/profile/UnderConstructionScreen';
 import remoteConfig from '@react-native-firebase/remote-config';
@@ -43,13 +43,14 @@ import { isVersionHigher } from './utils/checkVersions';
 import FastImage from '@d11/react-native-fast-image';
 import DeviceInfo from 'react-native-device-info';
 import { logotransparent } from './assets/images';
-import GlobalDetailBloodlineScreen from './scenes/property/GlobalDetailBloodlineScreen';
+import GlobalDetailPropertyScreen from './scenes/property/GlobalDetailPropertyScreen';
+import GlobalPropertyFilterScreen from './scenes/home/GlobalPropertyFilterScreen';
 import GlobalPopup from './components/GlobalPopup';
 import GlobalModal from './components/GlobalModal';
 import GlobalImagePreview from './components/GlobalImagePreview';
 import EditProfileScreen from './scenes/profile/EditProfileScreen';
 import PointScreen from './scenes/home/PointScreen';
-import GlobalPigeonListScreen from './scenes/home/GlobalPigeonListScreen';
+import GlobalPropertyListScreen from './scenes/home/GlobalPropertyListScreen';
 import MapPickerScreen from './scenes/property/MapPickerScreen';
 import DonationScreen from './scenes/profile/DonationScreen';
 
@@ -149,7 +150,7 @@ function BottomNavigation() {
       tabBar={props => <FloatingTabBar {...props} />}
     >
       <Tab.Screen name='Home' component={HomeScreen} />
-      <Tab.Screen name='Semua' component={GlobalPigeonListScreen} />
+      <Tab.Screen name='Semua' component={GlobalPropertyListScreen} />
       <Tab.Screen
         name='BloodLineScreen'
         component={tokenStorage || token ? BloodLineScreen : AuthScreen}
@@ -189,6 +190,12 @@ function StackNavigation() {
         component={MapPickerScreen}
         options={{ headerStyleInterpolator: forFade, headerShown: false }}
       />
+      <Stack.Screen
+        key='GlobalPropertyFilterScreen'
+        name='GlobalPropertyFilterScreen'
+        component={GlobalPropertyFilterScreen}
+        options={{ headerStyleInterpolator: forFade, headerShown: false }}
+      />
 
       <Stack.Screen
         key='PrivacyScreen'
@@ -204,21 +211,21 @@ function StackNavigation() {
         options={{ headerStyleInterpolator: forFade, headerShown: false }}
       />
       <Stack.Screen
-        key='EditBloodlineScreen'
-        name='EditBloodlineScreen'
-        component={EditBloodlineScreen}
+        key='EditPropertyScreen'
+        name='EditPropertyScreen'
+        component={EditPropertyScreen}
         options={{ headerStyleInterpolator: forFade, headerShown: false }}
       />
       <Stack.Screen
-        key='DetailBloodlineScreen'
-        name='DetailBloodlineScreen'
-        component={DetailBloodlineScreen}
+        key='DetailPropertyScreen'
+        name='DetailPropertyScreen'
+        component={DetailPropertyScreen}
         options={{ headerStyleInterpolator: forFade, headerShown: false }}
       />
       <Stack.Screen
-        key='GlobalDetailBloodlineScreen'
-        name='GlobalDetailBloodlineScreen'
-        component={GlobalDetailBloodlineScreen}
+        key='GlobalDetailPropertyScreen'
+        name='GlobalDetailPropertyScreen'
+        component={GlobalDetailPropertyScreen}
         options={{ headerStyleInterpolator: forFade, headerShown: false }}
       />
       {/* PROFILE */}
@@ -257,7 +264,7 @@ function App() {
     android_version: {
       mandatory: false,
       version: DeviceInfo.getVersion(),
-      link: 'https://play.google.com/store/apps/details?id=com.makelar',
+      link: 'https://play.google.com/store/apps/details?id=com.makelar_apps',
     },
   });
   const [newVersionAvailable, setNewVersionAvailable] = React.useState(false);
@@ -323,7 +330,7 @@ function App() {
     config: {
       screens: {
         InfoScreen: 'home',
-        GlobalDetailBloodlineScreen: 'pigeon', // e.g. mypigeon://pigeon?id=xxx
+        GlobalDetailPropertyScreen: 'pigeon', // e.g. mypigeon://pigeon?id=xxx
       },
     },
   };

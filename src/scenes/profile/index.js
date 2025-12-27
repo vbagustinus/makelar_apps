@@ -59,6 +59,18 @@ function ProfileScreen() {
     }
   };
 
+  const confirmLogout = () => {
+    Alert.alert(
+      'Keluar Akun',
+      'Yakin ingin keluar dari aplikasi?',
+      [
+        { text: 'Batal', style: 'cancel' },
+        { text: 'Keluar', style: 'destructive', onPress: doLogout },
+      ],
+      { cancelable: true },
+    );
+  };
+
   React.useEffect(() => {
     const fetchDeviceInfo = async () => {
       setDeviceInfo({
@@ -160,6 +172,12 @@ function ProfileScreen() {
             <Text style={styles.userEmail}>
               {user?.email || user?.phoneNumber || 'Kontak'}
             </Text>
+            {user?.phoneNumber ? (
+              <Text style={styles.userContact}>Telepon: {user.phoneNumber}</Text>
+            ) : null}
+            {user?.whatsapp ? (
+              <Text style={styles.userContact}>WhatsApp: {user.whatsapp}</Text>
+            ) : null}
           </LinearGradient>
         </ImageBackground>
       </View>
@@ -195,7 +213,7 @@ function ProfileScreen() {
             icon='log-out-outline'
             label='Keluar'
             color={Colors.RED}
-            onPress={doLogout}
+            onPress={confirmLogout}
             backgroundColor={Colors.BLACK_50}
           />
           <View style={styles.card}>
@@ -298,6 +316,13 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.fontItalic,
     fontSize: FontSize.FONT_SIZE_14,
     marginTop: 10,
+    textAlign: 'center',
+  },
+  userContact: {
+    color: Colors.WHITE,
+    fontFamily: Fonts.fontRegular,
+    fontSize: FontSize.FONT_SIZE_12,
+    marginTop: 4,
     textAlign: 'center',
   },
   scrollContent: {

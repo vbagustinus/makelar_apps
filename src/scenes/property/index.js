@@ -1,490 +1,690 @@
 import * as React from 'react';
-import Ionicons from '@react-native-vector-icons/ionicons';
-import {
-  View,
-  Text,
-  BaseView,
-  Popup,
-  EmptyData,
-  AddButton,
-} from '../../components';
-import {
-  Image,
-  Pressable,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-  Modal,
-} from 'react-native';
-import Share from 'react-native-share';
+import { Text, BaseView, EmptyData, AddButton } from '../../components';
+import { Image, Pressable, StyleSheet, TextInput, View, Animated, Share, Alert } from 'react-native';
 import MaterialCommunityIcons from '@react-native-vector-icons/material-design-icons';
 import { FlashList } from '@shopify/flash-list';
-import Animated from 'react-native-reanimated';
-import {
-  birdColors,
-  eyeColorOptions,
-  Fonts,
-  genderOptions,
-} from '../../constants';
-import { Colors, Sizes } from '../../styles';
-import { FloatingButton } from '../../components';
+const AnimatedFlashList = Animated.createAnimatedComponent(FlashList);
+import { Fonts, propertyStatuses } from '../../constants';
+import { Colors } from '../../styles';
 import { useNavigation } from '@react-navigation/native';
 import { LoadingPigeons } from './LoadingPigeons';
-import useAuthStore from '../../store/useAuthStore';
 import { GlobalBannerAd } from '../ads';
-import { logo, logotransparent } from '../../assets/images';
-import useBloodlineStore from '../../store/usePropertyStore';
-import { useShareLimiter } from '../../hooks';
-import LottieView from 'lottie-react-native';
+import { logo } from '../../assets/images';
+import usePropertyStore from '../../store/usePropertyStore';
+import useAuthStore from '../../store/useAuthStore';
 
-const properties = [
-  {
-    id: '1',
-    title: 'Rumah Minimalis Modern',
-    price: 'Rp 980jt',
-    location: 'Jakarta Selatan',
-    image: 'https://picsum.photos/seed/p1/600/400',
-  },
-  {
-    id: '2',
-    title: 'Apartemen City View',
-    price: 'Rp 1,2M',
-    location: 'Bandung',
-    image: 'https://picsum.photos/seed/p2/600/400',
-  },
-  {
-    id: '3',
-    title: 'Rumah Cluster Tenang',
-    price: 'Rp 760jt',
-    location: 'Bogor',
-    image: 'https://picsum.photos/seed/p3/600/400',
-  },
-  {
-    id: '4',
-    title: 'Ruko 2 Lantai',
-    price: 'Rp 1,8M',
-    location: 'Bekasi',
-    image: 'https://picsum.photos/seed/p4/600/400',
-  },
-];
+const HEADER_MAX_HEIGHT = 180;
 
-function BloodLineScreen() {
+const statusPillStyle = color => ({
+  backgroundColor: '#FFFFFF90',
+  borderColor: color,
+  borderWidth: 0.6,
+  paddingHorizontal: 10,
+  paddingVertical: 4,
+  borderRadius: 12,
+});
+
+function PropertyScreen() {
   const navigation = useNavigation();
-  const fetchPigeons = useBloodlineStore(state => state.fetchPigeons);
-  const fetchMorePigeons = useBloodlineStore(state => state.fetchMorePigeons);
-  const deletePigeonData = useBloodlineStore(state => state.deletePigeonData);
-  const clearToken = useAuthStore(state => state.clearToken);
+  const fetchProperties = usePropertyStore(state => state.fetchProperties);
+  const listProperty = usePropertyStore(state => state.listProperty);
+  const listPropertyLoading = usePropertyStore(state => state.listPropertyLoading);
+  const globalLoading = usePropertyStore(state => state.globalLoading);
+  const listPropertyError = usePropertyStore(state => state.listPropertyError);
+  const fetchPropertyCounts = usePropertyStore(state => state.fetchPropertyCounts);
+  const totalProperties = usePropertyStore(state => state.totalProperties);
+  const totalForSale = usePropertyStore(state => state.totalForSale);
+  const totalForRent = usePropertyStore(state => state.totalForRent);
   const user = useAuthStore(state => state.user);
-  const { updateUserPoint } = useAuthStore();
-  const [successModal, setSuccessModal] = React.useState(false);
-
-  const { addShare, canAddPoint } = useShareLimiter();
-
-  const listPigeon = useBloodlineStore(state => state.listPigeon);
-  const listPigeonLoading = useBloodlineStore(state => state.listPigeonLoading);
-  const deletePigeonSuccess = useBloodlineStore(
-    state => state.deletePigeonSuccess,
-  );
-  const { fetchPigeonCounts, fetchLatestPigeons } = useBloodlineStore();
-  const globalLoading = useBloodlineStore(state => state.globalLoading);
-
-  const isFetchingMore = useBloodlineStore(state => state.isFetchingMore);
-  const hasMorePigeons = useBloodlineStore(state => state.hasMorePigeons);
-
+  const deletePropertyData = usePropertyStore(state => state.deletePropertyData);
+  const deletePropertySuccess = usePropertyStore(state => state.deletePropertySuccess);
+  const scrollY = React.useRef(new Animated.Value(0)).current;
   const [searchQuery, setSearchQuery] = React.useState('');
-  const [selectedPigeon, setSelectedPigeon] = React.useState(null);
-  const [isPopupVisible, setPopupVisible] = React.useState(false);
+  const [filterStatus, setFilterStatus] = React.useState('all'); // all | sale | rent
 
-  const handleCancel = () => {
-    setPopupVisible(false);
-  };
-
-  const handleConfirm = async () => {
-    if (selectedPigeon) {
-      deletePigeonData(selectedPigeon.id, selectedPigeon.imageUrls);
-    }
+  const getStatusMeta = statusId => {
+    const found = propertyStatuses.find(s => s.id === statusId);
+    return {
+      label: found?.name || 'Status?',
+      color: found?.color || Colors.GRAY_MEDIUM,
+    };
   };
 
   React.useEffect(() => {
-    // fetchPigeons();
-  }, []);
+    fetchProperties();
+    fetchPropertyCounts();
+  }, [fetchProperties, fetchPropertyCounts]);
 
   React.useEffect(() => {
-    if (deletePigeonSuccess) {
-      setPopupVisible(false);
-      fetchPigeons();
-      fetchPigeonCounts();
-      fetchLatestPigeons();
+    if (listPropertyError) {
+      console.warn('Property fetch error:', listPropertyError);
     }
-  }, [deletePigeonSuccess]);
+  }, [listPropertyError]);
 
-  // ✅ UseMemo for filteredPigeons
-  const filteredPigeons = React.useMemo(() => {
-    if (!searchQuery.trim()) return properties;
-    return properties.filter(pigeon =>
-      pigeon.name?.toLowerCase().includes(searchQuery.toLowerCase()),
+  React.useEffect(() => {
+    if (deletePropertySuccess) {
+      fetchProperties();
+      fetchPropertyCounts();
+    }
+  }, [deletePropertySuccess, fetchProperties, fetchPropertyCounts]);
+
+  const filteredProperties = React.useMemo(() => {
+    if (!searchQuery.trim()) return listProperty;
+    return listProperty.filter(prop =>
+      prop.propertyName?.toLowerCase().includes(searchQuery.toLowerCase()),
     );
-  }, [searchQuery, properties]);
+  }, [searchQuery, listProperty]);
 
+  const statusFiltered = React.useMemo(() => {
+    if (filterStatus === 'all') return filteredProperties;
+    if (filterStatus === 'sale') return filteredProperties.filter(p => p.statusId === 1);
+    if (filterStatus === 'rent') return filteredProperties.filter(p => p.statusId === 2);
+    return filteredProperties;
+  }, [filteredProperties, filterStatus]);
   const handleAdd = () => {
     return navigation.push('AddPropertyScreen');
   };
 
-  const toShare = item => {
-    const shareOptions = {
-      title: item?.name,
-      message: 'I want to share my pigeon bloodline information!',
-      url: `https://merpatiku-github-io.vercel.app/dl?id=${item?.id}`,
-    };
+  const handleEdit = property => {
+    navigation.push('EditPropertyScreen', property);
+  };
 
-    Share.open(shareOptions)
-      .then(async res => {
-        console.log('Shared successfully', res);
-
-        if (canAddPoint()) {
-          // ✅ Add points + save history
-          addShare();
-
-          try {
-            await updateUserPoint(user?.uid, 1); // increment +1
-            console.log('✅ User point increased');
-            await setSuccessModal(true);
-          } catch (err) {
-            console.error('❌ Failed to update user points:', err);
-          }
-        } else {
-          console.log('⛔ Share limit reached (max 10 per minute)');
-        }
-      })
-      .catch(err => {
-        err && console.log('Share failed', err);
+  const handleShare = async property => {
+    try {
+      const messageParts = [
+        property?.propertyName || 'Properti',
+        property?.address || property?.city || '',
+        property?.price ? `Harga: Rp ${Number(property.price).toLocaleString('id-ID')}` : '',
+      ].filter(Boolean);
+      await Share.share({
+        message: messageParts.join(' • '),
       });
+    } catch (error) {
+      console.warn('Share failed', error);
+    }
+  };
+
+  const handleOpenDetail = property => {
+    const isOwner = property?.uid && user?.uid && property.uid === user.uid;
+    const targetRoute = isOwner ? 'DetailPropertyScreen' : 'GlobalDetailPropertyScreen';
+    navigation.navigate(targetRoute, property);
+  };
+
+  const handleDelete = property => {
+    Alert.alert(
+      'Hapus Properti',
+      `Anda yakin ingin menghapus "${property?.propertyName || 'Properti'}"? Tindakan ini tidak dapat dibatalkan.`,
+      [
+        { text: 'Batal', style: 'cancel' },
+        {
+          text: 'Hapus',
+          style: 'destructive',
+          onPress: () => {
+            deletePropertyData(property.id, property.imageUrls || []);
+          },
+        },
+      ],
+    );
   };
 
   const renderItem = ({ item }) => {
-    const gender = genderOptions.find(g => g.id === item.genderId);
-    const color = birdColors.find(c => c.id === item.colorId);
-    const eye = eyeColorOptions.find(e => e.id === item.eyeColorId);
+    const imageUrl = item.imageUrl || item.imageUrls?.[0];
+    const statusMeta = getStatusMeta(item.statusId);
+    const isOwner = item?.uid && user?.uid && item.uid === user.uid;
+    const priceDisplay =
+      item.price && !Number.isNaN(Number(item.price))
+        ? `Rp ${Number(item.price).toLocaleString('id-ID')}`
+        : item.price || '-';
+    const locationLabel =
+      item.city && item.province
+        ? `${item.city?.name}, ${item.province?.name}`
+        : item.city || item.province || '-';
 
     return (
       <Pressable
-        onPress={() => navigation.navigate('GlobalDetailBloodlineScreen', item)}
-        style={styles.pressableContainerSocial}
+        onPress={() => handleOpenDetail(item)}
+        style={styles.card}
       >
-        <View style={styles.propertyItemContainer}>
-          {/* Container Gambar */}
-          <View unflex style={styles.imageWrapper}>
-            <Image source={{ uri: item?.image }} style={styles.propertyImage} />
-          </View>
-
-          {/* Detail Properti */}
-          <View style={styles.propertyDetailsContent}>
-            <Text style={styles.companyNameText}>{item?.title}</Text>
-
-            <Text style={styles.detailLabelText}>
-              <Text style={styles.detailValueText}>Properties:</Text>{' '}
-              {item?.propertiesCount}
-            </Text>
-
-            <Text style={styles.detailLabelText}>
-              <Text style={styles.detailValueText}>Service Areas:</Text>{' '}
-              {item?.serviceAreas}
-            </Text>
-
-            {/* Tombol Aksi */}
-            <View unflex style={styles.actionButtonContainer}>
-              <TouchableOpacity
-                style={[styles.actionButton, styles.emailButton]}
-              >
-                <MaterialCommunityIcons
-                  name='email-outline'
-                  size={18}
-                  color='#4A90E2'
-                />
-                <Text style={styles.emailButtonText}>Email</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.actionButton, styles.textButton]}
-              >
-                <MaterialCommunityIcons
-                  name='text-box-outline'
-                  size={18}
-                  color='#6B6B6B'
-                />
-                <Text style={styles.textButtonText}>Text</Text>
-              </TouchableOpacity>
+        <View style={styles.imageWrapper}>
+          {imageUrl ? (
+            <Image source={{ uri: imageUrl }} style={styles.propertyImage} />
+          ) : (
+            <View style={styles.imagePlaceholder}>
+              <MaterialCommunityIcons
+                name='image-off-outline'
+                size={28}
+                color={Colors.GRAY_DARK}
+              />
             </View>
+          )}
+          <View style={styles.overlayRow}>
+            <View style={statusPillStyle(statusMeta.color)}>
+              <Text style={styles.statusText}>{statusMeta.label}</Text>
+            </View>
+            {isOwner && (
+              <View style={styles.overlayActions}>
+                <Pressable style={styles.removeButton} onPress={() => handleDelete(item)}>
+                  <MaterialCommunityIcons
+                    name='trash-can-outline'
+                    size={18}
+                    color={Colors.TEXT}
+                  />
+                </Pressable>
+              </View>
+            )}
           </View>
+        </View>
+
+        <Text style={styles.propertyTitle} numberOfLines={2}>
+          {item?.propertyName || 'Properti'}
+        </Text>
+
+        <View style={styles.metaRow}>
+          <MaterialCommunityIcons
+            name='map-marker-outline'
+            size={16}
+            color={Colors.GRAY_DARK}
+          />
+          <Text
+            style={[styles.metaText, styles.metaLocation]}
+            numberOfLines={1}
+            ellipsizeMode='tail'
+          >
+            {locationLabel}
+          </Text>
+        </View>
+        <View style={styles.tagRow}>
+          <View style={styles.tagPill}>
+            <MaterialCommunityIcons
+              name='home-outline'
+              size={14}
+              color={Colors.PRIMARY}
+            />
+            <Text style={styles.tagText} numberOfLines={1}>
+              {item?.propertyTypeName || '-'}
+            </Text>
+          </View>
+          <View style={styles.tagPill}>
+            <MaterialCommunityIcons
+              name='map-marker-path'
+              size={14}
+              color={Colors.PRIMARY}
+            />
+            <Text style={styles.tagText} numberOfLines={1}>
+              {statusMeta.label}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.bottomRow}>
+          <Text style={styles.priceText}>{priceDisplay}</Text>
+        </View>
+
+        <View style={styles.actionRow}>
+          {isOwner && (
+            <Pressable style={styles.editAction} onPress={() => handleEdit(item)}>
+              <MaterialCommunityIcons name='pencil-outline' size={16} color={Colors.WHITE} />
+              <Text style={styles.editActionText}>Edit</Text>
+            </Pressable>
+          )}
+          <Pressable style={styles.shareAction} onPress={() => handleShare(item)}>
+            <MaterialCommunityIcons name='share-variant' size={16} color={Colors.PRIMARY} />
+            <Text style={styles.shareActionText}>Share</Text>
+          </Pressable>
         </View>
       </Pressable>
     );
   };
 
-  return (
-    <BaseView
-      title={'Daftar Propertimu'}
-      disableLeftMenu
-      loading={globalLoading}
-      onBackPress={() => {}}
-    >
-      <View unflex style={{ flexDirection: 'row' }}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder='Search by name...'
-          placeholderTextColor='#aaaaaa50'
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-        <AddButton onPress={handleAdd} />
-      </View>
+  const renderHeader = () => {
+    const headerHeight = scrollY.interpolate({
+      inputRange: [0, HEADER_MAX_HEIGHT],
+      outputRange: [HEADER_MAX_HEIGHT, 0],
+      extrapolate: 'clamp',
+    });
 
-      <View unflex style={{ marginLeft: -0 }}>
-        <GlobalBannerAd />
-      </View>
+    const headerTranslate = scrollY.interpolate({
+      inputRange: [0, HEADER_MAX_HEIGHT],
+      outputRange: [0, -HEADER_MAX_HEIGHT / 2],
+      extrapolate: 'clamp',
+    });
 
-      {/* {listPigeonLoading && <LoadingPigeons />}
-      {!listPigeonLoading && ( */}
-      <FlashList
-        onRefresh={fetchPigeons}
-        refreshing={false}
-        data={filteredPigeons}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-        estimatedItemSize={100}
-        contentContainerStyle={styles.listContainer}
-        ListEmptyComponent={
-          <EmptyData
-            message='Tidak ada properti ditemukan.'
-            description='Silakan tambahkan properti terlebih dahulu.'
-            illustration={logo}
-          />
-        }
-        onEndReached={() => {
-          if (!isFetchingMore && hasMorePigeons) {
-            fetchMorePigeons();
-          }
-        }}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={
-          <View style={{ padding: 20, backgroundColor: Colors.WHITE }}>
-            {isFetchingMore && (
-              <ActivityIndicator size='large' color={Colors.PRIMARY} />
-            )}
-            <View style={styles.spacer} />
+    return (
+      <Animated.View style={[styles.headerContainer, { height: headerHeight }]}>
+        <Animated.View style={{ transform: [{ translateY: headerTranslate }] }}>
+          <View unflex style={styles.hero}>
+            <View style={styles.heroText}>
+              <Text style={styles.pageTitle}>Properti Kamu</Text>
+              <Text style={styles.pageSubtitle}>
+                Kelola aset dan listing dengan tampilan yang rapi dan nyaman.
+              </Text>
+              <View style={styles.statRow}>
+                <View style={styles.statPill}>
+                  <MaterialCommunityIcons name='home-group' size={16} color={Colors.PRIMARY} />
+                  <Text style={styles.statText}>Total {totalProperties || 0}</Text>
+                </View>
+                <View style={styles.statPill}>
+                  <MaterialCommunityIcons name='tag-outline' size={16} color={Colors.PRIMARY} />
+                  <Text style={styles.statText}>Dijual {totalForSale || 0}</Text>
+                </View>
+                <View style={styles.statPill}>
+                  <MaterialCommunityIcons name='handshake-outline' size={16} color={Colors.PRIMARY} />
+                  <Text style={styles.statText}>Disewa {totalForRent || 0}</Text>
+                </View>
+              </View>
+            </View>
+            <View style={styles.heroAction}>
+              <AddButton onPress={handleAdd} />
+            </View>
           </View>
-        }
-      />
-      {/* )} */}
 
-      <Popup
-        visible={isPopupVisible}
-        title='Are you sure you want to delete this?'
-        message='Deleted data cannot be restored.'
-        onCancel={handleCancel}
-        onConfirm={handleConfirm}
-      />
-
-      {/* Success Modal */}
-      <Modal
-        visible={successModal}
-        transparent
-        animationType='fade'
-        onRequestClose={() => setSuccessModal(false)}
-      >
-        <View unflex style={styles.modalContainer}>
-          <View unflex style={styles.modalContent}>
-            <LottieView
-              source={require('../../assets/images/successfully-done.json')}
-              autoPlay
-              loop={false}
-              onAnimationFinish={() => {
-                setTimeout(() => setSuccessModal(false), 500);
-              }}
-              style={{ width: 250, height: 250, marginTop: -20 }}
+          <View style={styles.topBar}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder='Cari properti...'
+              placeholderTextColor={Colors.GRAY_DARK}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
             />
-            <Text style={styles.modalText}>🎉 You earned 1 point!</Text>
           </View>
-        </View>
-      </Modal>
-    </BaseView>
+
+          <View style={styles.filterRow}>
+            <Pressable
+              style={[styles.filterChip, filterStatus === 'all' && styles.filterChipActive]}
+              onPress={() => setFilterStatus('all')}
+            >
+              <Text style={[styles.filterText, filterStatus === 'all' && styles.filterTextActive]}>
+                Semua
+              </Text>
+            </Pressable>
+            <Pressable
+              style={[styles.filterChip, filterStatus === 'sale' && styles.filterChipActive]}
+              onPress={() => setFilterStatus('sale')}
+            >
+              <Text style={[styles.filterText, filterStatus === 'sale' && styles.filterTextActive]}>
+                Dijual
+              </Text>
+            </Pressable>
+            <Pressable
+              style={[styles.filterChip, filterStatus === 'rent' && styles.filterChipActive]}
+              onPress={() => setFilterStatus('rent')}
+            >
+              <Text style={[styles.filterText, filterStatus === 'rent' && styles.filterTextActive]}>
+                Disewakan
+              </Text>
+            </Pressable>
+          </View>
+
+          <View unflex style={{ marginLeft: -0 }}>
+            <GlobalBannerAd />
+          </View>
+        </Animated.View>
+      </Animated.View>
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      {listPropertyLoading && <LoadingPigeons />}
+      {!listPropertyLoading && (
+        <AnimatedFlashList
+          style={{ flex: 1, backgroundColor: Colors.BACKGROUND }}
+          onRefresh={fetchProperties}
+          refreshing={listPropertyLoading}
+          data={statusFiltered}
+          renderItem={renderItem}
+          keyExtractor={item => item.id}
+          estimatedItemSize={220}
+          numColumns={2}
+          contentContainerStyle={styles.listContainer}
+          columnWrapperStyle={styles.columnWrapper}
+          ListEmptyComponent={
+            <EmptyData
+              message='Tidak ada properti ditemukan.'
+              description='Silakan tambahkan properti terlebih dahulu.'
+              illustration={logo}
+            />
+          }
+          ListHeaderComponent={renderHeader}
+          ListHeaderComponentStyle={styles.listHeader}
+          onEndReached={null}
+          onEndReachedThreshold={0}
+          ListFooterComponent={<View style={styles.spacer} />}
+          scrollEventThrottle={16}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: false },
+          )}
+        />
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.BACKGROUND,
+    paddingHorizontal: 0,
+  },
   listContainer: {
-    padding: 10,
-    backgroundColor: Colors.WHITE,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: Colors.BACKGROUND,
   },
-  searchInput: {
-    backgroundColor: '#2c2f4850',
-    padding: 10,
-    borderRadius: 8,
-    margin: 10,
-    color: Colors.WHITE,
-    fontSize: 16,
-    fontFamily: Fonts.fontRegular,
-    flex: 1,
+  listHeader: {
+    backgroundColor: Colors.BACKGROUND,
+    paddingBottom: 8,
   },
-  card: {
-    flex: 1,
-    backgroundColor: Colors.WHITE_20,
-    borderRadius: 12,
-    marginTop: 10,
-    marginHorizontal: 5,
+  headerContainer: {
+    overflow: 'hidden',
+    backgroundColor: Colors.BACKGROUND,
+  },
+  hero: {
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    paddingBottom: 10,
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 10,
+    borderRadius: 14,
+    backgroundColor: Colors.CARD,
     borderWidth: 1,
     borderColor: Colors.WHITE_50,
+    marginHorizontal: 10,
+    marginTop: 8,
+    gap: 10,
   },
-  image: {
-    width: 80,
-    height: 120,
-    borderRadius: 8,
-    marginRight: 10,
-  },
-  deleteIcon: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: Colors.WHITE_20,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  deleteIconBottom: {
-    position: 'absolute',
-    right: 10,
-    backgroundColor: Colors.WHITE_20,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  editText: {
-    color: Colors.WHITE,
-    fontFamily: Fonts.fontSemiBold,
-    fontSize: 12,
-  },
-  infoContainer: {
+  heroText: {
     flex: 1,
+    paddingRight: 12,
+    paddingTop: 26,
   },
-  name: {
-    fontSize: 20,
-    fontFamily: Fonts.fontBoldItalic,
-    color: Colors.YELLOW,
-    marginLeft: 10,
+  heroAction: {
+    backgroundColor: Colors.PRIMARY,
+    borderRadius: 12,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+    borderWidth: 0,
   },
-  spacer: {
-    height: 120,
+  pageTitle: {
+    fontSize: 17,
+    fontFamily: Fonts.fontSemiBold,
+    color: Colors.TEXT,
+    marginBottom: 4,
   },
-  infoRow: {
+  pageSubtitle: {
+    fontSize: 12,
+    fontFamily: Fonts.fontRegular,
+    color: Colors.GRAY_DARK,
+    lineHeight: 17,
+  },
+  statRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 8,
+    gap: 6,
+    flexWrap: 'wrap',
   },
-  infoText: {
-    fontSize: 13,
-    color: Colors.WHITE,
-    marginHorizontal: 6,
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    backgroundColor: Colors.PRIMARY,
-    padding: 0,
-    borderRadius: 15,
-    alignItems: 'center',
-  },
-  modalText: {
-    marginTop: -60,
-    fontSize: 14,
-    color: Colors.WHITE,
-    fontFamily: Fonts.fontRegular,
-    textAlign: 'center',
-    padding: 20,
-  },
-  // --- ITEM PROPERTI (Kartu) ---
-  propertyItemContainer: {
+  statPill: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFFE6',
+    borderColor: Colors.WHITE_50,
+    borderWidth: 1,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 10,
+    gap: 5,
   },
-
-  // --- GAMBAR PROPERTI ---
+  statText: {
+    color: Colors.TEXT,
+    fontFamily: Fonts.fontMedium,
+    fontSize: 11,
+  },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingBottom: 10,
+  },
+  searchInput: {
+    backgroundColor: '#FFFFFFE6',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    marginTop: 12,
+    marginBottom: 6,
+    marginRight: 10,
+    color: Colors.TEXT,
+    fontSize: 16,
+    fontFamily: Fonts.fontRegular,
+    flex: 1,
+    borderWidth: 1,
+    borderColor: Colors.WHITE_50,
+  },
+  filterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    marginBottom: 10,
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  filterChip: {
+    borderRadius: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+    borderColor: Colors.WHITE_50,
+    backgroundColor: '#FFFFFFE6',
+  },
+  filterChipActive: {
+    backgroundColor: Colors.PRIMARY_20,
+    borderColor: Colors.PRIMARY,
+  },
+  filterText: {
+    fontFamily: Fonts.fontMedium,
+    color: Colors.TEXT,
+    fontSize: 13,
+  },
+  filterTextActive: {
+    color: Colors.PRIMARY,
+  },
+  columnWrapper: {
+    justifyContent: 'space-between',
+  },
+  card: {
+    backgroundColor: Colors.CARD,
+    borderRadius: 18,
+    padding: 14,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: Colors.WHITE_50,
+    flex: 1,
+    marginHorizontal: 4,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  statusText: {
+    color: Colors.TEXT,
+    fontSize: 12,
+    fontFamily: Fonts.fontMedium,
+  },
+  typeText: {
+    color: Colors.GRAY_DARK,
+    fontSize: 13,
+    fontFamily: Fonts.fontMedium,
+    marginBottom: 6,
+  },
   imageWrapper: {
-    // Memberikan bentuk lengkungan pada gambar
-    borderRadius: 5,
+    borderRadius: 16,
     overflow: 'hidden',
-    width: 150 * Sizes.ratioWidthScreen,
-    height: 150 * Sizes.ratioWidthScreen,
+    width: '100%',
+    aspectRatio: 1.15,
+    backgroundColor: Colors.WHITE,
+    marginBottom: 12,
   },
   propertyImage: {
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
   },
-
-  // --- DETAIL TEKS ---
-  propertyDetailsContent: {
+  imagePlaceholder: {
     flex: 1,
-    marginLeft: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  companyNameText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    color: '#333333',
-  },
-  detailLabelText: {
-    fontSize: 14,
-    color: '#6B6B6B',
-    lineHeight: 20,
-  },
-  detailValueText: {
-    fontWeight: '600', // Untuk menonjolkan label seperti "Properties:"
-    color: '#333333',
-  },
-
-  // --- TOMBOL AKSI ---
-  actionButtonContainer: {
+  overlayRow: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    right: 12,
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  overlayActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  propertyTitle: {
+    fontSize: 17,
+    fontFamily: Fonts.fontSemiBold,
+    color: Colors.TEXT,
+    letterSpacing: 0.2,
+  },
+  priceText: {
+    fontSize: 14,
+    fontFamily: Fonts.fontBold,
+    color: Colors.PRIMARY,
+    marginTop: 8,
+    letterSpacing: 0.2,
+  },
+  tagRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  tagPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.WHITE,
+    borderColor: Colors.GRAY_LIGHT,
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  tagText: {
+    marginLeft: 6,
+    color: Colors.TEXT,
+    fontFamily: Fonts.fontMedium,
+    fontSize: 12,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  bottomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginTop: 10,
   },
-  actionButton: {
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 10,
+    gap: 10,
+  },
+  editAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.PRIMARY,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    gap: 6,
+  },
+  editActionText: {
+    color: Colors.WHITE,
+    fontFamily: Fonts.fontSemiBold,
+    fontSize: 12,
+  },
+  shareAction: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
+    backgroundColor: Colors.WHITE,
     paddingHorizontal: 12,
-    borderRadius: 8,
-    marginRight: 10,
+    paddingVertical: 8,
+    borderRadius: 12,
     borderWidth: 1,
+    borderColor: Colors.PRIMARY,
+    gap: 6,
   },
-  emailButton: {
-    backgroundColor: '#E6F0FF',
-    borderColor: '#E6F0FF',
+  shareActionText: {
+    color: Colors.PRIMARY,
+    fontFamily: Fonts.fontSemiBold,
+    fontSize: 12,
   },
-  textButton: {
-    backgroundColor: 'transparent',
-    borderColor: '#CCCCCC',
+  metaText: {
+    marginLeft: 6,
+    color: Colors.GRAY_DARK,
+    fontFamily: Fonts.fontRegular,
+    letterSpacing: 0.1,
   },
-  emailButtonText: {
-    marginLeft: 5,
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#4A90E2',
+  metaLocation: {
+    flex: 1,
+    maxWidth: '85%',
   },
-  textButtonText: {
-    marginLeft: 5,
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#6B6B6B',
+  divider: {
+    height: 1,
+    backgroundColor: Colors.WHITE_50,
+    marginVertical: 8,
+  },
+  removeButton: {
+    backgroundColor: '#FFFFFFD0',
+    borderRadius: 999,
+    padding: 6,
+    borderWidth: 1,
+    borderColor: Colors.WHITE_50,
+  },
+  ratingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#FFFFFFE6',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: Colors.WHITE_50,
+  },
+  ratingText: {
+    color: Colors.TEXT,
+    fontFamily: Fonts.fontMedium,
+  },
+  spacer: {
+    height: 60,
   },
 });
 
-export default BloodLineScreen;
+export default PropertyScreen;

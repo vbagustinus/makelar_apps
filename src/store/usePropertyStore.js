@@ -346,7 +346,7 @@ const usePropertyStore = create((set, get) => ({
       listGlobalProperties,
     } = get();
 
-    if (!globalHasMore || globalIsFetchingMore) return;
+    if (!globalHasMore || globalIsFetchingMore || !globalLastVisible) return;
 
     set({ globalIsFetchingMore: true });
     try {
@@ -404,8 +404,6 @@ const usePropertyStore = create((set, get) => ({
         'propertyName',
         'statusId',
         'certificateTypeId',
-        'selectedRBSeller',
-        'selectedRBPurchaser',
         'images',
         'uid',
       ];
@@ -438,6 +436,8 @@ const usePropertyStore = create((set, get) => ({
           ...dataToSave,
           imageUrls: allImageUrls,
           imageUrl: primaryImageUrl,
+          phoneNumber: data.phoneNumber || null,
+          whatsapp: data.whatsapp || null,
           createdAt: firestore.FieldValue.serverTimestamp(),
         });
 
@@ -502,6 +502,8 @@ const usePropertyStore = create((set, get) => ({
         .doc(propertyId)
         .update({
           ...restOfData,
+          phoneNumber: data.phoneNumber || null,
+          whatsapp: data.whatsapp || null,
           imageUrls: finalImageUrls,
           imageUrl: finalImageUrls[0] || null,
           updatedAt: firestore.FieldValue.serverTimestamp(),
@@ -561,33 +563,33 @@ const usePropertyStore = create((set, get) => ({
 
     set({
       listPropertyLoading: true,
-      hasMoreProperty: true,
+      hasMoreProperty: false,
       lastVisible: null,
     });
     try {
-      let query = firestore()
+      const snapshot = await firestore()
         .collection(COLLECTION_NAME)
         .where('uid', '==', user.uid)
-        .orderBy('propertyName')
-        .limit(PAGE_SIZE);
+        .get();
 
-      const snapshot = await query.get();
+      const properties = snapshot.docs
+        .map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+        .sort((a, b) => {
+          const aTime = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+          const bTime = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+          if (aTime !== bTime) return bTime - aTime;
+          return (a.propertyName || '').localeCompare(b.propertyName || '');
+        });
 
-      const properties = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      const newHasMore = properties.length === PAGE_SIZE;
-      const newLastVisible = snapshot.docs[snapshot.docs.length - 1] || null;
-
-      // Filter berdasarkan Status Properti (statusId)
       set({
         listProperty: properties,
         listPropertyForSale: properties.filter(p => p.statusId === 1),
         listPropertyForRent: properties.filter(p => p.statusId === 2),
-        hasMoreProperty: newHasMore,
-        lastVisible: newLastVisible,
+        hasMoreProperty: false,
+        lastVisible: null,
       });
     } catch (error) {
       console.error('Error fetching properties:', error);
@@ -598,48 +600,8 @@ const usePropertyStore = create((set, get) => ({
   },
 
   fetchMoreProperties: async () => {
-    const { hasMoreProperty, isFetchingMore, lastVisible, listProperty } =
-      get();
-    const user = auth().currentUser;
-
-    if (!hasMoreProperty || isFetchingMore || !user) {
-      return;
-    }
-
-    set({ isFetchingMore: true });
-    try {
-      let query = firestore()
-        .collection(COLLECTION_NAME)
-        .where('uid', '==', user.uid)
-        .orderBy('propertyName')
-        .startAfter(lastVisible)
-        .limit(PAGE_SIZE);
-
-      const snapshot = await query.get();
-
-      const newProperties = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      const combinedProperties = [...listProperty, ...newProperties];
-
-      const newHasMore = newProperties.length === PAGE_SIZE;
-      const newLastVisible = snapshot.docs[snapshot.docs.length - 1] || null;
-
-      set({
-        listProperty: combinedProperties,
-        listPropertyForSale: combinedProperties.filter(p => p.statusId === 1),
-        listPropertyForRent: combinedProperties.filter(p => p.statusId === 2),
-        hasMoreProperty: newHasMore,
-        lastVisible: newLastVisible,
-      });
-    } catch (error) {
-      console.error('Error fetching more properties:', error);
-      set({ listPropertyError: error.message });
-    } finally {
-      set({ isFetchingMore: false });
-    }
+    const { hasMoreProperty } = get();
+    if (!hasMoreProperty) return;
   },
 
   getPropertyById: async id => {

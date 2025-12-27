@@ -3174,7 +3174,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-vector-icons/material-design-icons@npm:^12.3.0":
+"@react-native-vector-icons/material-design-icons@npm:^12.4.0":
   version: 12.4.0
   resolution: "@react-native-vector-icons/material-design-icons@npm:12.4.0"
   dependencies:
@@ -4114,7 +4114,7 @@ __metadata:
     "@react-native-ohos/react-native-image-resizer": ^3.0.12-rc.1
     "@react-native-vector-icons/common": ^12.3.0
     "@react-native-vector-icons/ionicons": ^12.3.0
-    "@react-native-vector-icons/material-design-icons": ^12.3.0
+    "@react-native-vector-icons/material-design-icons": ^12.4.0
     "@react-native/babel-preset": 0.82.1
     "@react-native/eslint-config": 0.82.1
     "@react-native/metro-config": 0.82.1

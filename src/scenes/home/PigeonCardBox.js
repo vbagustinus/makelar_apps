@@ -27,7 +27,7 @@ const PigeonCardBox = ({ item, isPrivate }) => {
     <Pressable
       onPress={() => {
         navigation.navigate(
-          isPrivate ? 'DetailBloodlineScreen' : 'GlobalDetailBloodlineScreen',
+          isPrivate ? 'DetailPropertyScreen' : 'GlobalDetailPropertyScreen',
           item,
         );
       }}

@@ -4,6 +4,7 @@ import {
   Alert,
   Image,
   TouchableOpacity,
+  StatusBar,
 } from 'react-native';
 import {
   BaseView,
@@ -31,9 +32,9 @@ const AuthScreen = () => {
   // const config = {
   //   issuer: 'https://accounts.google.com',
   //   clientId:
-  //     '87496731262-l3i9a00h5ursfc8t1l5pbt09jal0phjj.apps.googleusercontent.com',
+  //     '87496731262-flf5fk25of39fnfiiuvmc4e1ui2qvhai.apps.googleusercontent.com',
   //   redirectUrl:
-  //     'com.googleusercontent.apps.87496731262-l3i9a00h5ursfc8t1l5pbt09jal0phjj://oauth2redirect/google',
+  //     'com.googleusercontent.apps.87496731262-flf5fk25of39fnfiiuvmc4e1ui2qvhai://oauth2redirect/google',
   //   scopes: ['openid', 'profile', 'email'],
   //   AdditionalHeaders: {
   //     'User-Agent':
@@ -50,10 +51,10 @@ const AuthScreen = () => {
 
     // WEB CLIENT ID (tetap)
     clientId:
-      '87496731262-l3i9a00h5ursfc8t1l5pbt09jal0phjj.apps.googleusercontent.com',
+      '87496731262-flf5fk25of39fnfiiuvmc4e1ui2qvhai.apps.googleusercontent.com',
 
     // CUSTOM SCHEME APP (WAJIB)
-    redirectUrl: 'com.makelar:/oauthredirect',
+    redirectUrl: 'com.makelar_apps:/oauthredirect',
 
     scopes: ['openid', 'profile', 'email'],
     usePKCE: true,
@@ -104,6 +105,7 @@ const AuthScreen = () => {
     <BaseView
       disableToolbar
       isScrollable
+      isWhiteToolbar
       containerStyle={{
         justifyContent: 'center',
         alignContent: 'center',
@@ -164,12 +166,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontFamily: Fonts.fontSemiBold,
-    color: Colors.WHITE,
+    color: Colors.TEXT,
     marginVertical: 8,
   },
   subtitle: {
     fontSize: 14,
-    color: Colors.WHITE,
+    color: Colors.TEXT,
     textAlign: 'center',
     fontFamily: Fonts.fontRegular,
     marginBottom: 20,

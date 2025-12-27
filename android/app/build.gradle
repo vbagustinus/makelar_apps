@@ -83,17 +83,17 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.makelar"
+    namespace "com.makelar_apps"
     defaultConfig {
-        applicationId "com.makelar"
+        applicationId "com.makelar_apps"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "1.0"
-        resValue 'string', 'build_config_package','com.makelar'
+        versionName "1.0.0"
+        resValue 'string', 'build_config_package','com.makelar_apps'
         multiDexEnabled true
         manifestPlaceholders = [
-            appAuthRedirectScheme: 'com.makelar'
+            appAuthRedirectScheme: 'com.makelar_apps'
         ]   
     }
     splits {

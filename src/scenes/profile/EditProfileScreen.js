@@ -24,7 +24,12 @@ function EditProfileScreen() {
   const user = useAuthStore(state => state.user);
   const [photo, setPhoto] = useState(user?.photoURL || null);
   const [propertyName, setPropertyName] = useState(user?.displayName || '');
-  const [city, setCity] = useState(user?.city || '');
+  const [phone, setPhone] = useState(
+    user?.phoneNumber ? user.phoneNumber.replace(/^\+62/, '') : '',
+  );
+  const [whatsapp, setWhatsapp] = useState(
+    user?.whatsapp ? user.whatsapp.replace(/^\+62/, '') : phone,
+  );
   const { updateUserDataWithPhoto, userLoading, fetchUserData } =
     useAuthStore();
 
@@ -40,16 +45,26 @@ function EditProfileScreen() {
   };
 
   const handleSave = async () => {
-    if (!propertyName || !city) {
-      Alert.alert('Oops', 'Nama properti dan kota harus diisi.');
+    if (!propertyName) {
+      Alert.alert('Oops', 'Nama properti harus diisi.');
       return;
     }
+    if (!phone.trim()) {
+      Alert.alert('Oops', 'Nomor telepon wajib diisi.');
+      return;
+    }
+
+    const formattedPhone = `+62${phone.replace(/[^0-9]/g, '')}`;
+    const formattedWa = whatsapp.trim()
+      ? `+62${whatsapp.replace(/[^0-9]/g, '')}`
+      : '';
 
     try {
       await updateUserDataWithPhoto(user.uid, {
         displayName: propertyName,
         photoURL: photo,
-        city,
+        phoneNumber: formattedPhone,
+        whatsapp: formattedWa,
       });
       fetchUserData(user.uid);
       navigation.goBack();
@@ -100,13 +115,26 @@ function EditProfileScreen() {
           onChangeText={setPropertyName}
         />
 
-        {/* City Input */}
+        {/* Phone */}
         <Input
-          label='Kota Asal'
-          placeholder='Masukkan nama kota'
-          iconName='map-marker-outline'
-          value={city}
-          onChangeText={setCity}
+          label='Nomor Telepon'
+          placeholder='812xxxxxxx'
+          iconName='phone-outline'
+          keyboardType='phone-pad'
+          value={phone}
+          onChangeText={setPhone}
+          prefix='+62'
+        />
+
+        {/* WhatsApp */}
+        <Input
+          label='Nomor WhatsApp'
+          placeholder='812xxxxxxx'
+          iconName='whatsapp'
+          keyboardType='phone-pad'
+          value={whatsapp}
+          onChangeText={setWhatsapp}
+          prefix='+62'
         />
 
         {/* Save Button */}

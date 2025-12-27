@@ -17,8 +17,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import { Colors, Sizes } from '../../styles';
 import FastImage from '@d11/react-native-fast-image';
-import { logotransparent } from '../../assets/images';
-import { Fonts } from '../../constants';
+import { banner1, banner2, banner3, banner4, logotransparent } from '../../assets/images';
+import { Fonts, propertyCategories } from '../../constants';
 import { useNavigation } from '@react-navigation/native';
 import useAuthStore from '../../store/useAuthStore';
 import { getString, zustandMMKVStorage } from '../../helpers';
@@ -38,8 +38,10 @@ const categories = [
 ];
 
 const banners = [
-  { id: 1, image: 'https://picsum.photos/seed/banner1/800/400' },
-  { id: 2, image: 'https://picsum.photos/seed/banner2/800/400' },
+  { id: 1, image: banner1 },
+  { id: 2, image: banner2 },
+  { id: 3, image: banner3 },
+  { id: 4, image: banner4 },
 ];
 
 const properties = [
@@ -87,6 +89,11 @@ const HomeScreen = () => {
   const user = useAuthStore(state => state.user);
   const tokenStorage = getString('token');
   const token = useAuthStore(state => state.token);
+  const handleOpenProperty = property => {
+    const isOwner = property?.uid && user?.uid && property.uid === user.uid;
+    const targetRoute = isOwner ? 'DetailPropertyScreen' : 'GlobalDetailPropertyScreen';
+    navigation.navigate(targetRoute, property);
+  };
 
   // DIUBAH: Mengambil variabel properti dari usePropertyStore
   const {
@@ -125,12 +132,22 @@ const HomeScreen = () => {
 
   // DIUBAH: Navigasi ke daftar properti pribadi
   const goToPropertyScreen = () => {
-    navigation.navigate('PropertyScreen'); // Asumsi 'PropertyScreen' adalah layar daftar properti pribadi
+    // Arahkan ke tab Properti; tab ini otomatis menampilkan AuthScreen jika belum login
+    navigation.navigate('BloodLineScreen');
   };
 
   // DIUBAH: Navigasi ke daftar properti global
   const goToPropertyGlobalScreen = () => {
     navigation.navigate('Semua'); // Asumsi 'Semua' adalah layar daftar properti global
+  };
+
+  const handleCategoryPress = label => {
+    const selectedType =
+      propertyCategories.find(cat => cat.name?.toLowerCase() === label.toLowerCase()) || null;
+    navigation.navigate('Semua', {
+      filters: { propertyType: selectedType, status: null, search: '' },
+      updatedAt: Date.now(),
+    });
   };
 
   const goToLeaderBoardScreen = () => {
@@ -167,32 +184,57 @@ const HomeScreen = () => {
     }, 1500);
   }, []);
 
+  const withCurrency = price => {
+    if (price === 0) return 'Rp 0';
+    if (!price) return 'Rp -';
+    const numeric = Number(String(price).replace(/[^0-9]/g, ''));
+    if (Number.isNaN(numeric)) return `Rp ${price}`;
+    return `Rp ${numeric.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
+  };
+
   // DIUBAH: Mengganti komponen lama yang tidak lagi relevan
   const renderLatestProperties = ({ item }) => (
     <TouchableOpacity
       style={styles.card}
-      onPress={() =>
-        navigation.navigate('DetailPropertyScreen', { property: item })
-      } // Asumsi rute
+      onPress={() => handleOpenProperty(item)}
+      activeOpacity={0.85}
     >
-      <FastImage
-        source={{ uri: item.imageUrl || item.image }}
-        style={styles.cardImage}
-      />
+      <View style={styles.cardImageWrapper}>
+        <FastImage
+          source={{ uri: item.imageUrl || item.image }}
+          style={styles.cardImage}
+        />
+        <View style={styles.cardBadge}>
+          <Text style={styles.cardBadgeText}>{item?.propertyTypeName || item?.propertyType?.name || 'Tipe'}</Text>
+        </View>
+      </View>
       <Text style={styles.cardTitle} numberOfLines={2}>
         {item.propertyName || item.title}
       </Text>
-      <Text style={styles.cardPrice}>{item.price}</Text>
-      <Text style={styles.cardLocation}>{item.address || item.location}</Text>
+      <View style={styles.cardInfoRow}>
+        <MaterialDesignIcons
+          name='map-marker-outline'
+          size={14}
+          color={Colors.GRAY_DARK}
+        />
+        <Text style={styles.cardLocation} numberOfLines={1}>
+          {item.address || item.location || 'Lokasi belum diisi'}
+        </Text>
+      </View>
+      <Text style={styles.cardPrice}>{withCurrency(item.price)}</Text>
     </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
       {/* Search Bar */}
-      <View style={styles.searchContainer}>
+      <TouchableOpacity
+        style={[styles.searchContainer, { paddingTop: insets.top + 20 }]}
+        activeOpacity={0.8}
+        onPress={goToPropertyGlobalScreen}
+      >
         <Text style={styles.searchBar}>🔍 Cari properti...</Text>
-      </View>
+      </TouchableOpacity>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -211,7 +253,11 @@ const HomeScreen = () => {
           style={styles.categoryContainer}
         >
           {categories.map((item, index) => (
-            <TouchableOpacity key={index} style={styles.categoryChip}>
+            <TouchableOpacity
+              key={index}
+              style={styles.categoryChip}
+              onPress={() => handleCategoryPress(item)}
+            >
               <Text style={styles.categoryText}>{item}</Text>
             </TouchableOpacity>
           ))}
@@ -227,7 +273,7 @@ const HomeScreen = () => {
           {banners.map(b => (
             <FastImage
               key={b.id}
-              source={{ uri: b.image }}
+              source={b.image}
               style={styles.bannerImage}
             />
           ))}
@@ -273,7 +319,7 @@ const HomeScreen = () => {
                 onPress={goToPropertyScreen}
               >
                 <MaterialDesignIcons
-                  name='home-currency-usd'
+                  name='currency-usd'
                   size={30}
                   color={Colors.WARNING}
                 />
@@ -327,7 +373,7 @@ const HomeScreen = () => {
             </Text>
             <TouchableOpacity
               style={styles.actionButton}
-              onPress={() => navigation.navigate('AddPropertyScreen')}
+              onPress={goToPropertyScreen}
             >
               <Text style={styles.actionButtonText}>+ Tambah Sekarang</Text>
             </TouchableOpacity>
@@ -354,23 +400,33 @@ const HomeScreen = () => {
               // Menggunakan struktur item properti yang sama
               <TouchableOpacity
                 style={styles.card}
-                onPress={() =>
-                  navigation.navigate('GlobalDetailPropertyScreen', {
-                    property: item,
-                  })
-                }
+                onPress={() => handleOpenProperty(item)}
               >
-                <FastImage
-                  source={{ uri: item.imageUrl || item.image }}
-                  style={styles.cardImage}
-                />
+                <View style={styles.cardImageWrapper}>
+                  <FastImage
+                    source={{ uri: item.imageUrl || item.image }}
+                    style={styles.cardImage}
+                  />
+                  <View style={styles.cardBadge}>
+                    <Text style={styles.cardBadgeText}>
+                      {item?.propertyTypeName || item?.propertyType?.name || 'Tipe'}
+                    </Text>
+                  </View>
+                </View>
                 <Text style={styles.cardTitle} numberOfLines={2}>
                   {item.propertyName || item.title}
                 </Text>
-                <Text style={styles.cardPrice}>{item.price}</Text>
-                <Text style={styles.cardLocation}>
-                  {item.address || item.location}
-                </Text>
+                <View style={styles.cardInfoRow}>
+                  <MaterialDesignIcons
+                    name='map-marker-outline'
+                    size={14}
+                    color={Colors.GRAY_DARK}
+                  />
+                  <Text style={styles.cardLocation} numberOfLines={1}>
+                    {item.address || item.location || 'Lokasi belum diisi'}
+                  </Text>
+                </View>
+                <Text style={styles.cardPrice}>{withCurrency(item.price)}</Text>
               </TouchableOpacity>
             )}
           />
@@ -382,22 +438,21 @@ const HomeScreen = () => {
       {/* Floating Button Tambah Properti */}
       <TouchableOpacity
         style={styles.fab}
-        onPress={() => navigation.navigate('AddPropertyScreen')} // Asumsi AddPropertyScreen
+        onPress={goToPropertyScreen}
       >
-        <MaterialDesignIcons name='plus' size={24} color={Colors.WHITE} />
-      </TouchableOpacity>
+      <MaterialDesignIcons name='plus' size={24} color={Colors.WHITE} />
+    </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f3f5f8' },
+  container: { flex: 1, backgroundColor: Colors.BACKGROUND },
 
   searchContainer: {
     padding: 16,
-    paddingTop: 20,
-    backgroundColor: 'white',
-    elevation: 4,
+    paddingTop: 40,
+    backgroundColor: Colors.PRIMARY,
   },
   searchBar: {
     backgroundColor: '#e9eef5',
@@ -405,6 +460,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     fontSize: 16,
     color: '#333',
+    fontFamily: Fonts.fontSemiBold,
   },
 
   categoryContainer: {
@@ -418,25 +474,24 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 20,
     marginRight: 10,
-    elevation: 2,
-    borderWidth: 1,
+    borderWidth: 0.5,
     borderColor: '#e0e0e0',
   },
-  categoryText: { fontSize: 14, color: '#1A73E8', fontWeight: '500' },
+  categoryText: { fontSize: 14, color: Colors.PRIMARY, fontFamily: Fonts.fontSemiBold, },
 
-  bannerWrapper: { marginTop: 10, height: 150 },
+  bannerWrapper: { marginTop: 10, height: 150, paddingHorizontal: 10 },
   bannerImage: {
-    width: width - 32, // Sesuaikan lebar agar terlihat penuh
+    width: width - 40, // Sesuaikan lebar agar terlihat penuh
     height: 150,
-    borderRadius: 12,
-    marginLeft: 16,
+    borderRadius: 14,
+    marginHorizontal: 10,
   },
 
   sectionTitle: {
     marginTop: 24,
     marginBottom: 12,
     fontSize: 18,
-    fontWeight: '700',
+    fontFamily: Fonts.fontSemiBold,
     color: '#333',
     paddingHorizontal: 16,
   },
@@ -452,20 +507,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 15,
+    gap: 10,
   },
   statBox: {
     flex: 1,
     alignItems: 'center',
-    padding: 10,
-    marginHorizontal: 4,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
+    padding: 12,
+    backgroundColor: Colors.CARD,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: Colors.WHITE_50,
   },
   statCount: {
     fontSize: 20,
-    fontWeight: '800',
+    fontFamily: Fonts.fontSemiBold,
     color: Colors.BLACK,
     marginTop: 5,
   },
@@ -473,6 +528,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.GREY,
     textAlign: 'center',
+    fontFamily: Fonts.fontRegular,
   },
 
   // --- LIST PROPERTI ---
@@ -484,41 +540,69 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   card: {
-    backgroundColor: 'white',
-    borderRadius: 12,
+    backgroundColor: Colors.CARD,
+    borderRadius: 16,
     marginBottom: 16,
     flex: 1,
     marginHorizontal: 0,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    borderWidth: 1,
+    borderColor: Colors.WHITE_50,
+    paddingBottom: 10,
+  },
+  cardImageWrapper: {
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    overflow: 'hidden',
+    position: 'relative',
   },
   cardImage: {
     width: '100%',
-    height: 120,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
+    height: 130,
     resizeMode: 'cover',
   },
-  cardTitle: {
-    fontWeight: '600',
-    fontSize: 14,
-    marginTop: 8,
-    paddingHorizontal: 8,
+  cardBadge: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    backgroundColor: Colors.WHITE,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: Colors.WHITE_50,
   },
-  cardPrice: {
-    color: '#1A73E8',
-    fontWeight: '700',
-    paddingHorizontal: 8,
+  cardBadgeText: {
+    fontSize: 11,
+    fontFamily: Fonts.fontMedium,
+    color: Colors.TEXT,
+  },
+  cardTitle: {
+    fontFamily: Fonts.fontSemiBold,
+    fontSize: 14,
+    marginTop: 10,
+    paddingHorizontal: 10,
+    color: Colors.TEXT,
+  },
+  cardInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
     marginTop: 4,
   },
+  cardPrice: {
+    color: Colors.PRIMARY,
+    fontFamily: Fonts.fontBold,
+    paddingHorizontal: 10,
+    marginTop: 6,
+  },
   cardLocation: {
-    color: '#888',
+    color: Colors.GRAY_DARK,
     fontSize: 12,
-    paddingHorizontal: 8,
-    marginBottom: 8,
+    paddingHorizontal: 0,
+    marginTop: 4,
+    marginBottom: 4,
+    fontFamily: Fonts.fontRegular,
   },
 
   // --- TOMBOL AKSI BIASA ---
@@ -533,7 +617,7 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     color: Colors.WHITE,
-    fontWeight: '600',
+    fontFamily: Fonts.fontSemiBold,
     fontSize: 14,
     marginLeft: 5,
   },
@@ -551,6 +635,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     color: Colors.GREY,
     fontSize: 14,
+    fontFamily: Fonts.fontSemiBold,
   },
 
   // --- FLOATING ACTION BUTTON ---

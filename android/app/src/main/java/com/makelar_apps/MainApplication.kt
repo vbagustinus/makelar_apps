@@ -1,4 +1,4 @@
-package com.makelar
+package com.makelar_apps
 
 import android.app.Application
 import com.facebook.react.PackageList

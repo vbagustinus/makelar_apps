@@ -219,7 +219,7 @@ export const DropdownSearchableDefault = ({
           </Text>
         </View>
         <MaterialDesignIcons
-          name='chevron-down-outline'
+          name='chevron-down'
           size={20}
           color={Colors.GRAY_DARK}
           style={styles.iconRight}
@@ -358,11 +358,6 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     borderWidth: 1,
     borderColor: Colors.GRAY_LIGHT,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
   },
 
   icon: {
@@ -376,7 +371,7 @@ const styles = StyleSheet.create({
   },
 
   textContainer: {
-    flex: 1,
+    // flex: 1,
   },
 
   label: {

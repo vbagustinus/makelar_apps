@@ -41,7 +41,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="makelar" android:host="makelar" />
+                <data android:scheme="makelar_apps" android:host="makelar_apps" />
             </intent-filter>
         </activity>
 
@@ -54,11 +54,11 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <!-- <data 
-                    android:scheme="com.googleusercontent.apps.87496731262-l3i9a00h5ursfc8t1l5pbt09jal0phjj" 
+                    android:scheme="com.googleusercontent.apps.87496731262-flf5fk25of39fnfiiuvmc4e1ui2qvhai" 
                     android:host="oauth2redirect" 
                     android:path="/google" /> -->
-                    <data android:scheme="com.makelar" />
-                    <data android:scheme="com.googleusercontent.apps.87496731262-l3i9a00h5ursfc8t1l5pbt09jal0phjj" />
+                    <data android:scheme="com.makelar_apps" />
+                    <data android:scheme="com.googleusercontent.apps.87496731262-flf5fk25of39fnfiiuvmc4e1ui2qvhai" />
             </intent-filter>
         </activity>
 

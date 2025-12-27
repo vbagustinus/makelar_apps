@@ -1,58 +1,83 @@
 import React from 'react';
-import { View } from './View';
 import { Toolbar } from './Toolbar';
 import { Colors, FontSize } from '../styles';
-import { Animated } from 'react-native';
+import { Animated, View, SafeAreaView } from 'react-native';
 import PropTypes from 'prop-types';
 import styles from './styles';
 import Ionicons from '@react-native-vector-icons/ionicons';
-import LinearGradient from 'react-native-linear-gradient';
 import { Loading } from './Loading';
 
-export const BaseView = props => (
-  <View
-    style={[
-      styles.baseContainer,
-      !props.isScrollable && props.containerStyle,
-      props.additionalStyle,
-    ]}
-  >
-    {!props.disableToolbar && (
-      <Toolbar
-        title={props.title}
-        isWhite={props.isWhiteToolbar || false}
-        leftMenu={
-          !props.disableLeftMenu ? (
-            <Ionicons
-              name={'chevron-back-outline'}
-              size={FontSize.FONT_SIZE_30}
-              color={Colors.WHITE}
-            />
-          ) : null
-        }
-        leftMenuOnPress={() => props?.onBackPress()}
-        rightMenu={props.rightMenu}
-        rightMenuOnPress={props.rightMenuOnPress || false}
-        noshadow={props.noshadow || false}
-        bottomComponent={props.bottomComponent}
-      />
-    )}
-    {props.loading && <Loading />}
-    {props.isScrollable ? (
-      <Animated.ScrollView
-        showsVerticalScrollIndicator={false}
-        alwaysBounceVertical={false}
-        bounces={false}
-        contentContainerStyle={props.containerStyle}
-      >
-        {props.children}
-      </Animated.ScrollView>
-    ) : (
-      props.children
-    )}
-    {props.floatingComponent && props.floatingComponent}
-  </View>
-);
+export const BaseView = ({
+  title,
+  isScrollable,
+  loading,
+  children,
+  containerStyle,
+  additionalStyle,
+  backgroundColor = Colors.BACKGROUND,
+  disableToolbar,
+  isWhiteToolbar,
+  disableLeftMenu,
+  onBackPress,
+  rightMenu,
+  rightMenuOnPress,
+  noshadow,
+  bottomComponent,
+  floatingComponent,
+  headerComponent,
+  footerComponent,
+}) => {
+  const Wrapper = isScrollable ? Animated.ScrollView : View;
+  const wrapperProps = isScrollable
+    ? {
+        showsVerticalScrollIndicator: false,
+        alwaysBounceVertical: false,
+        bounces: false,
+        keyboardShouldPersistTaps: 'handled',
+        contentContainerStyle: [styles.contentContainer, containerStyle],
+      }
+    : {
+        style: [styles.contentContainer, containerStyle],
+      };
+
+  return (
+    <View
+      style={[
+        styles.baseContainer,
+        { backgroundColor, },
+        additionalStyle,
+      ]}
+    >
+      {!disableToolbar && (
+        <Toolbar
+          title={title}
+          isWhite={isWhiteToolbar || false}
+          leftMenu={
+            !disableLeftMenu ? (
+              <Ionicons
+                name={'chevron-back-outline'}
+                size={FontSize.FONT_SIZE_30}
+                color={Colors.WHITE}
+              />
+            ) : null
+          }
+          leftMenuOnPress={() => onBackPress?.()}
+          rightMenu={rightMenu}
+          rightMenuOnPress={rightMenuOnPress || false}
+          noshadow={noshadow || false}
+          bottomComponent={bottomComponent}
+        />
+      )}
+      {loading && <Loading />}
+      <Wrapper {...wrapperProps}>
+        {headerComponent}
+        {children}
+        {footerComponent}
+      </Wrapper>
+      {floatingComponent && floatingComponent}
+    </View>
+  );
+};
 
 BaseView.propTypes = {
   title: PropTypes.string,
@@ -61,6 +86,10 @@ BaseView.propTypes = {
   loading: PropTypes.bool,
   floatingComponent: PropTypes.element,
   containerStyle: PropTypes.object,
+  additionalStyle: PropTypes.any,
+  backgroundColor: PropTypes.string,
+  headerComponent: PropTypes.element,
+  footerComponent: PropTypes.element,
 };
 
 BaseView.defaultProps = {

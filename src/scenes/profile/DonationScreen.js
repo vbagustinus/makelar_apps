@@ -112,7 +112,7 @@ const DonationScreen = () => {
       onPress={() => handleDonationAction(option)}
     >
       <LinearGradient
-        colors={[option.color, '#ffffff20', '#ffffff00']}
+        colors={[option.color, Colors.PRIMARY_50, '#ffffff00']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.gradientCard}
@@ -156,68 +156,75 @@ const DonationScreen = () => {
       title='Dukungan & Donasi'
       isScrollable={false}
       onBackPress={() => navigation.pop()}
+      containerStyle={{ flex: 1, backgroundColor: '#f2f4f8' }}
     >
-      <LinearGradient
-        colors={Colors.GRADIENT_ROYAL} // Gunakan gradient yang sesuai
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.screen}
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <Text style={styles.headerTitle}>Bantu Kami Terus Berkembang! 💖</Text>
-          <Text style={styles.headerSubtitle}>
-            Donasi Anda membantu menutup biaya server dan pengembangan berkelanjutan
-            untuk aplikasi ini.
-          </Text>
-
-          <View style={styles.optionsList}>
-            {DONATION_OPTIONS.map(renderDonationOption)}
+        <View style={styles.hero}>
+          <View style={styles.heroTextWrap}>
+            <Text style={styles.heroTitle}>Bantu Kami Terus Berkembang! 💖</Text>
+            <Text style={styles.heroSubtitle}>
+              Donasi Anda membantu menutup biaya server dan pengembangan berkelanjutan untuk aplikasi ini.
+            </Text>
           </View>
+        </View>
 
-          <Text style={styles.footerNote}>
-            Terima kasih atas dukungan murah hati Anda!
-          </Text>
-        </ScrollView>
-      </LinearGradient>
+        <View style={styles.optionsList}>
+          {DONATION_OPTIONS.map(renderDonationOption)}
+        </View>
+
+        <Text style={styles.footerNote}>Terima kasih atas dukungan Anda!</Text>
+      </ScrollView>
     </BaseView>
   );
 };
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    padding: 20,
-  },
   scrollContent: {
+    padding: 16,
     paddingBottom: 40,
+    gap: 12,
   },
-  headerTitle: {
+  hero: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e4e8f0',
+    shadowColor: '#0d1b2a',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+  },
+  heroTextWrap: { gap: 6 },
+  heroTitle: {
     fontFamily: Fonts.fontBold,
     fontSize: Sizes.CUSTOM_SIZE(18),
-    color: Colors.WHITE,
-    textAlign: 'center',
-    marginBottom: 8,
+    color: Colors.TEXT,
   },
-  headerSubtitle: {
+  heroSubtitle: {
     fontFamily: Fonts.fontRegular,
     fontSize: Sizes.CUSTOM_SIZE(12),
-    color: Colors.WHITE_80,
-    textAlign: 'center',
-    marginBottom: 20,
-    paddingHorizontal: 10,
+    color: Colors.GRAY_DARK,
+    lineHeight: 18,
   },
   optionsList: {
-    marginTop: 10,
+    marginTop: 8,
+    gap: 10,
   },
   cardContainer: {
-    borderRadius: 12,
-    marginVertical: 8,
+    borderRadius: 14,
     overflow: 'hidden',
-    borderWidth: 0.5,
-    borderColor: Colors.WHITE_20,
+    borderWidth: 1,
+    borderColor: '#e4e8f0',
+    backgroundColor: '#ffffff',
+    shadowColor: '#0d1b2a',
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
   },
   gradientCard: {
     flexDirection: 'row',
@@ -236,32 +243,32 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontFamily: Fonts.fontSemiBold,
     fontSize: Sizes.CUSTOM_SIZE(14),
-    color: Colors.WHITE,
+    color: Colors.TEXT,
   },
   cardDescription: {
     fontFamily: Fonts.fontRegular,
-    fontSize: Sizes.CUSTOM_SIZE(10),
-    color: Colors.WHITE,
+    fontSize: Sizes.CUSTOM_SIZE(11),
+    color: Colors.TEXT,
     marginTop: 2,
   },
   addressText: {
     fontFamily: Fonts.fontItalic,
     fontSize: Sizes.CUSTOM_SIZE(10),
-    color: Colors.WHITE_80,
+    color: Colors.TEXT,
     marginTop: 5,
   },
   actionButton: {
     padding: 8,
     borderRadius: 50,
-    backgroundColor: Colors.PRIMARY_DARK,
+    backgroundColor: Colors.PRIMARY,
     marginLeft: 10,
   },
   footerNote: {
     fontFamily: Fonts.fontMedium,
     fontSize: Sizes.CUSTOM_SIZE(12),
-    color: Colors.WHITE,
+    color: Colors.TEXT,
     textAlign: 'center',
-    marginTop: 30,
+    marginTop: 20,
   },
 });
 

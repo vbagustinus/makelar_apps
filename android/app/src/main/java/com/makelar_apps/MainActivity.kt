@@ -1,4 +1,4 @@
-package com.makelar
+package com.makelar_apps
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

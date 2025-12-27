@@ -1,9 +1,11 @@
 import React from 'react';
-import { ScrollView, StatusBar, StyleSheet, View } from 'react-native';
+import { ScrollView, StatusBar, StyleSheet, View, Image } from 'react-native';
 import { BaseView, Text } from '../../components';
 import { Colors, FontSize, Sizes } from '../../styles';
 import { useNavigation } from '@react-navigation/native';
 import { Fonts } from '../../constants';
+import LinearGradient from 'react-native-linear-gradient';
+import { logotransparent } from '../../assets/images';
 
 export default function AboutAppScreen({ navigation: { pop } }) {
   const navigation = useNavigation();
@@ -16,62 +18,65 @@ export default function AboutAppScreen({ navigation: { pop } }) {
       containerStyle={styles.container}
     >
       <StatusBar translucent backgroundColor='transparent' />
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.sectionTitle}>Tentang Aplikasi Makelar</Text>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.hero}>
+          <Image source={logotransparent} style={styles.heroLogo} resizeMode='contain' />
+          <View style={styles.heroTextWrap}>
+            <Text style={styles.heroTitle}>Makelar</Text>
+            <Text style={styles.heroSubtitle}>
+              Platform untuk mengelola, mencari, dan memasarkan properti dengan pengalaman modern.
+            </Text>
+          </View>
+        </View>
 
-        <Text style={styles.text}>
-          Selamat datang di{' '}
-          <Text style={{ fontFamily: Fonts.fontSemiBold }}>Makelar</Text>, aplikasi yang dirancang untuk menghubungkan dan memberdayakan para profesional properti di seluruh dunia.
-          Kami percaya bahwa bisnis properti lebih dari sekadar transaksi—ini adalah tentang
-          kepercayaan, pengetahuan, dan komunitas. Makelar hadir untuk mendukung semua itu,
-          dari mengelola data properti Anda hingga membantu Anda terhubung dengan
-          para profesional real estate di seluruh dunia.
-        </Text>
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Tentang Makelar</Text>
+          <Text style={styles.text}>
+            Makelar dirancang untuk profesional properti: menghubungkan, mengelola aset, dan berbagi
+            wawasan. Semua fitur dibuat agar Anda bisa fokus pada bisnis, bukan kerumitan teknis.
+          </Text>
+        </View>
 
-        <Text style={styles.subtitle}>Fitur Utama:</Text>
-        <Text style={styles.bulletText}>
-          1. **Manajemen Data Properti**: Dengan mudah menyimpan dan mengelola data penting
-          untuk setiap properti Anda, termasuk lokasi, harga, tipe, dan riwayat penjualan.
-          Aplikasi membantu Anda memantau portofolio properti Anda secara detail.
-        </Text>
-        <Text style={styles.bulletText}>
-          2. **Penelusuran & Filter Lanjutan**: Tetap terdepan dengan fitur pencarian canggih
-          yang memungkinkan Anda menemukan properti berdasarkan lokasi, harga, tipe, dan kriteria lainnya.
-        </Text>
-        <Text style={styles.bulletText}>
-          3. **Forum Komunitas**: Berinteraksi dengan profesional real estate secara global,
-          bagikan tips dan pengalaman, serta diskusikan segala hal terkait properti.
-        </Text>
-        <Text style={styles.bulletText}>
-          4. **Galeri Properti**: Unggah dan bagikan foto berkualitas tinggi dari properti Anda
-          kepada komunitas. Galeri juga berfungsi sebagai portofolio visual untuk bisnis Anda.
-        </Text>
-        <Text style={styles.bulletText}>
-          5. **Artikel & Panduan**: Akses perpustakaan artikel eksklusif dan panduan ahli tentang
-          tren pasar properti, strategi penjualan, dan tips investasi dari para profesional berpengalaman.
-        </Text>
-        <Text style={styles.bulletText}>
-          6. **Fitur Lokasi Interaktif**: Temukan properti berdasarkan karakteristik spesifik seperti
-          lokasi geografis, fasilitas sekitar, dan zona, membantu Anda menemukan informasi yang relevan dengan cepat.
-        </Text>
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Fitur Utama</Text>
+          {[
+            'Manajemen Data Properti lengkap (lokasi, harga, status, foto, riwayat).',
+            'Pencarian & filter canggih untuk menemukan listing yang relevan.',
+            'Forum komunitas untuk berbagi tips dan diskusi real estate.',
+            'Galeri visual berkualitas untuk portofolio properti Anda.',
+            'Artikel & panduan eksklusif tentang pasar, strategi, dan investasi.',
+            'Peta interaktif untuk menemukan properti berdasarkan zona & fasilitas sekitar.',
+          ].map((item, idx) => (
+            <View key={idx} style={styles.bulletRow}>
+              <Text style={styles.bulletDot}>•</Text>
+              <Text style={styles.bulletText}>{item}</Text>
+            </View>
+          ))}
+        </View>
 
-        <Text style={styles.subtitle}>Visi & Misi Kami:</Text>
-        <Text style={styles.text}>
-          Visi kami adalah membuat{' '}
-          <Text style={{ fontFamily: Fonts.fontSemiBold }}>Makelar</Text>
-          menjadi platform global terkemuka yang mendukung dan mengembangkan komunitas real estate.
-          Misi kami adalah menyediakan alat yang inovatif dan user-friendly sambil memupuk komunitas
-          global yang aktif, suportif, dan bersemangat dalam bisnis properti.
-        </Text>
+        <View style={styles.cardRow}>
+          <View style={styles.miniCard}>
+            <Text style={styles.sectionTitle}>Visi</Text>
+            <Text style={styles.text}>
+              Menjadi platform global terkemuka yang memperkuat komunitas real estate.
+            </Text>
+          </View>
+          <View style={styles.miniCard}>
+            <Text style={styles.sectionTitle}>Misi</Text>
+            <Text style={styles.text}>
+              Menyediakan alat inovatif yang ramah pengguna dan komunitas yang suportif untuk
+              memajukan bisnis properti.
+            </Text>
+          </View>
+        </View>
 
-        <Text style={styles.subtitle}>Dukungan Pengguna:</Text>
-        <Text style={styles.text}>
-          Kami selalu terbuka terhadap umpan balik dan saran. Jika Anda memiliki pertanyaan
-          atau memerlukan bantuan, silakan hubungi tim dukungan kami melalui fitur kontak di aplikasi.
-          Kami berkomitmen untuk terus meningkatkan
-          <Text style={{ fontFamily: Fonts.fontSemiBold }}> Makelar</Text>
-          untuk memberikan pengalaman terbaik bagi Anda.
-        </Text>
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Dukungan & Umpan Balik</Text>
+          <Text style={styles.text}>
+            Ada pertanyaan atau saran? Hubungi tim dukungan melalui menu kontak di aplikasi.
+            Kami terus memperbaiki Makelar agar pengalaman Anda semakin baik.
+          </Text>
+        </View>
       </ScrollView>
     </BaseView>
   );
@@ -79,37 +84,102 @@ export default function AboutAppScreen({ navigation: { pop } }) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#f0f0f010',
+    backgroundColor: '#f2f4f8',
   },
   content: {
-    padding: 20 * Sizes.ratioWidthScreen,
+    padding: 16,
+    gap: 14,
+  },
+  hero: {
+    borderRadius: 20,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#fdfdfd',
+    borderWidth: 1,
+    borderColor: '#e4e8f0',
+  },
+  heroLogo: {
+    width: 72,
+    height: 72,
+  },
+  heroTextWrap: {
+    flex: 1,
+    gap: 6,
+  },
+  heroTitle: {
+    fontFamily: Fonts.fontBold,
+    fontSize: FontSize.FONT_SIZE_18,
+    color: Colors.TEXT,
+  },
+  heroSubtitle: {
+    fontFamily: Fonts.fontRegular,
+    fontSize: FontSize.FONT_SIZE_14,
+    color: Colors.GRAY_DARK,
+    opacity: 0.9,
+    lineHeight: 20,
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: 14,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e4e8f0',
+    shadowColor: '#0d1b2a',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+  },
+  cardRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  miniCard: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: Colors.WHITE_20,
   },
   sectionTitle: {
-    color: Colors.WHITE,
+    color: Colors.TEXT,
     fontSize: FontSize.FONT_SIZE_16,
     fontFamily: Fonts.fontSemiBold,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   subtitle: {
-    color: Colors.WHITE,
+    color: Colors.TEXT,
     fontSize: FontSize.FONT_SIZE_16,
     fontFamily: Fonts.fontSemiBold,
     marginTop: 20,
     marginBottom: 8,
   },
   text: {
-    color: Colors.WHITE,
+    color: Colors.GRAY_DARK,
     fontSize: FontSize.FONT_SIZE_14,
     fontFamily: Fonts.fontRegular,
     lineHeight: 22,
-    textAlign: 'justify',
+    opacity: 0.95,
+  },
+  bulletRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    marginBottom: 6,
+  },
+  bulletDot: {
+    color: '#2b5cff',
+    fontSize: 18,
+    lineHeight: 20,
   },
   bulletText: {
-    color: Colors.WHITE,
+    flex: 1,
+    color: Colors.GRAY_DARK,
     fontSize: FontSize.FONT_SIZE_14,
     fontFamily: Fonts.fontRegular,
-    marginLeft: 10,
-    lineHeight: 22,
-    textAlign: 'justify',
+    lineHeight: 20,
+    opacity: 0.95,
   },
 });

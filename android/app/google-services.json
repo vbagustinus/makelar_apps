@@ -7,17 +7,17 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:87496731262:android:b55d1627b4886ecd5a062f",
+        "mobilesdk_app_id": "1:87496731262:android:62e99708c4cf02295a062f",
         "android_client_info": {
-          "package_name": "com.makelar"
+          "package_name": "com.makelar_apps"
         }
       },
       "oauth_client": [
         {
-          "client_id": "87496731262-l3i9a00h5ursfc8t1l5pbt09jal0phjj.apps.googleusercontent.com",
+          "client_id": "87496731262-flf5fk25of39fnfiiuvmc4e1ui2qvhai.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.makelar",
+            "package_name": "com.makelar_apps",
             "certificate_hash": "22a90c7d4cf9a741cfd57603779cb56fb1d0eac8"
           }
         },
@@ -40,8 +40,7 @@
             }
           ]
         }
-      },
-      "admob_app_id": "ca-app-pub-2729357311903669~5948961716"
+      }
     }
   ],
   "configuration_version": "1"

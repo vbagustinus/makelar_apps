@@ -251,7 +251,7 @@ export const NodeGeneral = ({ x, y, data, mainId }) => {
             onPress={() => {
               hideModal();
               // For global navigation, push a new detail screen
-              navigation.push('GlobalDetailBloodlineScreen', { id: data.id });
+              navigation.push('GlobalDetailPropertyScreen', { id: data.id });
             }}
           >
             <MaterialCommunityIcons

@@ -20,6 +20,8 @@ export const Input = ({
   onChangeText, // Callback untuk perubahan teks
   value, // Nilai yang diterima dari luar
   multiline = false,
+  keyboardType = 'default',
+  prefix = '',
 }) => {
   const [focused, setFocused] = useState(false);
   const [inputValue, setInputValue] = useState('');
@@ -48,17 +50,21 @@ export const Input = ({
       />
       <View style={styles.textContainer}>
         <Text style={styles.label}>{label}</Text>
-        <TextInput
-          style={styles.input}
-          placeholder={placeholder}
-          placeholderTextColor={Colors.GRAY_DARK}
-          secureTextEntry={secureTextEntry}
-          value={inputValue} // Gunakan nilai dari state lokal
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          multiline={multiline}
-          onChangeText={handleTextChange} // Gunakan handler untuk menangani perubahan teks
-        />
+        <View style={styles.inputRow}>
+          {prefix ? <Text style={styles.prefix}>{prefix}</Text> : null}
+          <TextInput
+            style={[styles.input, prefix ? { paddingLeft: 6 } : null]}
+            placeholder={placeholder}
+            placeholderTextColor={Colors.GRAY_DARK}
+            secureTextEntry={secureTextEntry}
+            value={inputValue} // Gunakan nilai dari state lokal
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            multiline={multiline}
+            keyboardType={keyboardType}
+            onChangeText={handleTextChange} // Gunakan handler untuk menangani perubahan teks
+          />
+        </View>
       </View>
       {onIconPress && (
         <TouchableOpacity onPress={onIconPress}>
@@ -274,6 +280,22 @@ const styles = StyleSheet.create({
     marginBottom: 3,
     fontFamily: Fonts.fontMedium,
     opacity: 0.85,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  prefix: {
+    fontFamily: Fonts.fontSemiBold,
+    color: Colors.TEXT,
+    fontSize: 14,
+    paddingHorizontal: 6,
+    paddingVertical: 8,
+    borderRadius: 10,
+    backgroundColor: Colors.WHITE,
+    borderWidth: 1,
+    borderColor: Colors.WHITE_50,
+    marginRight: 6,
   },
 
   input: {

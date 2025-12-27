@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const Toolbar = props => {
   const insets = useSafeAreaInsets();
   return (
-    <View style={{ zIndex: 199, paddingTop: insets.top - 20, paddingBottom: 20 }}>
+    <View style={{ zIndex: 199, paddingBottom: 20 }}>
       <StatusBar
         barStyle={props.isWhite ? 'dark-content' : 'light-content'}
         translucent

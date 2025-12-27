@@ -28,8 +28,8 @@ const PigeonGlobalCard = ({ item, isPrivate }) => {
       onPress={() => {
         navigation.navigate(
           isPrivate
-            ? 'GlobalDetailBloodlineScreen'
-            : 'GlobalDetailBloodlineScreen',
+            ? 'GlobalDetailPropertyScreen'
+            : 'GlobalDetailPropertyScreen',
           item,
         );
       }}

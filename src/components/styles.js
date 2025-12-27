@@ -484,7 +484,8 @@ export default StyleSheet.create({
     elevation: 1 * Sizes.ratioWidthScreen,
   },
   containerToolbar: {
-    height: 50 * Sizes.ratioHeightScreen,
+    paddingVertical: 20,
+    paddingTop: 40,
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -593,6 +594,9 @@ export default StyleSheet.create({
   baseContainer: {
     backgroundColor: Colors.PRIMARY,
     flex: 1,
+  },
+  contentContainer: {
+    paddingHorizontal: 0,
   },
   mainContainer: {
     top: 0,

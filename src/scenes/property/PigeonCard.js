@@ -110,7 +110,7 @@ const PigeonCard = ({ bird, style, role, mainId }) => {
             onPress={() => {
               hideModal();
               goToBloodlineDetail(bird?.id);
-              // navigation.navigate('GlobalDetailBloodlineScreen', {id: bird?.id});
+              // navigation.navigate('GlobalDetailPropertyScreen', {id: bird?.id});
             }}
           >
             <MaterialCommunityIcons
