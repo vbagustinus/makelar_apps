@@ -88,12 +88,12 @@ android {
         applicationId "com.makelar_apps"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
+        versionCode 3
         versionName "1.0.0"
         resValue 'string', 'build_config_package','com.makelar_apps'
         multiDexEnabled true
         manifestPlaceholders = [
-            appAuthRedirectScheme: 'com.makelar_apps'
+            appAuthRedirectScheme: 'com.googleusercontent.apps.87496731262-flf5fk25of39fnfiiuvmc4e1ui2qvhai'
         ]   
     }
     splits {

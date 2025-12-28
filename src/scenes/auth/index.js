@@ -47,18 +47,19 @@ const AuthScreen = () => {
   //   },
   // };
   const config = {
-  issuer: 'https://accounts.google.com',
+    issuer: 'https://accounts.google.com',
 
-    // WEB CLIENT ID (tetap)
+    // ANDROID CLIENT ID (package + SHA matching google-services.json)
     clientId:
       '87496731262-flf5fk25of39fnfiiuvmc4e1ui2qvhai.apps.googleusercontent.com',
 
-    // CUSTOM SCHEME APP (WAJIB)
-    redirectUrl: 'com.makelar_apps:/oauthredirect',
+    // REDIRECT URI (must match manifest intent-filter)
+    redirectUrl:
+      'com.googleusercontent.apps.87496731262-flf5fk25of39fnfiiuvmc4e1ui2qvhai:/oauth2redirect/google',
 
     scopes: ['openid', 'profile', 'email'],
     usePKCE: true,
-};
+  };
 
 
   const signInWithGoogle = async () => {

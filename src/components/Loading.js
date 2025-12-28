@@ -15,7 +15,7 @@ const Loading = () => {
         bottom: 0,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: 'transparent',
         zIndex: 1000,
       }}
     >
@@ -24,8 +24,8 @@ const Loading = () => {
           justifyContent: 'center',
           alignItems: 'center',
           padding: 10,
-          borderRadius: 20,
-          backgroundColor: 'rgba(0, 0, 0, 0.0)',
+          borderRadius: 40,
+          backgroundColor: Colors.WHITE,
         }}
       >
         <LottieView
@@ -46,7 +46,7 @@ const Loading = () => {
               marginTop: -10,
               marginBottom: 10,
               fontSize: 16,
-              color: Colors.WHITE,
+              color: Colors.PRIMARY,
               fontFamily: Fonts.fontRegular,
             }}
           >
