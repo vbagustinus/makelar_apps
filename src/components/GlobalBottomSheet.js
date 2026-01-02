@@ -26,7 +26,7 @@ export const GlobalBottomSheet = forwardRef(
           {...props}
           appearsOnIndex={0}
           disappearsOnIndex={-1}
-          pressBehavior='close'
+          pressBehavior="close"
           opacity={0.5}
         />
       ),

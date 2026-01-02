@@ -65,13 +65,13 @@ const OtpScreen = ({ route, navigation }) => {
 
         <OtpInput
           numberOfDigits={6}
-          focusColor='green'
+          focusColor="green"
           autoFocus={false}
           hideStick={true}
-          placeholder='******'
+          placeholder="******"
           blurOnFilled={true}
           disabled={false}
-          type='numeric'
+          type="numeric"
           secureTextEntry={false}
           focusStickBlinkingDuration={500}
           onFocus={() => console.log('Focused')}

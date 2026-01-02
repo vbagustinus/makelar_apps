@@ -34,7 +34,7 @@ const LineComponent = ({ x1, y1, x2, y2, colors, nested = 0 }) => {
         height,
         zIndex: -1,
       }}
-      pointerEvents='none'
+      pointerEvents="none"
     >
       <Canvas style={{ width, height }}>
         <SkiaLine

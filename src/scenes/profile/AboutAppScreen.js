@@ -14,17 +14,25 @@ export default function AboutAppScreen({ navigation: { pop } }) {
       onBackPress={pop}
       noshadow
       isScrollable
-      title='Tentang Aplikasi Makelar'
+      title="Tentang Aplikasi Makelar"
       containerStyle={styles.container}
     >
-      <StatusBar translucent backgroundColor='transparent' />
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <StatusBar translucent backgroundColor="transparent" />
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.hero}>
-          <Image source={logotransparent} style={styles.heroLogo} resizeMode='contain' />
+          <Image
+            source={logotransparent}
+            style={styles.heroLogo}
+            resizeMode="contain"
+          />
           <View style={styles.heroTextWrap}>
             <Text style={styles.heroTitle}>Makelar</Text>
             <Text style={styles.heroSubtitle}>
-              Platform untuk mengelola, mencari, dan memasarkan properti dengan pengalaman modern.
+              Platform untuk mengelola, mencari, dan memasarkan properti dengan
+              pengalaman modern.
             </Text>
           </View>
         </View>
@@ -32,8 +40,9 @@ export default function AboutAppScreen({ navigation: { pop } }) {
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Tentang Makelar</Text>
           <Text style={styles.text}>
-            Makelar dirancang untuk profesional properti: menghubungkan, mengelola aset, dan berbagi
-            wawasan. Semua fitur dibuat agar Anda bisa fokus pada bisnis, bukan kerumitan teknis.
+            Makelar dirancang untuk profesional properti: menghubungkan,
+            mengelola aset, dan berbagi wawasan. Semua fitur dibuat agar Anda
+            bisa fokus pada bisnis, bukan kerumitan teknis.
           </Text>
         </View>
 
@@ -58,14 +67,15 @@ export default function AboutAppScreen({ navigation: { pop } }) {
           <View style={styles.miniCard}>
             <Text style={styles.sectionTitle}>Visi</Text>
             <Text style={styles.text}>
-              Menjadi platform global terkemuka yang memperkuat komunitas real estate.
+              Menjadi platform global terkemuka yang memperkuat komunitas real
+              estate.
             </Text>
           </View>
           <View style={styles.miniCard}>
             <Text style={styles.sectionTitle}>Misi</Text>
             <Text style={styles.text}>
-              Menyediakan alat inovatif yang ramah pengguna dan komunitas yang suportif untuk
-              memajukan bisnis properti.
+              Menyediakan alat inovatif yang ramah pengguna dan komunitas yang
+              suportif untuk memajukan bisnis properti.
             </Text>
           </View>
         </View>
@@ -73,8 +83,9 @@ export default function AboutAppScreen({ navigation: { pop } }) {
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Dukungan & Umpan Balik</Text>
           <Text style={styles.text}>
-            Ada pertanyaan atau saran? Hubungi tim dukungan melalui menu kontak di aplikasi.
-            Kami terus memperbaiki Makelar agar pengalaman Anda semakin baik.
+            Ada pertanyaan atau saran? Hubungi tim dukungan melalui menu kontak
+            di aplikasi. Kami terus memperbaiki Makelar agar pengalaman Anda
+            semakin baik.
           </Text>
         </View>
       </ScrollView>

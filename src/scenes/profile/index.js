@@ -127,7 +127,7 @@ function ProfileScreen() {
           }}
         >
           <MaterialDesignIcons
-            name='account-box-edit-outline'
+            name="account-box-edit-outline"
             size={25}
             color={Colors.WHITE}
           />
@@ -137,7 +137,7 @@ function ProfileScreen() {
           blurRadius={10}
           source={(user?.photoURL && { uri: user.photoURL }) || logo}
           style={styles.headerContainer}
-          resizeMode='cover'
+          resizeMode="cover"
         >
           {/* Profile Image */}
           <TouchableOpacity
@@ -155,7 +155,7 @@ function ProfileScreen() {
           </TouchableOpacity>
           {/* User Name and Email */}
           <LinearGradient
-            pointerEvents='box-none'
+            pointerEvents="box-none"
             colors={Colors.GRADIENT_ROYAL90}
             start={{ x: 1, y: 1 }}
             end={{ x: 0, y: 0 }}
@@ -173,7 +173,9 @@ function ProfileScreen() {
               {user?.email || user?.phoneNumber || 'Kontak'}
             </Text>
             {user?.phoneNumber ? (
-              <Text style={styles.userContact}>Telepon: {user.phoneNumber}</Text>
+              <Text style={styles.userContact}>
+                Telepon: {user.phoneNumber}
+              </Text>
             ) : null}
             {user?.whatsapp ? (
               <Text style={styles.userContact}>WhatsApp: {user.whatsapp}</Text>
@@ -190,28 +192,28 @@ function ProfileScreen() {
         <View style={styles.sectionContainer}>
           {/* Account Settings */}
           <SettingItem
-            icon='settings-outline'
-            label='Pengaturan Akun'
-            onPress={() => navigation.push('UnderConstructionScreen')}
+            icon="settings-outline"
+            label="Pengaturan Tema"
+            onPress={() => navigation.push('SettingsScreen')}
           />
           <SettingItem
-            icon='shield-outline'
-            label='Kebijakan Privasi'
+            icon="shield-outline"
+            label="Kebijakan Privasi"
             onPress={() => navigation.push('PrivacyScreen')}
           />
           <SettingItem
-            icon='gift-outline'
-            label='Dukungan'
+            icon="gift-outline"
+            label="Dukungan"
             onPress={() => navigation.push('DonationScreen')}
           />
           <SettingItem
-            icon='information-circle-outline'
-            label='Tentang Aplikasi'
+            icon="information-circle-outline"
+            label="Tentang Aplikasi"
             onPress={() => navigation.push('AboutAppScreen')}
           />
           <SettingItem
-            icon='log-out-outline'
-            label='Keluar'
+            icon="log-out-outline"
+            label="Keluar"
             color={Colors.RED}
             onPress={confirmLogout}
             backgroundColor={Colors.BLACK_50}
@@ -247,7 +249,7 @@ const SettingItem = ({
     />
     <Text style={[styles.settingLabel, { color }]}>{label}</Text>
     <Ionicons
-      name='chevron-forward-outline'
+      name="chevron-forward-outline"
       size={FontSize.FONT_SIZE_16}
       color={Colors.WHITE}
       style={{ marginLeft: 'auto' }}

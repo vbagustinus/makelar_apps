@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Image, TouchableOpacity, Text, Alert } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Text,
+  Alert,
+} from 'react-native';
 import MapView from 'react-native-maps';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import MaterialIcon from '@react-native-vector-icons/material-design-icons';
@@ -31,7 +38,7 @@ const MapPickerScreen = () => {
 
   const handleCurrentLocation = () => {
     Geolocation.getCurrentPosition(
-      (position) => {
+      position => {
         const { latitude, longitude } = position.coords;
         setRegion({
           latitude,
@@ -40,11 +47,14 @@ const MapPickerScreen = () => {
           longitudeDelta: 0.01,
         });
       },
-      (error) => {
-        Alert.alert('Kesalahan', 'Gagal mendapatkan lokasi. Pastikan GPS aktif.');
+      error => {
+        Alert.alert(
+          'Kesalahan',
+          'Gagal mendapatkan lokasi. Pastikan GPS aktif.',
+        );
         console.log(error);
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 },
     );
   };
 
@@ -62,7 +72,10 @@ const MapPickerScreen = () => {
       </View>
 
       {/* Current Location Button */}
-      <TouchableOpacity style={styles.locationButton} onPress={handleCurrentLocation}>
+      <TouchableOpacity
+        style={styles.locationButton}
+        onPress={handleCurrentLocation}
+      >
         <MaterialIcon name="crosshairs-gps" size={24} color="#fff" />
       </TouchableOpacity>
 

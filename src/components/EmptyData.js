@@ -15,7 +15,7 @@ export const EmptyData = ({
         <Image
           source={illustration}
           style={styles.illustration}
-          resizeMode='contain'
+          resizeMode="contain"
         />
       )}
       <Text style={styles.message}>{message}</Text>

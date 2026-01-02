@@ -38,7 +38,7 @@ const PigeonGlobalCard = ({ item, isPrivate }) => {
         <ImageBackground
           source={{ uri: item?.imageUrl }}
           style={styles.banner}
-          resizeMode='cover'
+          resizeMode="cover"
           imageStyle={{ borderTopLeftRadius: 12, borderTopRightRadius: 12 }}
         >
           {/* Bisa ditambah overlay jika mau */}
@@ -49,15 +49,15 @@ const PigeonGlobalCard = ({ item, isPrivate }) => {
             {item?.name}
           </Text>
           <View style={styles.statItem}>
-            <Icon name='gender-male-female' size={18} color={Colors.PINK} />
+            <Icon name="gender-male-female" size={18} color={Colors.PINK} />
             <Text style={styles.statText}>{gender?.name}</Text>
           </View>
           <View style={styles.statItem}>
-            <Icon name='eye-outline' size={18} color={Colors.YELLOW} />
+            <Icon name="eye-outline" size={18} color={Colors.YELLOW} />
             <Text style={styles.statText}>{color?.name}</Text>
           </View>
           <View style={styles.statItem}>
-            <Icon name='palette-outline' size={18} color={Colors.PURPLE} />
+            <Icon name="palette-outline" size={18} color={Colors.PURPLE} />
             <Text style={styles.statText}>{eye?.name}</Text>
           </View>
         </View>

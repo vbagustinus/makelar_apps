@@ -62,7 +62,7 @@ export const DatePicker = ({
         style={styles.container}
         onPress={() => setIsVisible(true)} // Tampilkan modal saat diklik
       >
-        <Ionicons name={iconName} size={20} color='#fff' style={styles.icon} />
+        <Ionicons name={iconName} size={20} color="#fff" style={styles.icon} />
         <View style={styles.textContainer}>
           {label && <Text style={styles.label}>{label}</Text>}
           <Text
@@ -75,9 +75,9 @@ export const DatePicker = ({
           </Text>
         </View>
         <Ionicons
-          name='calendar-outline'
+          name="calendar-outline"
           size={20}
-          color='#fff'
+          color="#fff"
           style={styles.iconRight}
         />
       </TouchableOpacity>
@@ -88,7 +88,7 @@ export const DatePicker = ({
         statusBarTranslucent
         visible={isVisible}
         transparent
-        animationType='fade'
+        animationType="fade"
         onRequestClose={() => setIsVisible(false)}
       >
         <View style={styles.modalOverlay}>
@@ -99,8 +99,8 @@ export const DatePicker = ({
             style={styles.modalContent}
           >
             <DateTimePicker
-              locale='id'
-              mode='single'
+              locale="id"
+              mode="single"
               date={date}
               onChange={({ date: newDate }) => {
                 if (newDate) {

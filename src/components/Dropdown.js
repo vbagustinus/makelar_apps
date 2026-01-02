@@ -77,7 +77,7 @@ export const DropdownSearchable = ({
           </Text>
         </View>
         <MaterialDesignIcons
-          name='chevron-down'
+          name="chevron-down"
           size={20}
           color={Colors.GRAY_DARK}
           style={styles.iconRight}
@@ -87,7 +87,7 @@ export const DropdownSearchable = ({
       <Modal
         visible={isVisible}
         transparent={true}
-        animationType='fade'
+        animationType="fade"
         onRequestClose={() => setIsVisible(false)}
         onDismiss={() => setIsVisible(false)}
       >
@@ -101,7 +101,7 @@ export const DropdownSearchable = ({
             <View style={styles.modalContent}>
               <TextInput
                 style={styles.searchInput}
-                placeholder='Cari...'
+                placeholder="Cari..."
                 placeholderTextColor={Colors.GRAY_DARK}
                 value={searchTerm}
                 onChangeText={handleSearch}
@@ -124,7 +124,14 @@ export const DropdownSearchable = ({
                       }}
                       onPress={() => handleSelect(item)}
                     >
-                      <Text style={[styles.optionText, {color: item?.color || Colors.TEXT}]}>{item?.name}</Text>
+                      <Text
+                        style={[
+                          styles.optionText,
+                          { color: item?.color || Colors.TEXT },
+                        ]}
+                      >
+                        {item?.name}
+                      </Text>
                       {item?.description && (
                         <Text
                           style={[
@@ -219,7 +226,7 @@ export const DropdownSearchableDefault = ({
           </Text>
         </View>
         <MaterialDesignIcons
-          name='chevron-down'
+          name="chevron-down"
           size={20}
           color={Colors.GRAY_DARK}
           style={styles.iconRight}
@@ -229,7 +236,7 @@ export const DropdownSearchableDefault = ({
       <Modal
         visible={isVisible}
         transparent={true}
-        animationType='fade'
+        animationType="fade"
         onRequestClose={() => setIsVisible(false)}
         onDismiss={() => setIsVisible(false)}
       >
@@ -243,8 +250,8 @@ export const DropdownSearchableDefault = ({
             <View style={styles.modalContent}>
               <TextInput
                 style={styles.searchInput}
-                placeholder='Search...'
-                placeholderTextColor='#ffffff70'
+                placeholder="Search..."
+                placeholderTextColor="#ffffff70"
                 value={searchTerm}
                 onChangeText={handleSearch}
               />
@@ -322,7 +329,7 @@ export const DropdownSearchableCountry = ({
           </Text>
         </View>
         <MaterialDesignIcons
-          name='chevron-down-outline'
+          name="chevron-down-outline"
           size={20}
           color={Colors.GRAY_DARK}
           style={styles.iconRight}
@@ -371,7 +378,7 @@ const styles = StyleSheet.create({
   },
 
   textContainer: {
-    // flex: 1,
+    flex: 1,
   },
 
   label: {

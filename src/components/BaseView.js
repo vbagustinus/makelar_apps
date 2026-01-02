@@ -1,7 +1,7 @@
 import React from 'react';
 import { Toolbar } from './Toolbar';
-import { Colors, FontSize } from '../styles';
-import { Animated, View, SafeAreaView } from 'react-native';
+import { useThemeColors, FontSize, Colors } from '../styles';
+import { Animated, View } from 'react-native';
 import PropTypes from 'prop-types';
 import styles from './styles';
 import Ionicons from '@react-native-vector-icons/ionicons';
@@ -27,6 +27,7 @@ export const BaseView = ({
   headerComponent,
   footerComponent,
 }) => {
+  const colors = useThemeColors();
   const Wrapper = isScrollable ? Animated.ScrollView : View;
   const wrapperProps = isScrollable
     ? {
@@ -44,7 +45,7 @@ export const BaseView = ({
     <View
       style={[
         styles.baseContainer,
-        { backgroundColor, },
+        { backgroundColor: backgroundColor || colors.BACKGROUND },
         additionalStyle,
       ]}
     >
@@ -57,7 +58,7 @@ export const BaseView = ({
               <Ionicons
                 name={'chevron-back-outline'}
                 size={FontSize.FONT_SIZE_30}
-                color={Colors.WHITE}
+                color={colors.WHITE}
               />
             ) : null
           }
@@ -95,4 +96,5 @@ BaseView.propTypes = {
 BaseView.defaultProps = {
   isScrollable: false,
   title: '',
+  backgroundColor: null,
 };

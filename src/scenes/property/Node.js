@@ -138,7 +138,7 @@ export const Node = ({ x, y, data, mainId }) => {
             }}
           >
             <MaterialCommunityIcons
-              name='bird'
+              name="bird"
               size={20}
               color={Colors.WHITE}
             />
@@ -176,7 +176,7 @@ export const Node = ({ x, y, data, mainId }) => {
             <FastImage
               source={{ uri: data.imageUrl }}
               style={styles.nodeImage}
-              resizeMode='cover'
+              resizeMode="cover"
             />
             <View style={styles.nodeTextContainer}>
               <Text style={styles.nodeName} numberOfLines={1}>
@@ -255,7 +255,7 @@ export const NodeGeneral = ({ x, y, data, mainId }) => {
             }}
           >
             <MaterialCommunityIcons
-              name='bird'
+              name="bird"
               size={20}
               color={Colors.WHITE}
             />
@@ -292,7 +292,7 @@ export const NodeGeneral = ({ x, y, data, mainId }) => {
             <FastImage
               source={{ uri: data.imageUrl }}
               style={styles.nodeImage}
-              resizeMode='cover'
+              resizeMode="cover"
             />
             <View style={styles.nodeTextContainer}>
               <Text style={styles.nodeName} numberOfLines={1}>

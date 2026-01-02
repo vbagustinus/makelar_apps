@@ -6,12 +6,7 @@ import {
   TouchableOpacity,
   StatusBar,
 } from 'react-native';
-import {
-  BaseView,
-  Loading,
-  Text,
-  View,
-} from '../../components';
+import { BaseView, Loading, Text, View } from '../../components';
 import { logo } from '../../assets/images';
 import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
 import { Colors, Sizes } from '../../styles';
@@ -60,7 +55,6 @@ const AuthScreen = () => {
     scopes: ['openid', 'profile', 'email'],
     usePKCE: true,
   };
-
 
   const signInWithGoogle = async () => {
     try {
@@ -118,7 +112,7 @@ const AuthScreen = () => {
         <Image source={logo} style={styles.image} />
         <Text style={styles.title}>Selamat Datang</Text>
         <Text style={styles.subtitle}>Silahkan masuk dengan Google</Text>
-        
+
         {/* Google Login Button */}
         <View
           style={{

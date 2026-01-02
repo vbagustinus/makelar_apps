@@ -38,7 +38,9 @@ const EditPropertyScreen = () => {
   const user = useAuthStore(state => state.user);
   const userPhone = user?.phoneNumber;
   const userWa = user?.whatsapp;
-  const updatePropertyData = usePropertyStore(state => state.updatePropertyData);
+  const updatePropertyData = usePropertyStore(
+    state => state.updatePropertyData,
+  );
   const fetchProperties = usePropertyStore(state => state.fetchProperties);
   const resetFlags = usePropertyStore(state => state.resetFlags);
   const globalLoading = usePropertyStore(state => state.globalLoading);
@@ -47,7 +49,7 @@ const EditPropertyScreen = () => {
     state => state.updatePropertySuccess,
   );
   console.log('item', item);
-  
+
   const {
     fetchProvinces,
     fetchCitiesByProvince,
@@ -73,76 +75,178 @@ const EditPropertyScreen = () => {
   const [price, setPrice] = useState(item?.price ? String(item.price) : '');
 
   // State untuk Detail Tambahan (misalnya, Luas)
-  const [landArea, setLandArea] = useState(item?.landArea ? String(item.landArea) : '');
-  const [buildingArea, setBuildingArea] = useState(item?.buildingArea ? String(item.buildingArea) : '');
+  const [landArea, setLandArea] = useState(
+    item?.landArea ? String(item.landArea) : '',
+  );
+  const [buildingArea, setBuildingArea] = useState(
+    item?.buildingArea ? String(item.buildingArea) : '',
+  );
 
   // State untuk Pihak Terkait (Mengganti Silsilah Jantan/Betina)
   // (saat ini tidak digunakan di UI)
 
   // --- FIELDS RUMAH (HOUSE) ---
-  const [bedrooms, setBedrooms] = useState(item?.bedrooms ? String(item.bedrooms) : '');
-  const [bathrooms, setBathrooms] = useState(item?.bathrooms ? String(item.bathrooms) : '');
+  const [bedrooms, setBedrooms] = useState(
+    item?.bedrooms ? String(item.bedrooms) : '',
+  );
+  const [bathrooms, setBathrooms] = useState(
+    item?.bathrooms ? String(item.bathrooms) : '',
+  );
   const [floors, setFloors] = useState(item?.floors ? String(item.floors) : '');
   const [garage, setGarage] = useState(item?.garage || '');
-  const [builtYear, setBuiltYear] = useState(item?.builtYear ? String(item.builtYear) : '');
-  const [electricPower, setElectricPower] = useState(item?.electricPower ? String(item.electricPower) : '');
-  const [waterSource, setWaterSource] = useState(item?.waterSource ? { id: item.waterSource, name: item.waterSource } : '');
-  const [facing, setFacing] = useState(item?.facing ? { id: item.facing, name: item.facing } : '');
-  const [furnished, setFurnished] = useState(item?.furnished ? { id: item.furnished, name: item.furnished } : null);
-  const [roadWidth, setRoadWidth] = useState(item?.roadWidth ? String(item.roadWidth) : '');
-  const [carAccess, setCarAccess] = useState(item?.carAccess ? { id: item.carAccess, name: item.carAccess } : '');
-  const [environmentType, setEnvironmentType] = useState(item?.environmentType ? { id: item.environmentType, name: item.environmentType } : '');
-  const [condition, setCondition] = useState(item?.condition ? { id: item.condition, name: item.condition } : '');
-  const [renovationYear, setRenovationYear] = useState(item?.renovationYear ? String(item.renovationYear) : '');
-  const [legalOwnerName, setLegalOwnerName] = useState(item?.legalOwnerName || '');
+  const [builtYear, setBuiltYear] = useState(
+    item?.builtYear ? String(item.builtYear) : '',
+  );
+  const [electricPower, setElectricPower] = useState(
+    item?.electricPower ? String(item.electricPower) : '',
+  );
+  const [waterSource, setWaterSource] = useState(
+    item?.waterSource ? { id: item.waterSource, name: item.waterSource } : '',
+  );
+  const [facing, setFacing] = useState(
+    item?.facing ? { id: item.facing, name: item.facing } : '',
+  );
+  const [furnished, setFurnished] = useState(
+    item?.furnished ? { id: item.furnished, name: item.furnished } : null,
+  );
+  const [roadWidth, setRoadWidth] = useState(
+    item?.roadWidth ? String(item.roadWidth) : '',
+  );
+  const [carAccess, setCarAccess] = useState(
+    item?.carAccess ? { id: item.carAccess, name: item.carAccess } : '',
+  );
+  const [environmentType, setEnvironmentType] = useState(
+    item?.environmentType
+      ? { id: item.environmentType, name: item.environmentType }
+      : '',
+  );
+  const [condition, setCondition] = useState(
+    item?.condition ? { id: item.condition, name: item.condition } : '',
+  );
+  const [renovationYear, setRenovationYear] = useState(
+    item?.renovationYear ? String(item.renovationYear) : '',
+  );
+  const [legalOwnerName, setLegalOwnerName] = useState(
+    item?.legalOwnerName || '',
+  );
   const [imbNumber, setImbNumber] = useState(item?.imbNumber || '');
-  const [monthlyFee, setMonthlyFee] = useState(item?.monthlyFee ? String(item.monthlyFee) : '');
+  const [monthlyFee, setMonthlyFee] = useState(
+    item?.monthlyFee ? String(item.monthlyFee) : '',
+  );
 
   // --- FIELDS APARTEMEN ---
   const [tower, setTower] = useState(item?.tower || '');
-  const [floorNumber, setFloorNumber] = useState(item?.floorNumber ? String(item.floorNumber) : '');
+  const [floorNumber, setFloorNumber] = useState(
+    item?.floorNumber ? String(item.floorNumber) : '',
+  );
   const [unitNumber, setUnitNumber] = useState(item?.unitNumber || '');
-  const [unitType, setUnitType] = useState(item?.unitType ? { id: item.unitType, name: item.unitType } : null);
-  const [maintenanceFee, setMaintenanceFee] = useState(item?.maintenanceFee ? String(item.maintenanceFee) : '');
-  const [balcony, setBalcony] = useState(item?.balcony ? { id: item.balcony, name: item.balcony } : '');
-  const [apartmentFacilities, setApartmentFacilities] = useState(item?.apartmentFacilities || '');
+  const [unitType, setUnitType] = useState(
+    item?.unitType ? { id: item.unitType, name: item.unitType } : null,
+  );
+  const [maintenanceFee, setMaintenanceFee] = useState(
+    item?.maintenanceFee ? String(item.maintenanceFee) : '',
+  );
+  const [balcony, setBalcony] = useState(
+    item?.balcony ? { id: item.balcony, name: item.balcony } : '',
+  );
+  const [apartmentFacilities, setApartmentFacilities] = useState(
+    item?.apartmentFacilities || '',
+  );
 
   // --- FIELDS TANAH (LAND) ---
-  const [landShape, setLandShape] = useState(item?.landShape ? { id: item.landShape, name: item.landShape } : '');
-  const [frontageWidth, setFrontageWidth] = useState(item?.frontageWidth ? String(item.frontageWidth) : '');
-  const [zoning, setZoning] = useState(item?.zoning ? { id: item.zoning, name: item.zoning } : '');
-  const [contour, setContour] = useState(item?.contour ? { id: item.contour, name: item.contour } : '');
-  const [roadType, setRoadType] = useState(item?.roadType ? { id: item.roadType, name: item.roadType } : '');
+  const [landShape, setLandShape] = useState(
+    item?.landShape ? { id: item.landShape, name: item.landShape } : '',
+  );
+  const [frontageWidth, setFrontageWidth] = useState(
+    item?.frontageWidth ? String(item.frontageWidth) : '',
+  );
+  const [zoning, setZoning] = useState(
+    item?.zoning ? { id: item.zoning, name: item.zoning } : '',
+  );
+  const [contour, setContour] = useState(
+    item?.contour ? { id: item.contour, name: item.contour } : '',
+  );
+  const [roadType, setRoadType] = useState(
+    item?.roadType ? { id: item.roadType, name: item.roadType } : '',
+  );
 
-  // --- FIELDS RUKO --- 
-  const [buildingWidth, setBuildingWidth] = useState(item?.buildingWidth ? String(item.buildingWidth) : '');
-  const [buildingLength, setBuildingLength] = useState(item?.buildingLength ? String(item.buildingLength) : '');
-  const [parkingSpace, setParkingSpace] = useState(item?.parkingSpace ? String(item.parkingSpace) : '');
-  const [restroomCount, setRestroomCount] = useState(item?.restroomCount ? String(item.restroomCount) : '');
-  const [electricityType, setElectricityType] = useState(item?.electricityType ? { id: item.electricityType, name: item.electricityType } : '');
-  const [businessSuitableFor, setBusinessSuitableFor] = useState(item?.businessSuitableFor || '');
+  // --- FIELDS RUKO ---
+  const [buildingWidth, setBuildingWidth] = useState(
+    item?.buildingWidth ? String(item.buildingWidth) : '',
+  );
+  const [buildingLength, setBuildingLength] = useState(
+    item?.buildingLength ? String(item.buildingLength) : '',
+  );
+  const [parkingSpace, setParkingSpace] = useState(
+    item?.parkingSpace ? String(item.parkingSpace) : '',
+  );
+  const [restroomCount, setRestroomCount] = useState(
+    item?.restroomCount ? String(item.restroomCount) : '',
+  );
+  const [electricityType, setElectricityType] = useState(
+    item?.electricityType
+      ? { id: item.electricityType, name: item.electricityType }
+      : '',
+  );
+  const [businessSuitableFor, setBusinessSuitableFor] = useState(
+    item?.businessSuitableFor || '',
+  );
 
   // --- FIELDS KANTOR (OFFICE) ---
-  const [officeType, setOfficeType] = useState(item?.officeType ? { id: item.officeType, name: item.officeType } : '');
-  const [meetingRoomCount, setMeetingRoomCount] = useState(item?.meetingRoomCount ? String(item.meetingRoomCount) : '');
-  const [workspaceCapacity, setWorkspaceCapacity] = useState(item?.workspaceCapacity ? String(item.workspaceCapacity) : '');
-  const [pantry, setPantry] = useState(item?.pantry ? { id: item.pantry, name: item.pantry } : '');
-  const [toiletType, setToiletType] = useState(item?.toiletType ? { id: item.toiletType, name: item.toiletType } : '');
+  const [officeType, setOfficeType] = useState(
+    item?.officeType ? { id: item.officeType, name: item.officeType } : '',
+  );
+  const [meetingRoomCount, setMeetingRoomCount] = useState(
+    item?.meetingRoomCount ? String(item.meetingRoomCount) : '',
+  );
+  const [workspaceCapacity, setWorkspaceCapacity] = useState(
+    item?.workspaceCapacity ? String(item.workspaceCapacity) : '',
+  );
+  const [pantry, setPantry] = useState(
+    item?.pantry ? { id: item.pantry, name: item.pantry } : '',
+  );
+  const [toiletType, setToiletType] = useState(
+    item?.toiletType ? { id: item.toiletType, name: item.toiletType } : '',
+  );
 
   // --- FIELDS KOS/KONTRAKAN ---
-  const [totalRooms, setTotalRooms] = useState(item?.totalRooms ? String(item.totalRooms) : '');
-  const [occupiedRooms, setOccupiedRooms] = useState(item?.occupiedRooms ? String(item.occupiedRooms) : '');
-  const [roomFacilities, setRoomFacilities] = useState(item?.roomFacilities || '');
-  const [bathroomInside, setBathroomInside] = useState(item?.bathroomInside ? { id: item.bathroomInside, name: item.bathroomInside } : '');
-  const [incomePerMonth, setIncomePerMonth] = useState(item?.incomePerMonth ? String(item.incomePerMonth) : '');
-  const [rules, setRules] = useState(item?.rules ? { id: item.rules, name: item.rules } : '');
+  const [totalRooms, setTotalRooms] = useState(
+    item?.totalRooms ? String(item.totalRooms) : '',
+  );
+  const [occupiedRooms, setOccupiedRooms] = useState(
+    item?.occupiedRooms ? String(item.occupiedRooms) : '',
+  );
+  const [roomFacilities, setRoomFacilities] = useState(
+    item?.roomFacilities || '',
+  );
+  const [bathroomInside, setBathroomInside] = useState(
+    item?.bathroomInside
+      ? { id: item.bathroomInside, name: item.bathroomInside }
+      : '',
+  );
+  const [incomePerMonth, setIncomePerMonth] = useState(
+    item?.incomePerMonth ? String(item.incomePerMonth) : '',
+  );
+  const [rules, setRules] = useState(
+    item?.rules ? { id: item.rules, name: item.rules } : '',
+  );
 
   // --- FIELDS INDUSTRI/GUDANG ---
-  const [ceilingHeight, setCeilingHeight] = useState(item?.ceilingHeight ? String(item.ceilingHeight) : '');
-  const [loadingDock, setLoadingDock] = useState(item?.loadingDock ? { id: item.loadingDock, name: item.loadingDock } : '');
-  const [truckAccess, setTruckAccess] = useState(item?.truckAccess ? { id: item.truckAccess, name: item.truckAccess } : '');
-  const [powerCapacity, setPowerCapacity] = useState(item?.powerCapacity ? String(item.powerCapacity) : '');
-  const [floorStrength, setFloorStrength] = useState(item?.floorStrength ? String(item.floorStrength) : '');
+  const [ceilingHeight, setCeilingHeight] = useState(
+    item?.ceilingHeight ? String(item.ceilingHeight) : '',
+  );
+  const [loadingDock, setLoadingDock] = useState(
+    item?.loadingDock ? { id: item.loadingDock, name: item.loadingDock } : '',
+  );
+  const [truckAccess, setTruckAccess] = useState(
+    item?.truckAccess ? { id: item.truckAccess, name: item.truckAccess } : '',
+  );
+  const [powerCapacity, setPowerCapacity] = useState(
+    item?.powerCapacity ? String(item.powerCapacity) : '',
+  );
+  const [floorStrength, setFloorStrength] = useState(
+    item?.floorStrength ? String(item.floorStrength) : '',
+  );
 
   const [longitude, setLongitude] = useState(item?.longitude || 0);
   const [latitude, setLatitude] = useState(item?.latitude || 0);
@@ -296,8 +400,7 @@ const EditPropertyScreen = () => {
     return [];
   }, [listVillages]);
 
-  const getOptionName = option =>
-    option && option.name ? option.name : null;
+  const getOptionName = option => (option && option.name ? option.name : null);
 
   // ===============================================
   // HOOKS PENGAMBILAN DATA LOKASI
@@ -309,8 +412,14 @@ const EditPropertyScreen = () => {
 
   // Prefill pilihan ketika data list sudah siap
   useEffect(() => {
-    if (!hasPrefilledProvince.current && item?.province && listProvinces?.length > 0) {
-      const match = listProvinces.find(p => `${p.id}` === `${item.province?.id}`);
+    if (
+      !hasPrefilledProvince.current &&
+      item?.province &&
+      listProvinces?.length > 0
+    ) {
+      const match = listProvinces.find(
+        p => `${p.id}` === `${item.province?.id}`,
+      );
       if (match) {
         setProvince({ ...match, value: match.id, label: match.name });
         hasPrefilledProvince.current = true;
@@ -329,8 +438,14 @@ const EditPropertyScreen = () => {
   }, [listCities, item?.city]);
 
   useEffect(() => {
-    if (!hasPrefilledDistrict.current && item?.district && listDistricts?.length > 0) {
-      const match = listDistricts.find(d => `${d.id}` === `${item.district?.id}`);
+    if (
+      !hasPrefilledDistrict.current &&
+      item?.district &&
+      listDistricts?.length > 0
+    ) {
+      const match = listDistricts.find(
+        d => `${d.id}` === `${item.district?.id}`,
+      );
       if (match) {
         setDistrict({ ...match, value: match.id, label: match.name });
         hasPrefilledDistrict.current = true;
@@ -339,7 +454,11 @@ const EditPropertyScreen = () => {
   }, [listDistricts, item?.district]);
 
   useEffect(() => {
-    if (!hasPrefilledVillage.current && item?.village && listVillages?.length > 0) {
+    if (
+      !hasPrefilledVillage.current &&
+      item?.village &&
+      listVillages?.length > 0
+    ) {
       const match = listVillages.find(v => `${v.id}` === `${item.village?.id}`);
       if (match) {
         setVillage({ ...match, value: match.id, label: match.name });
@@ -457,7 +576,8 @@ const EditPropertyScreen = () => {
           { text: 'Nanti', style: 'cancel' },
           {
             text: 'Ke Edit Profil',
-            onPress: () => navigation.navigate('Profil', { screen: 'EditProfileScreen' }),
+            onPress: () =>
+              navigation.navigate('Profil', { screen: 'EditProfileScreen' }),
           },
         ],
       );
@@ -477,7 +597,8 @@ const EditPropertyScreen = () => {
           { text: 'Batal', style: 'cancel' },
           {
             text: 'Ke Edit Profil',
-            onPress: () => navigation.navigate('Profil', { screen: 'EditProfileScreen' }),
+            onPress: () =>
+              navigation.navigate('Profil', { screen: 'EditProfileScreen' }),
           },
         ],
       );
@@ -621,7 +742,7 @@ const EditPropertyScreen = () => {
   const resetFields = () => {
     setPropertyType(null);
     setPropertyName('');
-    setStatus(null);    
+    setStatus(null);
     setCertificateType(null);
     setAddress('');
     setImages([]);
@@ -749,175 +870,175 @@ const EditPropertyScreen = () => {
     return (
       <>
         {/* ======= INPUT TAMBAHAN (Spesifikasi Rumah) ======= */}
-          <Input
-            label='Luas Tanah (m²)'
-            placeholder='Contoh: 120'
-            iconName='ruler-square'
-            keyboardType='numeric'
-            value={landArea}
-            onChangeText={setLandArea}
-          />
+        <Input
+          label="Luas Tanah (m²)"
+          placeholder="Contoh: 120"
+          iconName="ruler-square"
+          keyboardType="numeric"
+          value={landArea}
+          onChangeText={setLandArea}
+        />
 
-          <Input
-            label='Luas Bangunan (m²)'
-            placeholder='Contoh: 90'
-            iconName='home-floor-1'
-            keyboardType='numeric'
-            value={buildingArea}
-            onChangeText={setBuildingArea}
-          />
+        <Input
+          label="Luas Bangunan (m²)"
+          placeholder="Contoh: 90"
+          iconName="home-floor-1"
+          keyboardType="numeric"
+          value={buildingArea}
+          onChangeText={setBuildingArea}
+        />
 
-          <Input
-            label='Jumlah Kamar Tidur'
-            placeholder='Contoh: 3'
-            iconName='bed-double-outline'
-            keyboardType='numeric'
-            value={bedrooms}
-            onChangeText={setBedrooms}
-          />
+        <Input
+          label="Jumlah Kamar Tidur"
+          placeholder="Contoh: 3"
+          iconName="bed-double-outline"
+          keyboardType="numeric"
+          value={bedrooms}
+          onChangeText={setBedrooms}
+        />
 
-          <Input
-            label='Jumlah Kamar Mandi'
-            placeholder='Contoh: 2'
-            iconName='shower-head'
-            keyboardType='numeric'
-            value={bathrooms}
-            onChangeText={setBathrooms}
-          />
+        <Input
+          label="Jumlah Kamar Mandi"
+          placeholder="Contoh: 2"
+          iconName="shower-head"
+          keyboardType="numeric"
+          value={bathrooms}
+          onChangeText={setBathrooms}
+        />
 
-          <Input
-            label='Jumlah Lantai'
-            placeholder='Contoh: 2'
-            iconName='stairs'
-            keyboardType='numeric'
-            value={floors}
-            onChangeText={setFloors}
-          />
+        <Input
+          label="Jumlah Lantai"
+          placeholder="Contoh: 2"
+          iconName="stairs"
+          keyboardType="numeric"
+          value={floors}
+          onChangeText={setFloors}
+        />
 
-          <Input
-            label='Garasi / Carport (kapasitas)'
-            placeholder='Contoh: 1 Mobil'
-            iconName='car'
-            value={garage}
-            onChangeText={setGarage}
-          />
+        <Input
+          label="Garasi / Carport (kapasitas)"
+          placeholder="Contoh: 1 Mobil"
+          iconName="car"
+          value={garage}
+          onChangeText={setGarage}
+        />
 
-          <Input
-            label='Tahun Dibangun'
-            placeholder='Contoh: 2018'
-            iconName='calendar-range'
-            keyboardType='numeric'
-            value={builtYear}
-            onChangeText={setBuiltYear}
-          />
+        <Input
+          label="Tahun Dibangun"
+          placeholder="Contoh: 2018"
+          iconName="calendar-range"
+          keyboardType="numeric"
+          value={builtYear}
+          onChangeText={setBuiltYear}
+        />
 
-          {/* ======= INPUT TAMBAHAN (Kelengkapan & Lingkungan) ======= */}
-          <Input
-            label='Daya Listrik (Watt)'
-            placeholder='Contoh: 1300'
-            iconName='flash'
-            keyboardType='numeric'
-            value={electricPower}
-            onChangeText={setElectricPower}
-          />
+        {/* ======= INPUT TAMBAHAN (Kelengkapan & Lingkungan) ======= */}
+        <Input
+          label="Daya Listrik (Watt)"
+          placeholder="Contoh: 1300"
+          iconName="flash"
+          keyboardType="numeric"
+          value={electricPower}
+          onChangeText={setElectricPower}
+        />
 
-          <Input
-            label='Sumber Air'
-            placeholder='Contoh: PDAM / Sumur'
-            iconName='water'
-            value={waterSource}
-            onChangeText={setWaterSource}
-          />
+        <Input
+          label="Sumber Air"
+          placeholder="Contoh: PDAM / Sumur"
+          iconName="water"
+          value={waterSource}
+          onChangeText={setWaterSource}
+        />
 
-          <Input
-            label='Arah Hadap'
-            placeholder='Contoh: Timur'
-            iconName='compass'
-            value={facing}
-            onChangeText={setFacing}
-          />
+        <Input
+          label="Arah Hadap"
+          placeholder="Contoh: Timur"
+          iconName="compass"
+          value={facing}
+          onChangeText={setFacing}
+        />
 
-          <DropdownSearchable
-            label='Status Furnitur'
-            placeholder='Pilih Status Furnitur'
-            iconName='sofa'
-            options={[
-              { id: 1, name: 'Unfurnished' },
-              { id: 2, name: 'Semi Furnished' },
-              { id: 3, name: 'Full Furnished' }
-            ]}
-            value={furnished}
-            onSelect={setFurnished}
-          />
+        <DropdownSearchable
+          label="Status Furnitur"
+          placeholder="Pilih Status Furnitur"
+          iconName="sofa"
+          options={[
+            { id: 1, name: 'Unfurnished' },
+            { id: 2, name: 'Semi Furnished' },
+            { id: 3, name: 'Full Furnished' },
+          ]}
+          value={furnished}
+          onSelect={setFurnished}
+        />
 
-          <Input
-            label='Lebar Jalan (m)'
-            placeholder='Contoh: 6'
-            iconName='road-variant'
-            keyboardType='numeric'
-            value={roadWidth}
-            onChangeText={setRoadWidth}
-          />
+        <Input
+          label="Lebar Jalan (m)"
+          placeholder="Contoh: 6"
+          iconName="road-variant"
+          keyboardType="numeric"
+          value={roadWidth}
+          onChangeText={setRoadWidth}
+        />
 
-          <Input
-            label='Akses Kendaraan'
-            placeholder='Contoh: Mobil / Motor only'
-            iconName='truck'
-            value={carAccess}
-            onChangeText={setCarAccess}
-          />
+        <Input
+          label="Akses Kendaraan"
+          placeholder="Contoh: Mobil / Motor only"
+          iconName="truck"
+          value={carAccess}
+          onChangeText={setCarAccess}
+        />
 
-          <Input
-            label='Tipe Lingkungan'
-            placeholder='Contoh: Perumahan / Cluster / Kampung'
-            iconName='domain'
-            value={environmentType}
-            onChangeText={setEnvironmentType}
-          />
+        <Input
+          label="Tipe Lingkungan"
+          placeholder="Contoh: Perumahan / Cluster / Kampung"
+          iconName="domain"
+          value={environmentType}
+          onChangeText={setEnvironmentType}
+        />
 
-          <Input
-            label='Kondisi Rumah'
-            placeholder='Contoh: Baru / Bekas / Direnovasi'
-            iconName='tools'
-            value={condition}
-            onChangeText={setCondition}
-          />
+        <Input
+          label="Kondisi Rumah"
+          placeholder="Contoh: Baru / Bekas / Direnovasi"
+          iconName="tools"
+          value={condition}
+          onChangeText={setCondition}
+        />
 
-          <Input
-            label='Tahun Renovasi (jika ada)'
-            placeholder='Contoh: 2022'
-            iconName='calendar-edit'
-            keyboardType='numeric'
-            value={renovationYear}
-            onChangeText={setRenovationYear}
-          />
+        <Input
+          label="Tahun Renovasi (jika ada)"
+          placeholder="Contoh: 2022"
+          iconName="calendar-edit"
+          keyboardType="numeric"
+          value={renovationYear}
+          onChangeText={setRenovationYear}
+        />
 
-          <Input
-            label='Nama Pemilik Sertifikat'
-            placeholder='Nama di sertifikat'
-            iconName='account'
-            value={legalOwnerName}
-            onChangeText={setLegalOwnerName}
-          />
+        <Input
+          label="Nama Pemilik Sertifikat"
+          placeholder="Nama di sertifikat"
+          iconName="account"
+          value={legalOwnerName}
+          onChangeText={setLegalOwnerName}
+        />
 
-          <Input
-            label='Nomor IMB / Izin'
-            placeholder='Jika ada'
-            iconName='file-document'
-            value={imbNumber}
-            onChangeText={setImbNumber}
-          />
+        <Input
+          label="Nomor IMB / Izin"
+          placeholder="Jika ada"
+          iconName="file-document"
+          value={imbNumber}
+          onChangeText={setImbNumber}
+        />
 
-          <Input
-            label='Iuran Bulanan / Security (Rp)'
-            placeholder='Contoh: 50000'
-            iconName='cash'
-            keyboardType='numeric'
-            value={monthlyFee}
-            onChangeText={setMonthlyFee}
-          />
+        <Input
+          label="Iuran Bulanan / Security (Rp)"
+          placeholder="Contoh: 50000"
+          iconName="cash"
+          keyboardType="numeric"
+          value={monthlyFee}
+          onChangeText={setMonthlyFee}
+        />
       </>
-    )
+    );
   };
 
   const renderApartmentForm = () => {
@@ -925,89 +1046,89 @@ const EditPropertyScreen = () => {
       <>
         {/* ======= INPUT APARTEMEN ======= */}
         <Input
-          label='Luas Unit (m²)'
-          placeholder='Contoh: 90'
-          iconName='home-floor-1'
-          keyboardType='numeric'
+          label="Luas Unit (m²)"
+          placeholder="Contoh: 90"
+          iconName="home-floor-1"
+          keyboardType="numeric"
           value={buildingArea}
           onChangeText={setBuildingArea}
         />
 
         <Input
-          label='Tower / Blok'
-          placeholder='Contoh: Melati, A, Tower 1'
-          iconName='building'
+          label="Tower / Blok"
+          placeholder="Contoh: Melati, A, Tower 1"
+          iconName="building"
           value={tower}
           onChangeText={setTower}
         />
 
         <Input
-          label='Lantai'
-          placeholder='Contoh: 2'
-          iconName='layers'
-          keyboardType='numeric'
+          label="Lantai"
+          placeholder="Contoh: 2"
+          iconName="layers"
+          keyboardType="numeric"
           value={floorNumber}
           onChangeText={setFloorNumber}
         />
 
         <Input
-          label='Nomor Unit'
-          placeholder='Contoh: 201'
-          iconName='door'
+          label="Nomor Unit"
+          placeholder="Contoh: 201"
+          iconName="door"
           value={unitNumber}
           onChangeText={setUnitNumber}
         />
 
         <DropdownSearchable
-          label='Tipe Unit'
-          placeholder='Pilih Tipe Unit'
-          iconName='sofa'
+          label="Tipe Unit"
+          placeholder="Pilih Tipe Unit"
+          iconName="sofa"
           options={[
             { id: 1, name: 'Studio' },
             { id: 2, name: '1 Kamar Tidur' },
             { id: 3, name: '2 Kamar Tidur' },
             { id: 4, name: '3 Kamar Tidur' },
             { id: 5, name: 'Penthouse' },
-            { id: 6, name: 'Lainnya' }
+            { id: 6, name: 'Lainnya' },
           ]}
           value={unitType}
           onSelect={setUnitType}
         />
 
         <Input
-          label='Biaya IPL/Maintenance (Rp)'
-          placeholder='Contoh: 500000'
-          iconName='cash'
-          keyboardType='numeric'
+          label="Biaya IPL/Maintenance (Rp)"
+          placeholder="Contoh: 500000"
+          iconName="cash"
+          keyboardType="numeric"
           value={maintenanceFee}
           onChangeText={setMaintenanceFee}
         />
 
         <DropdownSearchable
-          label='Status Furnitur'
-          placeholder='Pilih Status Furnitur'
-          iconName='sofa'
+          label="Status Furnitur"
+          placeholder="Pilih Status Furnitur"
+          iconName="sofa"
           options={[
             { id: 1, name: 'Unfurnished' },
             { id: 2, name: 'Semi Furnished' },
-            { id: 3, name: 'Full Furnished' }
+            { id: 3, name: 'Full Furnished' },
           ]}
           value={furnished}
           onSelect={setFurnished}
         />
 
         <Input
-          label='Balkon'
-          placeholder='Contoh: Ada / Tidak Ada'
-          iconName='window-open'
+          label="Balkon"
+          placeholder="Contoh: Ada / Tidak Ada"
+          iconName="window-open"
           value={balcony}
           onChangeText={setBalcony}
         />
 
         <Input
-          label='Fasilitas'
-          placeholder='Contoh: Gym, Pool, Security 24h, Lift'
-          iconName='star'
+          label="Fasilitas"
+          placeholder="Contoh: Gym, Pool, Security 24h, Lift"
+          iconName="star"
           value={apartmentFacilities}
           onChangeText={setApartmentFacilities}
         />
@@ -1020,75 +1141,75 @@ const EditPropertyScreen = () => {
       <>
         {/* ======= INPUT TANAH ======= */}
         <Input
-          label='Luas Tanah (m²)'
-          placeholder='Contoh: 500'
-          iconName='ruler-square'
-          keyboardType='numeric'
+          label="Luas Tanah (m²)"
+          placeholder="Contoh: 500"
+          iconName="ruler-square"
+          keyboardType="numeric"
           value={landArea}
           onChangeText={setLandArea}
         />
 
         <DropdownSearchable
-          label='Bentuk Tanah'
-          placeholder='Pilih Bentuk Tanah'
-          iconName='shape'
+          label="Bentuk Tanah"
+          placeholder="Pilih Bentuk Tanah"
+          iconName="shape"
           options={[
             { id: 1, name: 'Kotak / Persegi' },
             { id: 2, name: 'Segitiga' },
             { id: 3, name: 'Trapesium' },
-            { id: 4, name: 'Tidak Beraturan' }
+            { id: 4, name: 'Tidak Beraturan' },
           ]}
           value={landShape}
           onSelect={setLandShape}
         />
 
         <Input
-          label='Lebar Muka Tanah (m)'
-          placeholder='Contoh: 20'
-          iconName='ruler'
-          keyboardType='numeric'
+          label="Lebar Muka Tanah (m)"
+          placeholder="Contoh: 20"
+          iconName="ruler"
+          keyboardType="numeric"
           value={frontageWidth}
           onChangeText={setFrontageWidth}
         />
 
         <DropdownSearchable
-          label='Zona / Tujuan Lahan'
-          placeholder='Pilih Zona'
-          iconName='map'
+          label="Zona / Tujuan Lahan"
+          placeholder="Pilih Zona"
+          iconName="map"
           options={[
             { id: 1, name: 'Permukiman' },
             { id: 2, name: 'Komersial' },
             { id: 3, name: 'Industri' },
             { id: 4, name: 'Pertanian' },
-            { id: 5, name: 'Campuran' }
+            { id: 5, name: 'Campuran' },
           ]}
           value={zoning}
           onSelect={setZoning}
         />
 
         <DropdownSearchable
-          label='Kontur Tanah'
-          placeholder='Pilih Kontur'
-          iconName='terrain'
+          label="Kontur Tanah"
+          placeholder="Pilih Kontur"
+          iconName="terrain"
           options={[
             { id: 1, name: 'Datar' },
             { id: 2, name: 'Miring Ringan' },
             { id: 3, name: 'Miring Sedang' },
-            { id: 4, name: 'Miring Curam' }
+            { id: 4, name: 'Miring Curam' },
           ]}
           value={contour}
           onSelect={setContour}
         />
 
         <DropdownSearchable
-          label='Jenis Jalan'
-          placeholder='Pilih Jenis Jalan'
-          iconName='road'
+          label="Jenis Jalan"
+          placeholder="Pilih Jenis Jalan"
+          iconName="road"
           options={[
             { id: 1, name: 'Aspal' },
             { id: 2, name: 'Beton' },
             { id: 3, name: 'Tanah' },
-            { id: 4, name: 'Macadam' }
+            { id: 4, name: 'Macadam' },
           ]}
           value={roadType}
           onSelect={setRoadType}
@@ -1102,84 +1223,84 @@ const EditPropertyScreen = () => {
       <>
         {/* ======= INPUT RUKO ======= */}
         <Input
-          label='Luas Tanah (m²)'
-          placeholder='Contoh: 120'
-          iconName='ruler-square'
-          keyboardType='numeric'
+          label="Luas Tanah (m²)"
+          placeholder="Contoh: 120"
+          iconName="ruler-square"
+          keyboardType="numeric"
           value={landArea}
           onChangeText={setLandArea}
         />
 
         <Input
-          label='Luas Bangunan (m²)'
-          placeholder='Contoh: 80'
-          iconName='home-floor-1'
-          keyboardType='numeric'
+          label="Luas Bangunan (m²)"
+          placeholder="Contoh: 80"
+          iconName="home-floor-1"
+          keyboardType="numeric"
           value={buildingArea}
           onChangeText={setBuildingArea}
         />
 
         <Input
-          label='Jumlah Lantai'
-          placeholder='Contoh: 2'
-          iconName='layers'
-          keyboardType='numeric'
+          label="Jumlah Lantai"
+          placeholder="Contoh: 2"
+          iconName="layers"
+          keyboardType="numeric"
           value={floors}
           onChangeText={setFloors}
         />
 
         <Input
-          label='Lebar Bangunan (m)'
-          placeholder='Contoh: 6'
-          iconName='ruler'
-          keyboardType='numeric'
+          label="Lebar Bangunan (m)"
+          placeholder="Contoh: 6"
+          iconName="ruler"
+          keyboardType="numeric"
           value={buildingWidth}
           onChangeText={setBuildingWidth}
         />
 
         <Input
-          label='Panjang Bangunan (m)'
-          placeholder='Contoh: 20'
-          iconName='ruler'
-          keyboardType='numeric'
+          label="Panjang Bangunan (m)"
+          placeholder="Contoh: 20"
+          iconName="ruler"
+          keyboardType="numeric"
           value={buildingLength}
           onChangeText={setBuildingLength}
         />
 
         <Input
-          label='Tempat Parkir'
-          placeholder='Contoh: 2 Mobil'
-          iconName='parking'
+          label="Tempat Parkir"
+          placeholder="Contoh: 2 Mobil"
+          iconName="parking"
           value={parkingSpace}
           onChangeText={setParkingSpace}
         />
 
         <Input
-          label='Jumlah Kamar Mandi'
-          placeholder='Contoh: 2'
-          iconName='shower-head'
-          keyboardType='numeric'
+          label="Jumlah Kamar Mandi"
+          placeholder="Contoh: 2"
+          iconName="shower-head"
+          keyboardType="numeric"
           value={restroomCount}
           onChangeText={setRestroomCount}
         />
 
         <DropdownSearchable
-          label='Jenis Listrik'
-          placeholder='Pilih Jenis Listrik'
-          iconName='flash'
+          label="Jenis Listrik"
+          placeholder="Pilih Jenis Listrik"
+          iconName="flash"
           options={[
             { id: 1, name: 'Toko (900 VA)' },
             { id: 2, name: 'Toko Besar (1300 VA)' },
-            { id: 3, name: 'Industri' }
+            { id: 3, name: 'Industri' },
           ]}
           value={electricityType}
           onSelect={setElectricityType}
         />
 
         <Input
-          label='Cocok Untuk Bisnis'
-          placeholder='Contoh: Toko, Salon, Warung'
-          iconName='briefcase'
+          label="Cocok Untuk Bisnis"
+          placeholder="Contoh: Toko, Salon, Warung"
+          iconName="briefcase"
           value={businessSuitableFor}
           onChangeText={setBusinessSuitableFor}
         />
@@ -1192,68 +1313,68 @@ const EditPropertyScreen = () => {
       <>
         {/* ======= INPUT KANTOR ======= */}
         <Input
-          label='Luas Bangunan (m²)'
-          placeholder='Contoh: 500'
-          iconName='home-floor-1'
-          keyboardType='numeric'
+          label="Luas Bangunan (m²)"
+          placeholder="Contoh: 500"
+          iconName="home-floor-1"
+          keyboardType="numeric"
           value={buildingArea}
           onChangeText={setBuildingArea}
         />
 
         <Input
-          label='Lantai / Floor'
-          placeholder='Contoh: 5'
-          iconName='layers'
-          keyboardType='numeric'
+          label="Lantai / Floor"
+          placeholder="Contoh: 5"
+          iconName="layers"
+          keyboardType="numeric"
           value={floorNumber}
           onChangeText={setFloorNumber}
         />
 
         <DropdownSearchable
-          label='Tipe Kantor'
-          placeholder='Pilih Tipe Kantor'
-          iconName='briefcase'
+          label="Tipe Kantor"
+          placeholder="Pilih Tipe Kantor"
+          iconName="briefcase"
           options={[
             { id: 1, name: 'Bare (Kosong)' },
             { id: 2, name: 'Semi Furnished' },
-            { id: 3, name: 'Full Furnished' }
+            { id: 3, name: 'Full Furnished' },
           ]}
           value={officeType}
           onSelect={setOfficeType}
         />
 
         <Input
-          label='Jumlah Ruang Rapat'
-          placeholder='Contoh: 3'
-          iconName='door-multiple'
-          keyboardType='numeric'
+          label="Jumlah Ruang Rapat"
+          placeholder="Contoh: 3"
+          iconName="door-multiple"
+          keyboardType="numeric"
           value={meetingRoomCount}
           onChangeText={setMeetingRoomCount}
         />
 
         <Input
-          label='Kapasitas Workspace'
-          placeholder='Contoh: 50 orang'
-          iconName='seat'
+          label="Kapasitas Workspace"
+          placeholder="Contoh: 50 orang"
+          iconName="seat"
           value={workspaceCapacity}
           onChangeText={setWorkspaceCapacity}
         />
 
         <Input
-          label='Pantry / Dapur'
-          placeholder='Contoh: Ada / Tidak Ada'
-          iconName='food'
+          label="Pantry / Dapur"
+          placeholder="Contoh: Ada / Tidak Ada"
+          iconName="food"
           value={pantry}
           onChangeText={setPantry}
         />
 
         <DropdownSearchable
-          label='Jenis Toilet'
-          placeholder='Pilih Jenis Toilet'
-          iconName='toilet'
+          label="Jenis Toilet"
+          placeholder="Pilih Jenis Toilet"
+          iconName="toilet"
           options={[
             { id: 1, name: 'Internal (Dalam Unit)' },
-            { id: 2, name: 'Shared (Bersama)' }
+            { id: 2, name: 'Shared (Bersama)' },
           ]}
           value={toiletType}
           onSelect={setToiletType}
@@ -1267,61 +1388,61 @@ const EditPropertyScreen = () => {
       <>
         {/* ======= INPUT KOS/KONTRAKAN ======= */}
         <Input
-          label='Total Kamar'
-          placeholder='Contoh: 10'
-          iconName='door-multiple'
-          keyboardType='numeric'
+          label="Total Kamar"
+          placeholder="Contoh: 10"
+          iconName="door-multiple"
+          keyboardType="numeric"
           value={totalRooms}
           onChangeText={setTotalRooms}
         />
 
         <Input
-          label='Kamar Terisi'
-          placeholder='Contoh: 8'
-          iconName='door-open'
-          keyboardType='numeric'
+          label="Kamar Terisi"
+          placeholder="Contoh: 8"
+          iconName="door-open"
+          keyboardType="numeric"
           value={occupiedRooms}
           onChangeText={setOccupiedRooms}
         />
 
         <Input
-          label='Fasilitas Kamar'
-          placeholder='Contoh: AC, WiFi, KM Dalam'
-          iconName='star'
+          label="Fasilitas Kamar"
+          placeholder="Contoh: AC, WiFi, KM Dalam"
+          iconName="star"
           value={roomFacilities}
           onChangeText={setRoomFacilities}
         />
 
         <DropdownSearchable
-          label='Kamar Mandi'
-          placeholder='Pilih Tipe KM'
-          iconName='shower-head'
+          label="Kamar Mandi"
+          placeholder="Pilih Tipe KM"
+          iconName="shower-head"
           options={[
             { id: 1, name: 'Dalam Kamar' },
             { id: 2, name: 'Bersama' },
-            { id: 3, name: 'Campuran' }
+            { id: 3, name: 'Campuran' },
           ]}
           value={bathroomInside}
           onSelect={setBathroomInside}
         />
 
         <Input
-          label='Pendapatan Per Bulan (Rp)'
-          placeholder='Contoh: 4000000'
-          iconName='cash'
-          keyboardType='numeric'
+          label="Pendapatan Per Bulan (Rp)"
+          placeholder="Contoh: 4000000"
+          iconName="cash"
+          keyboardType="numeric"
           value={incomePerMonth}
           onChangeText={setIncomePerMonth}
         />
 
         <DropdownSearchable
-          label='Aturan Penghuni'
-          placeholder='Pilih Aturan'
-          iconName='file-document'
+          label="Aturan Penghuni"
+          placeholder="Pilih Aturan"
+          iconName="file-document"
           options={[
             { id: 1, name: 'Bebas (Putra/Putri)' },
             { id: 2, name: 'Putra Saja' },
-            { id: 3, name: 'Putri Saja' }
+            { id: 3, name: 'Putri Saja' },
           ]}
           value={rules}
           onSelect={setRules}
@@ -1335,80 +1456,80 @@ const EditPropertyScreen = () => {
       <>
         {/* ======= INPUT INDUSTRI/GUDANG ======= */}
         <Input
-          label='Luas Bangunan (m²)'
-          placeholder='Contoh: 1000'
-          iconName='home-floor-1'
-          keyboardType='numeric'
+          label="Luas Bangunan (m²)"
+          placeholder="Contoh: 1000"
+          iconName="home-floor-1"
+          keyboardType="numeric"
           value={buildingArea}
           onChangeText={setBuildingArea}
         />
 
         <Input
-          label='Lebar Bangunan (m)'
-          placeholder='Contoh: 30'
-          iconName='ruler'
-          keyboardType='numeric'
+          label="Lebar Bangunan (m)"
+          placeholder="Contoh: 30"
+          iconName="ruler"
+          keyboardType="numeric"
           value={buildingWidth}
           onChangeText={setBuildingWidth}
         />
 
         <Input
-          label='Panjang Bangunan (m)'
-          placeholder='Contoh: 50'
-          iconName='ruler'
-          keyboardType='numeric'
+          label="Panjang Bangunan (m)"
+          placeholder="Contoh: 50"
+          iconName="ruler"
+          keyboardType="numeric"
           value={buildingLength}
           onChangeText={setBuildingLength}
         />
 
         <Input
-          label='Tinggi Ruangan (m)'
-          placeholder='Contoh: 6'
-          iconName='layers'
-          keyboardType='numeric'
+          label="Tinggi Ruangan (m)"
+          placeholder="Contoh: 6"
+          iconName="layers"
+          keyboardType="numeric"
           value={ceilingHeight}
           onChangeText={setCeilingHeight}
         />
 
         <DropdownSearchable
-          label='Loading Dock'
-          placeholder='Pilih Ketersediaan'
-          iconName='truck'
+          label="Loading Dock"
+          placeholder="Pilih Ketersediaan"
+          iconName="truck"
           options={[
             { id: 1, name: 'Ada' },
-            { id: 2, name: 'Tidak Ada' }
+            { id: 2, name: 'Tidak Ada' },
           ]}
           value={loadingDock}
           onSelect={setLoadingDock}
         />
 
         <DropdownSearchable
-          label='Akses Kendaraan'
-          placeholder='Pilih Tipe Akses'
-          iconName='truck'
+          label="Akses Kendaraan"
+          placeholder="Pilih Tipe Akses"
+          iconName="truck"
           options={[
             { id: 1, name: 'Tronton' },
             { id: 2, name: 'Kontainer' },
-            { id: 3, name: 'Keduanya' }
+            { id: 3, name: 'Keduanya' },
           ]}
           value={truckAccess}
           onSelect={setTruckAccess}
         />
 
         <Input
-          label='Kapasitas Listrik (kVA)'
-          placeholder='Contoh: 100'
-          iconName='flash'
-          keyboardType='numeric'
+          label="Kapasitas Listrik (kVA)"
+          placeholder="Contoh: 100"
+          iconName="flash"
+          keyboardType="numeric"
           value={powerCapacity}
           onChangeText={setPowerCapacity}
         />
 
         <Input
-          label='Daya Tampung Lantai (Ton/m²)'
-          placeholder='Contoh: 5'
-          iconName='weight'
-          keyboardType='numeric'
+          label="Daya Tampung Lantai (Ton/m²)"
+          placeholder="Contoh: 5"
+          iconName="weight"
+          keyboardType="numeric"
           value={floorStrength}
           onChangeText={setFloorStrength}
         />
@@ -1418,7 +1539,7 @@ const EditPropertyScreen = () => {
 
   return (
     <BaseView
-      title='Tambah Properti Baru'
+      title="Tambah Properti Baru"
       isScrollable={false}
       loading={globalLoading || locationLoading}
       onBackPress={() => navigation.pop()}
@@ -1427,23 +1548,23 @@ const EditPropertyScreen = () => {
         enableOnAndroid
         extraScrollHeight={100}
         contentContainerStyle={styles.scrollContainer}
-        keyboardShouldPersistTaps='handled'
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.screen}>
           {/* INPUT: Nama/Judul Properti */}
           <Input
-            label='Nama / Judul Properti'
-            placeholder='Contoh: Rumah Minimalis Jakarta, Tanah Kavling Blok B'
-            iconName='bookmark-multiple-outline'
+            label="Nama / Judul Properti"
+            placeholder="Contoh: Rumah Minimalis Jakarta, Tanah Kavling Blok B"
+            iconName="bookmark-multiple-outline"
             value={propertyName}
             onChangeText={setPropertyName}
           />
           {/* INPUT: Tipe Properti */}
           <DropdownSearchable
-            label='Tipe Properti'
-            placeholder='Pilih Tipe Properti (Rumah/Tanah/Toko)'
-            iconName='home-city-outline'
+            label="Tipe Properti"
+            placeholder="Pilih Tipe Properti (Rumah/Tanah/Toko)"
+            iconName="home-city-outline"
             options={propertyCategories}
             value={propertyType}
             onSelect={setPropertyType}
@@ -1491,7 +1612,7 @@ const EditPropertyScreen = () => {
                     onPress={() => removeImage(0)}
                   >
                     <MaterialDesignIcons
-                      name='close'
+                      name="close"
                       size={15}
                       color={Colors.GRAY_DARK}
                     />
@@ -1508,7 +1629,7 @@ const EditPropertyScreen = () => {
                         onPress={() => removeImage(index + 1)}
                       >
                         <MaterialDesignIcons
-                          name='close'
+                          name="close"
                           size={15}
                           color={Colors.GRAY_DARK}
                         />
@@ -1526,7 +1647,7 @@ const EditPropertyScreen = () => {
                       onPress={handleSelectImage}
                     >
                       <MaterialDesignIcons
-                        name='plus'
+                        name="plus"
                         size={25}
                         color={Colors.GRAY_DARK}
                       />
@@ -1551,9 +1672,9 @@ const EditPropertyScreen = () => {
           </Animated.View>
 
           <InputMaps
-            label='Lokasi Properti di Peta'
-            placeholder='Pilih titik di peta'
-            iconName='map-outline'
+            label="Lokasi Properti di Peta"
+            placeholder="Pilih titik di peta"
+            iconName="map-outline"
             onPress={() =>
               navigation.navigate('MapPickerScreen', {
                 onSelectLocation: ({ latitude, longitude }) => {
@@ -1571,9 +1692,9 @@ const EditPropertyScreen = () => {
           {/* INPUT: Provinsi */}
           <DropdownSearchable
             key={`province-dropdown-${formattedProvinces.length}`}
-            label='Provinsi'
-            placeholder='Pilih Provinsi'
-            iconName='map-marker-radius' // Ikon diperbarui
+            label="Provinsi"
+            placeholder="Pilih Provinsi"
+            iconName="map-marker-radius" // Ikon diperbarui
             options={formattedProvinces} // Menggunakan data yang diformat
             value={province} // State provinsi
             onSelect={setProvince}
@@ -1582,13 +1703,13 @@ const EditPropertyScreen = () => {
           {/* INPUT: Kota */}
           <DropdownSearchable
             key={`city-dropdown-${formattedCities.length}`}
-            label='Kota/Kabupaten'
+            label="Kota/Kabupaten"
             placeholder={
               province
                 ? 'Pilih Kota/Kabupaten'
                 : 'Pilih Provinsi terlebih dahulu'
             }
-            iconName='city-variant-outline' // Ikon diperbarui
+            iconName="city-variant-outline" // Ikon diperbarui
             options={formattedCities} // Menggunakan data yang diformat
             value={city} // State kota
             onSelect={setCity}
@@ -1598,11 +1719,11 @@ const EditPropertyScreen = () => {
           {/* INPUT: Kecamatan */}
           <DropdownSearchable
             key={`districts-dropdown-${formattedDistricts.length}`}
-            label='Kecamatan'
+            label="Kecamatan"
             placeholder={
               city ? 'Pilih Kecamatan' : 'Pilih Kota/Kabupaten terlebih dahulu'
             }
-            iconName='map-marker-path' // Ikon diperbarui
+            iconName="map-marker-path" // Ikon diperbarui
             options={formattedDistricts} // Menggunakan data yang diformat
             value={district} // State kecamatan
             onSelect={setDistrict}
@@ -1612,13 +1733,13 @@ const EditPropertyScreen = () => {
           {/* INPUT: Kelurahan */}
           <DropdownSearchable
             key={`subdistricts-dropdown-${formattedVillages.length}`}
-            label='Kelurahan / Desa'
+            label="Kelurahan / Desa"
             placeholder={
               district
                 ? 'Pilih Kelurahan/Desa'
                 : 'Pilih Kecamatan terlebih dahulu'
             }
-            iconName='map-marker-outline' // Ikon diperbarui
+            iconName="map-marker-outline" // Ikon diperbarui
             options={formattedVillages} // Menggunakan data yang diformat
             value={village} // State kelurahan
             onSelect={setVillage}
@@ -1628,9 +1749,9 @@ const EditPropertyScreen = () => {
 
           {/* INPUT: Alamat Lengkap */}
           <Input
-            label='Alamat Lengkap (Jalan, Nomor)'
-            placeholder='Masukkan Alamat Properti'
-            iconName='map-marker-outline'
+            label="Alamat Lengkap (Jalan, Nomor)"
+            placeholder="Masukkan Alamat Properti"
+            iconName="map-marker-outline"
             value={address}
             onChangeText={setAddress}
             multiline
@@ -1638,27 +1759,27 @@ const EditPropertyScreen = () => {
 
           {/* INPUT: Status Properti */}
           <DropdownSearchable
-            label='Status Properti'
-            placeholder='Pilih Status (Dijual/Disewa/Milik Sendiri)'
-            iconName='account-check-outline'
+            label="Status Properti"
+            placeholder="Pilih Status (Dijual/Disewa/Milik Sendiri)"
+            iconName="account-check-outline"
             options={propertyStatuses}
             value={status} // Tambahkan value
             onSelect={setStatus}
           />
           {/* INPUT: Harga */}
           <Input
-            label='Harga (Rp)'
-            placeholder='Contoh: 500000000'
-            iconName='cash-multiple'
-            keyboardType='numeric'
+            label="Harga (Rp)"
+            placeholder="Contoh: 500000000"
+            iconName="cash-multiple"
+            keyboardType="numeric"
             value={price}
             onChangeText={setPrice}
           />
           {/* INPUT: Jenis Sertifikat */}
           <DropdownSearchable
-            label='Jenis Sertifikat'
-            placeholder='Pilih Jenis Sertifikat (SHM/HGB/AJB)'
-            iconName='file-certificate-outline'
+            label="Jenis Sertifikat"
+            placeholder="Pilih Jenis Sertifikat (SHM/HGB/AJB)"
+            iconName="file-certificate-outline"
             options={certificateTypes}
             value={certificateType} // Tambahkan value
             onSelect={setCertificateType}
@@ -1673,14 +1794,14 @@ const EditPropertyScreen = () => {
           {propertyType?.name === 'Industri/Gudang' && renderWarehouseForm()}
 
           {/* TOMBOL SIMPAN */}
-        <TouchableOpacity
-          onPress={handleSubmit}
-          disabled={!isFormComplete}
-          style={[styles.submitButton, { opacity: isFormComplete ? 1 : 0.5 }]}
-        >
-          <Text style={styles.submitText}>Update Aset</Text>
-        </TouchableOpacity>
-        <View style={{ height: 40 }} />
+          <TouchableOpacity
+            onPress={handleSubmit}
+            disabled={!isFormComplete}
+            style={[styles.submitButton, { opacity: isFormComplete ? 1 : 0.5 }]}
+          >
+            <Text style={styles.submitText}>Update Aset</Text>
+          </TouchableOpacity>
+          <View style={{ height: 40 }} />
         </View>
       </KeyboardAwareScrollView>
     </BaseView>
@@ -1762,7 +1883,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
     fontFamily: Fonts.fontRegular,
   },
-  photoGrid: { justifyContent: 'center', alignItems: 'center', flex: 1, },
+  photoGrid: { justifyContent: 'center', alignItems: 'center', flex: 1 },
   mainPhotoContainer: {
     width: '100%',
     aspectRatio: 1.5,

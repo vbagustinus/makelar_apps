@@ -7,7 +7,7 @@ export default function GlobalPopup() {
   const { popup, hidePopup } = usePopupStore();
 
   return (
-    <Modal visible={!!popup} transparent animationType='fade'>
+    <Modal visible={!!popup} transparent animationType="fade">
       <View
         style={{
           flex: 1,
@@ -27,7 +27,7 @@ export default function GlobalPopup() {
           <Text style={{ fontSize: 16, marginBottom: 10 }}>
             {popup?.message}
           </Text>
-          <Button title='Tutup' onPress={hidePopup} />
+          <Button title="Tutup" onPress={hidePopup} />
         </View>
       </View>
     </Modal>

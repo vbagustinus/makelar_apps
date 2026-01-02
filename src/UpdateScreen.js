@@ -16,24 +16,24 @@ const UpdateScreen = ({ status, progress }) => {
         <Svg height={120} width={120}>
           {/* Background Circle */}
           <Circle
-            cx='60'
-            cy='60'
+            cx="60"
+            cy="60"
             r={radius}
-            stroke='#d3d3d3'
+            stroke="#d3d3d3"
             strokeWidth={strokeWidth}
-            fill='none'
+            fill="none"
           />
           {/* Progress Circle */}
           <Circle
-            cx='60'
-            cy='60'
+            cx="60"
+            cy="60"
             r={radius}
-            stroke='#4CAF50'
+            stroke="#4CAF50"
             strokeWidth={strokeWidth}
-            fill='none'
+            fill="none"
             strokeDasharray={circumference}
             strokeDashoffset={progressStroke}
-            strokeLinecap='round'
+            strokeLinecap="round"
           />
         </Svg>
         <Text style={styles.progressText}>{Math.round(progress * 100)}%</Text>
@@ -49,8 +49,8 @@ const UpdateScreen = ({ status, progress }) => {
       {/* Loading Spinner */}
       {progress === 0 && (
         <ActivityIndicator
-          size='large'
-          color='#4CAF50'
+          size="large"
+          color="#4CAF50"
           style={{ marginTop: 20 }}
         />
       )}

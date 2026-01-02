@@ -106,7 +106,7 @@ export default function PointScreen() {
         {done ? (
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <MaterialDesignIcons
-              name='check-circle'
+              name="check-circle"
               size={40}
               color={Colors.WHITE}
             />
@@ -115,7 +115,7 @@ export default function PointScreen() {
         ) : (
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <MaterialDesignIcons
-              name='play-circle'
+              name="play-circle"
               size={40}
               color={Colors.WHITE}
             />
@@ -129,11 +129,11 @@ export default function PointScreen() {
   return (
     <BaseView
       onBackPress={navigation.pop}
-      title='Tambah Poin'
+      title="Tambah Poin"
       style={[styles.container, { paddingTop: insets.top }]}
     >
       <StatusBar
-        barStyle='light-content'
+        barStyle="light-content"
         backgroundColor={Colors.PRIMARY}
         translucent
       />
@@ -182,7 +182,7 @@ export default function PointScreen() {
       <Modal
         visible={successModal}
         transparent
-        animationType='fade'
+        animationType="fade"
         onRequestClose={() => setSuccessModal(false)}
       >
         <View style={styles.modalContainer}>

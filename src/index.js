@@ -10,7 +10,12 @@ import {
   BackHandler,
   Alert,
 } from 'react-native';
-import { NavigationContainer, useFocusEffect } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  useFocusEffect,
+  DefaultTheme,
+  DarkTheme,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Modal from 'react-native-modal';
@@ -25,7 +30,7 @@ import PrivacyScreen from './scenes/profile/privacypolicy';
 import AuthScreen from './scenes/auth';
 import OTPScreen from './scenes/auth/OTPScreen';
 import { View, Text, TouchableOpacity } from './components';
-import { Colors, Sizes } from './styles';
+import { Sizes, useThemeColors } from './styles';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Fonts } from './constants';
 import useAuthStore from './store/useAuthStore';
@@ -53,6 +58,8 @@ import PointScreen from './scenes/home/PointScreen';
 import GlobalPropertyListScreen from './scenes/home/GlobalPropertyListScreen';
 import MapPickerScreen from './scenes/property/MapPickerScreen';
 import DonationScreen from './scenes/profile/DonationScreen';
+import SettingsScreen from './scenes/profile/SettingsScreen';
+import useThemeStore from './store/useThemeStore';
 
 const forFade = ({ current, next }) => {
   const opacity = Animated.add(
@@ -76,11 +83,14 @@ const Tab = createBottomTabNavigator();
 
 const FloatingTabBar = ({ state, descriptors, navigation }) => {
   const insets = useSafeAreaInsets();
+  const colors = useThemeColors();
+  const tabStyles = React.useMemo(
+    () => createFloatingTabStyles(colors, insets),
+    [colors, insets],
+  );
   return (
-    // Hapus 'bottom: 20' dari sini
-    // Tambahkan paddingBottom: insets.bottom untuk ruang Home Indicator
-    <View style={[styles.floatingTab, { paddingBottom: insets.bottom + 5 }]}>
-      <View style={styles.floatingTabContainer}>
+    <View style={tabStyles.floatingTab}>
+      <View style={tabStyles.floatingTabContainer}>
         {state.routes.map((route, index) => {
           // ... (Kode untuk menentukan ikon dan label tetap sama)
 
@@ -112,24 +122,26 @@ const FloatingTabBar = ({ state, descriptors, navigation }) => {
             <TouchableOpacity
               key={index}
               onPress={() => navigation.navigate(route.name)}
-              style={styles.tabButton}
+              style={tabStyles.tabButton}
             >
               <View
                 style={{
                   alignItems: 'center',
                   justifyContent: 'center',
-                  backgroundColor: isFocused ? Colors.SECONDARY : 'transparent',
-                  padding: 8,
-                  borderRadius: 25,
-                  width: 50,
-                  height: 50,
+                  backgroundColor: isFocused
+                    ? colors.PRIMARY
+                    : colors.transparent,
+                  padding: 10,
+                  borderRadius: 24,
+                  width: 52,
+                  height: 52,
                   overflow: 'hidden',
                 }}
               >
                 <MaterialDesignIcons
                   name={iconName}
                   size={30}
-                  color={isFocused ? Colors.WHITE : Colors.GRAY_MEDIUM}
+                  color={isFocused ? colors.WHITE : colors.GRAY_DARK}
                 />
               </View>
             </TouchableOpacity>
@@ -149,14 +161,14 @@ function BottomNavigation() {
       screenOptions={{ headerShown: false }}
       tabBar={props => <FloatingTabBar {...props} />}
     >
-      <Tab.Screen name='Home' component={HomeScreen} />
-      <Tab.Screen name='Semua' component={GlobalPropertyListScreen} />
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Semua" component={GlobalPropertyListScreen} />
       <Tab.Screen
-        name='BloodLineScreen'
+        name="BloodLineScreen"
         component={tokenStorage || token ? BloodLineScreen : AuthScreen}
       />
       <Tab.Screen
-        name='Profil'
+        name="Profil"
         component={tokenStorage || token ? ProfileScreen : AuthScreen}
       />
     </Tab.Navigator>
@@ -167,84 +179,90 @@ function StackNavigation() {
   return (
     <Stack.Navigator key={'Main'}>
       <Stack.Screen
-        name='Main'
+        name="Main"
         component={BottomNavigation}
         options={{ headerShown: false }}
       />
       {/* HOME */}
       <Stack.Screen
-        key='PointScreen'
-        name='PointScreen'
+        key="PointScreen"
+        name="PointScreen"
         component={PointScreen}
         options={{ headerStyleInterpolator: forFade, headerShown: false }}
       />
       <Stack.Screen
-        key='DonationScreen'
-        name='DonationScreen'
+        key="DonationScreen"
+        name="DonationScreen"
         component={DonationScreen}
         options={{ headerStyleInterpolator: forFade, headerShown: false }}
       />
       <Stack.Screen
-        key='MapPickerScreen'
-        name='MapPickerScreen'
+        key="MapPickerScreen"
+        name="MapPickerScreen"
         component={MapPickerScreen}
         options={{ headerStyleInterpolator: forFade, headerShown: false }}
       />
       <Stack.Screen
-        key='GlobalPropertyFilterScreen'
-        name='GlobalPropertyFilterScreen'
+        key="GlobalPropertyFilterScreen"
+        name="GlobalPropertyFilterScreen"
         component={GlobalPropertyFilterScreen}
         options={{ headerStyleInterpolator: forFade, headerShown: false }}
       />
 
       <Stack.Screen
-        key='PrivacyScreen'
-        name='PrivacyScreen'
+        key="PrivacyScreen"
+        name="PrivacyScreen"
         component={PrivacyScreen}
         options={{ headerStyleInterpolator: forFade, headerShown: false }}
       />
       {/* PIGEON */}
       <Stack.Screen
-        key='AddPropertyScreen'
-        name='AddPropertyScreen'
+        key="AddPropertyScreen"
+        name="AddPropertyScreen"
         component={AddPropertyScreen}
         options={{ headerStyleInterpolator: forFade, headerShown: false }}
       />
       <Stack.Screen
-        key='EditPropertyScreen'
-        name='EditPropertyScreen'
+        key="EditPropertyScreen"
+        name="EditPropertyScreen"
         component={EditPropertyScreen}
         options={{ headerStyleInterpolator: forFade, headerShown: false }}
       />
       <Stack.Screen
-        key='DetailPropertyScreen'
-        name='DetailPropertyScreen'
+        key="DetailPropertyScreen"
+        name="DetailPropertyScreen"
         component={DetailPropertyScreen}
         options={{ headerStyleInterpolator: forFade, headerShown: false }}
       />
       <Stack.Screen
-        key='GlobalDetailPropertyScreen'
-        name='GlobalDetailPropertyScreen'
+        key="GlobalDetailPropertyScreen"
+        name="GlobalDetailPropertyScreen"
         component={GlobalDetailPropertyScreen}
         options={{ headerStyleInterpolator: forFade, headerShown: false }}
       />
       {/* PROFILE */}
       <Stack.Screen
-        key='AboutAppScreen'
-        name='AboutAppScreen'
+        key="AboutAppScreen"
+        name="AboutAppScreen"
         component={AboutAppScreen}
         options={{ headerStyleInterpolator: forFade, headerShown: false }}
       />
       <Stack.Screen
-        key='EditProfileScreen'
-        name='EditProfileScreen'
+        key="SettingsScreen"
+        name="SettingsScreen"
+        component={SettingsScreen}
+        options={{ headerStyleInterpolator: forFade, headerShown: false }}
+      />
+      <Stack.Screen
+        key="EditProfileScreen"
+        name="EditProfileScreen"
         component={EditProfileScreen}
         options={{ headerStyleInterpolator: forFade, headerShown: false }}
       />
       {/* GLOBAL */}
       <Stack.Screen
-        key='UnderConstructionScreen'
-        name='UnderConstructionScreen'
+        key="UnderConstructionScreen"
+        name="UnderConstructionScreen"
         component={UnderConstructionScreen}
         options={{ headerStyleInterpolator: forFade, headerShown: false }}
       />
@@ -253,6 +271,8 @@ function StackNavigation() {
 }
 
 function App() {
+  const theme = useThemeStore(state => state.theme);
+  const colors = useThemeColors();
   const routeNameRef = React.useRef();
   const navigationRef = React.useRef();
   const [newVersionDetail, setNewVersionDetail] = React.useState({
@@ -268,6 +288,21 @@ function App() {
     },
   });
   const [newVersionAvailable, setNewVersionAvailable] = React.useState(false);
+  const navigationTheme = React.useMemo(() => {
+    const base = theme === 'dark' ? DarkTheme : DefaultTheme;
+    return {
+      ...base,
+      colors: {
+        ...base.colors,
+        primary: colors.PRIMARY,
+        background: colors.BACKGROUND,
+        card: colors.CARD,
+        text: colors.TEXT,
+        border: colors.GRAY_LIGHT,
+        notification: colors.PRIMARY,
+      },
+    };
+  }, [colors, theme]);
   const isMandatoryUpdate =
     Platform.OS === 'ios'
       ? !newVersionDetail?.ios_version?.mandatory
@@ -339,8 +374,10 @@ function App() {
     <GestureHandlerRootView>
       <BottomSheetModalProvider>
         <NavigationContainer
+          key={`nav-${theme}`}
           linking={linking}
           ref={navigationRef}
+          theme={navigationTheme}
           onReady={() => {
             routeNameRef.current = navigationRef.current.getCurrentRoute().name;
             RNBootSplash.hide({ fade: true });
@@ -371,7 +408,7 @@ function App() {
                 <View
                   unflex
                   style={{
-                    backgroundColor: Colors.WHITE,
+                    backgroundColor: colors.CARD,
                     borderRadius: Sizes.widthScreen * 0.05,
                     width: Sizes.widthScreen * 0.7,
                     minHeight: Sizes.widthScreen * 0.75,
@@ -379,6 +416,8 @@ function App() {
                     marginTop: Sizes.widthScreen * 0.05,
                     alignItems: 'center',
                     justifyContent: 'center',
+                    borderWidth: 1,
+                    borderColor: colors.GRAY_LIGHT,
                   }}
                 >
                   <FastImage
@@ -393,7 +432,7 @@ function App() {
                   />
                   <Text
                     style={{
-                      color: Colors.TextPrimary,
+                      color: colors.TEXT,
                       fontSize: Sizes.widthScreen * 0.035,
                       fontFamily: Fonts.fontSemiBold,
                       textAlign: 'center',
@@ -410,7 +449,7 @@ function App() {
                     style={{
                       width: Sizes.widthScreen * 0.3,
                       height: Sizes.widthScreen * 0.1,
-                      backgroundColor: Colors.PRIMARY,
+                      backgroundColor: colors.PRIMARY,
                       borderRadius: Sizes.widthScreen * 0.1,
                       marginTop: Sizes.widthScreen * 0.05,
                       alignItems: 'center',
@@ -422,7 +461,7 @@ function App() {
                   >
                     <Text
                       style={{
-                        color: Colors.WHITE,
+                        color: colors.WHITE,
                         fontSize: Sizes.widthScreen * 0.035,
                         fontFamily: Fonts.fontSemiBold,
                       }}
@@ -435,9 +474,9 @@ function App() {
                       style={{
                         width: Sizes.widthScreen * 0.3,
                         height: Sizes.widthScreen * 0.1,
-                        backgroundColor: Colors.WHITE,
+                        backgroundColor: colors.WHITE,
                         borderWidth: 0.5,
-                        borderColor: Colors.PRIMARY,
+                        borderColor: colors.PRIMARY,
                         borderRadius: Sizes.widthScreen * 0.1,
                         marginVertical: Sizes.widthScreen * 0.05,
                         alignItems: 'center',
@@ -447,7 +486,7 @@ function App() {
                     >
                       <Text
                         style={{
-                          color: Colors.PRIMARY,
+                          color: colors.PRIMARY,
                           fontSize: Sizes.widthScreen * 0.035,
                           fontFamily: Fonts.fontSemiBold,
                         }}
@@ -470,45 +509,36 @@ function App() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  floatingTab: {
-    position: 'absolute',
-    bottom: 0, // Ganti dari 20 menjadi 0 agar menempel di bawah
-    left: 0, // Ganti dari 20 menjadi 0
-    right: 0, // Ganti dari 20 menjadi 0
-    // Hapus semua properti shadow/elevation dari sini
-
-    // Gunakan flexDirection/alignItems/justifyContent sesuai kebutuhan
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'transparent', // Penting agar bayangan hanya pada container
-  },
-
-  tabButton: { alignItems: 'center', flex: 1, paddingVertical: 5 },
-  tabText: { fontSize: 10, marginTop: 3, fontFamily: Fonts.fontRegular },
-
-  floatingTabContainer: {
-    // Ini adalah 'kapsul' biru
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: Colors.PRIMARY, // Warna biru utama
-    marginHorizontal: 20, // Ini yang membuat 'floating' di sisi kiri & kanan
-    paddingVertical: 5,
-    borderRadius: 25, // Lengkungan utama
-
-    // --- Penyesuaian Bayangan (Shadow) ---
-    // Bayangan iOS
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -5 }, // Bayangan sedikit ke atas
-    shadowOpacity: 0.25, // **Penting:** Ubah dari 0 ke nilai > 0
-    shadowRadius: 25, // Radius besar untuk bayangan lembut
-
-    // Elevation Android
-    elevation: 5, // Nilai lebih tinggi untuk Android (agar bayangan terlihat)
-    overflow: 'visible',
-  },
-});
+const createFloatingTabStyles = (colors, insets) =>
+  StyleSheet.create({
+    floatingTab: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'transparent',
+      paddingBottom: insets.bottom + 6,
+    },
+    floatingTabContainer: {
+      flex: 1,
+      flexDirection: 'row',
+      backgroundColor: colors.CARD,
+      marginHorizontal: 20,
+      paddingVertical: 6,
+      borderRadius: 28,
+      borderWidth: 1,
+      borderColor: colors.GRAY_LIGHT,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: -5 },
+      shadowOpacity: 0.1,
+      shadowRadius: 18,
+      elevation: 8,
+      overflow: 'visible',
+    },
+    tabButton: { alignItems: 'center', flex: 1, paddingVertical: 5 },
+  });
 
 export default App;

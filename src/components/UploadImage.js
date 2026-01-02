@@ -114,9 +114,9 @@ export const UploadImage = ({
         ) : (
           <>
             <Ionicons
-              name='cloud-upload'
+              name="cloud-upload"
               size={40}
-              color='#ccc'
+              color="#ccc"
               style={styles.icon}
             />
             <Text style={styles.placeholderText}>{title}</Text>

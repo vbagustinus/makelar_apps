@@ -114,7 +114,7 @@ const PigeonCard = ({ bird, style, role, mainId }) => {
             }}
           >
             <MaterialCommunityIcons
-              name='bird'
+              name="bird"
               size={20}
               color={Colors.WHITE}
             />
@@ -139,7 +139,7 @@ const PigeonCard = ({ bird, style, role, mainId }) => {
             <FastImage
               source={bird?.imageUrl ? { uri: bird?.imageUrl } : logopigeon}
               style={styles.image}
-              resizeMode='cover'
+              resizeMode="cover"
             />
             <View
               style={{

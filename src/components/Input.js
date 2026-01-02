@@ -71,7 +71,7 @@ export const Input = ({
           <MaterialDesignIcons
             name={secureTextEntry ? 'eye-off' : 'eye'}
             size={20}
-            color='#aaa'
+            color="#aaa"
             style={styles.iconRight}
           />
         </TouchableOpacity>
@@ -131,7 +131,7 @@ export const InputDefault = ({
           <MaterialDesignIcons
             name={secureTextEntry ? 'eye-off' : 'eye'}
             size={20}
-            color='#aaa'
+            color="#aaa"
             style={styles.iconRight}
           />
         </TouchableOpacity>

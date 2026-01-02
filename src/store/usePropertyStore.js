@@ -124,7 +124,13 @@ const usePropertyStore = create((set, get) => ({
   fetchProvinces: async () => {
     console.log('TERPANNGIL');
 
-    set({ locationLoading: true, locationError: null, listCities: [], listDistricts: [], listVillages: [] });
+    set({
+      locationLoading: true,
+      locationError: null,
+      listCities: [],
+      listDistricts: [],
+      listVillages: [],
+    });
     try {
       const response = await fetch(`${API_BASE}/provinces.json`);
       console.log('response', response);
@@ -158,7 +164,13 @@ const usePropertyStore = create((set, get) => ({
       set({ listCities: [] });
       return;
     }
-    set({ locationLoading: true, locationError: null, listCities: [], listDistricts: [], listVillages: [] });
+    set({
+      locationLoading: true,
+      locationError: null,
+      listCities: [],
+      listDistricts: [],
+      listVillages: [],
+    });
     try {
       // Endpoint: /regencies/{provinceId}.json
       const response = await fetch(`${API_BASE}/regencies/${provinceId}.json`);
@@ -190,7 +202,12 @@ const usePropertyStore = create((set, get) => ({
       set({ listDistricts: [] });
       return;
     }
-    set({ locationLoading: true, locationError: null, listDistricts: [], listVillages: [] });
+    set({
+      locationLoading: true,
+      locationError: null,
+      listDistricts: [],
+      listVillages: [],
+    });
     try {
       // Endpoint: /districts/{cityId}.json
       const response = await fetch(`${API_BASE}/districts/${cityId}.json`);
@@ -578,8 +595,12 @@ const usePropertyStore = create((set, get) => ({
           ...doc.data(),
         }))
         .sort((a, b) => {
-          const aTime = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
-          const bTime = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+          const aTime = a.createdAt?.toDate
+            ? a.createdAt.toDate().getTime()
+            : 0;
+          const bTime = b.createdAt?.toDate
+            ? b.createdAt.toDate().getTime()
+            : 0;
           if (aTime !== bTime) return bTime - aTime;
           return (a.propertyName || '').localeCompare(b.propertyName || '');
         });

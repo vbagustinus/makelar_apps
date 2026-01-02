@@ -29,13 +29,13 @@ const GlobalImagePreview = () => {
   if (!visible) return null;
 
   return (
-    <Modal visible transparent animationType='fade'>
+    <Modal visible transparent animationType="fade">
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => setVisible(false)}
           style={styles.closeButton}
         >
-          <Ionicons name='close-circle' size={40} color={Colors.WHITE} />
+          <Ionicons name="close-circle" size={40} color={Colors.WHITE} />
         </TouchableOpacity>
       </View>
       <ImageViewer

@@ -16,7 +16,7 @@ export const FloatingButton = ({ onPress }) => {
   return (
     <View style={styles.fab}>
       <TouchableOpacity onPress={onPress}>
-        <Ionicons name='add' size={30} color={Colors.WHITE} />
+        <Ionicons name="add" size={30} color={Colors.WHITE} />
       </TouchableOpacity>
     </View>
   );
@@ -25,7 +25,7 @@ export const FloatingButton = ({ onPress }) => {
 export const AddButton = ({ onPress }) => {
   return (
     <TouchableOpacity onPress={onPress} style={styles.add}>
-      <MaterialDesignIcons name='home-plus' size={25} color={Colors.WHITE} />
+      <MaterialDesignIcons name="home-plus" size={25} color={Colors.WHITE} />
       <Text style={styles.addText}>Tambah</Text>
     </TouchableOpacity>
   );

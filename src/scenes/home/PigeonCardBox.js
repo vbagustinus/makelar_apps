@@ -37,7 +37,7 @@ const PigeonCardBox = ({ item, isPrivate }) => {
           blurRadius={6}
           source={{ uri: item?.imageUrl }}
           style={styles.banner}
-          resizeMode='cover'
+          resizeMode="cover"
           imageStyle={{ borderTopLeftRadius: 12, borderTopRightRadius: 12 }}
         >
           <View style={styles.content}>
@@ -45,7 +45,7 @@ const PigeonCardBox = ({ item, isPrivate }) => {
               {item?.name}
             </Text>
             <View style={styles.statItem}>
-              <Icon name='gender-male-female' size={18} color={Colors.PINK} />
+              <Icon name="gender-male-female" size={18} color={Colors.PINK} />
               <Text style={styles.statText}>{gender?.name}</Text>
             </View>
           </View>

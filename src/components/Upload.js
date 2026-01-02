@@ -91,9 +91,9 @@ export const Upload = ({ onUpload, initialImage = null }) => {
           onPress={handleUpload}
         >
           <Ionicons
-            name='cloud-upload-outline'
+            name="cloud-upload-outline"
             size={40}
-            color='#fff'
+            color="#fff"
             style={styles.icon}
           />
           <Text style={styles.title}>Upload your pigeon photo</Text>

@@ -77,7 +77,7 @@ function EditProfileScreen() {
   return (
     <BaseView
       onBackPress={navigation.pop}
-      title='Edit Profil'
+      title="Edit Profil"
       containerStyle={styles.container}
       loading={userLoading}
     >
@@ -95,11 +95,11 @@ function EditProfileScreen() {
           <Image
             source={photo ? { uri: photo } : logo}
             style={styles.image}
-            resizeMode='cover'
+            resizeMode="cover"
           />
           <View style={styles.changePhotoContainer}>
             <MaterialDesignIcons
-              name='camera'
+              name="camera"
               size={Sizes.SIZE_30}
               color={Colors.WHITE}
             />
@@ -108,33 +108,33 @@ function EditProfileScreen() {
 
         {/* Property Name Input */}
         <Input
-          label='Nama Properti'
-          placeholder='Masukkan nama properti'
-          iconName='home-outline'
+          label="Nama Properti"
+          placeholder="Masukkan nama properti"
+          iconName="home-outline"
           value={propertyName}
           onChangeText={setPropertyName}
         />
 
         {/* Phone */}
         <Input
-          label='Nomor Telepon'
-          placeholder='812xxxxxxx'
-          iconName='phone-outline'
-          keyboardType='phone-pad'
+          label="Nomor Telepon"
+          placeholder="812xxxxxxx"
+          iconName="phone-outline"
+          keyboardType="phone-pad"
           value={phone}
           onChangeText={setPhone}
-          prefix='+62'
+          prefix="+62"
         />
 
         {/* WhatsApp */}
         <Input
-          label='Nomor WhatsApp'
-          placeholder='812xxxxxxx'
-          iconName='whatsapp'
-          keyboardType='phone-pad'
+          label="Nomor WhatsApp"
+          placeholder="812xxxxxxx"
+          iconName="whatsapp"
+          keyboardType="phone-pad"
           value={whatsapp}
           onChangeText={setWhatsapp}
-          prefix='+62'
+          prefix="+62"
         />
 
         {/* Save Button */}

@@ -13,8 +13,8 @@ const GlobalModal = () => {
     <Modal
       isVisible={visible}
       onBackdropPress={hideModal}
-      animationIn='fadeIn'
-      animationOut='fadeOut'
+      animationIn="fadeIn"
+      animationOut="fadeOut"
       backdropOpacity={0.5}
       useNativeDriver
     >
@@ -26,7 +26,7 @@ const GlobalModal = () => {
       >
         {content}
         <Pressable onPress={hideModal} style={styles.button}>
-          <MaterialIcons name='close-circle' size={30} color={Colors.WHITE} />
+          <MaterialIcons name="close-circle" size={30} color={Colors.WHITE} />
         </Pressable>
       </LinearGradient>
     </Modal>

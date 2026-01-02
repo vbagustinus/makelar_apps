@@ -10,7 +10,7 @@ const UnderConstructionScreen = () => {
   const navigation = useNavigation();
   return (
     <BaseView
-      title='Sedang Dalam Pengembangan'
+      title="Sedang Dalam Pengembangan"
       onBackPress={navigation.pop}
       containerStyle={{ flex: 1, backgroundColor: Colors.PRIMARY }}
       backgroundColor={Colors.PRIMARY}
@@ -30,12 +30,12 @@ const UnderConstructionScreen = () => {
           }}
         >
           <Image source={logotransparent} style={styles.logo} />
-        <View style={styles.textWrap}>
-          <Text style={styles.title}>Halaman Belum Tersedia</Text>
-          <Text style={styles.subtitle}>
-            Fitur ini sedang kami kembangkan. Tunggu update selanjutnya ya!
-          </Text>
-        </View>
+          <View style={styles.textWrap}>
+            <Text style={styles.title}>Halaman Belum Tersedia</Text>
+            <Text style={styles.subtitle}>
+              Fitur ini sedang kami kembangkan. Tunggu update selanjutnya ya!
+            </Text>
+          </View>
         </View>
       </View>
     </BaseView>

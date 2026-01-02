@@ -70,7 +70,8 @@ const DONATION_OPTIONS = [
     color: '#9945FF', // Warna Solana
     actionType: 'copy',
     address: 'GstFpH6kB99e1f3S2Eq53BrCKUhL8d7oDrVxJBq9JZSL', // **GANTI**
-    description: 'Dukung kami menggunakan Solana Network (Cepat & Biaya Rendah).', // Diperjelas
+    description:
+      'Dukung kami menggunakan Solana Network (Cepat & Biaya Rendah).', // Diperjelas
   },
   {
     name: 'Tether USD (USDT)',
@@ -153,7 +154,7 @@ const DonationScreen = () => {
 
   return (
     <BaseView
-      title='Dukungan & Donasi'
+      title="Dukungan & Donasi"
       isScrollable={false}
       onBackPress={() => navigation.pop()}
       containerStyle={{ flex: 1, backgroundColor: '#f2f4f8' }}
@@ -165,9 +166,12 @@ const DonationScreen = () => {
       >
         <View style={styles.hero}>
           <View style={styles.heroTextWrap}>
-            <Text style={styles.heroTitle}>Bantu Kami Terus Berkembang! 💖</Text>
+            <Text style={styles.heroTitle}>
+              Bantu Kami Terus Berkembang! 💖
+            </Text>
             <Text style={styles.heroSubtitle}>
-              Donasi Anda membantu menutup biaya server dan pengembangan berkelanjutan untuk aplikasi ini.
+              Donasi Anda membantu menutup biaya server dan pengembangan
+              berkelanjutan untuk aplikasi ini.
             </Text>
           </View>
         </View>

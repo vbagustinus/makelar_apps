@@ -169,7 +169,7 @@ const LeaderBoardScreen = () => {
       <FastImage
         source={item?.photoURL ? { uri: item?.photoURL } : logo}
         style={styles.listAvatar}
-        resizeMode='cover'
+        resizeMode="cover"
       />
       <View style={styles.listInfo}>
         <Text style={styles.listName}>{item?.displayName}</Text>
@@ -202,7 +202,7 @@ const LeaderBoardScreen = () => {
   return (
     <BaseView
       onBackPress={navigation.pop}
-      title='Papan Skor'
+      title="Papan Skor"
       style={[styles.container, { paddingTop: insets.top }]}
       bottomComponent={
         <View
@@ -244,7 +244,7 @@ const LeaderBoardScreen = () => {
       }
     >
       <StatusBar
-        barStyle='light-content'
+        barStyle="light-content"
         backgroundColor={Colors.PRIMARY}
         translucent
       />

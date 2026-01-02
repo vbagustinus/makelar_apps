@@ -16,7 +16,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { Fonts, propertyStatuses } from '../../constants';
-import { Colors, Sizes } from '../../styles';
+import { useThemeColors } from '../../styles';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { LoadingPigeonsGLobal } from '../property/LoadingPigeons'; // Mungkin perlu diubah namanya
 import useAuthStore from '../../store/useAuthStore';
@@ -31,15 +31,6 @@ dayjs.extend(relativeTime);
 
 const AnimatedFlashList = Animated.createAnimatedComponent(FlashList);
 
-const statusPillStyle = color => ({
-  backgroundColor: '#FFFFFF90',
-  borderColor: color,
-  borderWidth: 0.6,
-  paddingHorizontal: 10,
-  paddingVertical: 4,
-  borderRadius: 12,
-});
-
 const formatPrice = value => {
   if (!value) return '-';
   const numeric = Number(String(value).replace(/[^0-9]/g, ''));
@@ -52,10 +43,12 @@ const getStatusMeta = rawStatus => {
   const statusId = rawStatus?.id ?? rawStatus;
   const found =
     propertyStatuses.find(s => `${s.id}` === `${statusId}`) ||
-    propertyStatuses.find(s => s.name?.toLowerCase() === String(rawStatus || '').toLowerCase());
+    propertyStatuses.find(
+      s => s.name?.toLowerCase() === String(rawStatus || '').toLowerCase(),
+    );
   return {
     label: found?.name || (statusId ? `${statusId}` : 'Status'),
-    color: found?.color || Colors.PRIMARY,
+    color: found?.color,
   };
 };
 
@@ -107,6 +100,8 @@ const dummyProperties = [
 function GlobalPropertyListScreen() {
   // DIUBAH: Nama Komponen
   const navigation = useNavigation();
+  const colors = useThemeColors();
+  const styles = React.useMemo(() => createStyles(colors), [colors]);
   const {
     // DIUBAH: Variabel yang diambil dari usePropertyStore
     totalProperties,
@@ -188,7 +183,8 @@ function GlobalPropertyListScreen() {
     return propertiesToDisplay.filter(item => {
       const matchesType =
         !appliedPropertyType ||
-        `${item?.propertyTypeId || item?.propertyType?.id}` === `${appliedPropertyType?.id}` ||
+        `${item?.propertyTypeId || item?.propertyType?.id}` ===
+          `${appliedPropertyType?.id}` ||
         (item?.propertyTypeName || item?.propertyType?.name || item?.type || '')
           .toLowerCase()
           .includes((appliedPropertyType?.name || '').toLowerCase());
@@ -215,7 +211,12 @@ function GlobalPropertyListScreen() {
 
       return matchesType && matchesStatus && matchesSearch;
     });
-  }, [propertiesToDisplay, appliedPropertyType, appliedStatus, appliedSearchQuery]);
+  }, [
+    propertiesToDisplay,
+    appliedPropertyType,
+    appliedStatus,
+    appliedSearchQuery,
+  ]);
 
   const propertiesWithAds = injectAds(filteredProperties, 5);
 
@@ -244,18 +245,29 @@ function GlobalPropertyListScreen() {
       >
         <View style={styles.imageWrapper}>
           {imageUrl ? (
-            <FastImage source={{ uri: imageUrl }} style={styles.propertyImage} />
+            <FastImage
+              source={{ uri: imageUrl }}
+              style={styles.propertyImage}
+            />
           ) : (
             <View style={styles.imagePlaceholder}>
-              <MaterialCommunityIcons name='image-off-outline' size={28} color={Colors.GRAY_DARK} />
+              <MaterialCommunityIcons
+                name="image-off-outline"
+                size={28}
+                color={colors.GREY}
+              />
             </View>
           )}
           <View style={styles.overlayRow}>
-            <View style={statusPillStyle(statusMeta.color)}>
+            <View style={styles.statusPill(statusMeta.color || colors.PRIMARY)}>
               <Text style={styles.statusText}>{statusMeta.label}</Text>
             </View>
             <View style={styles.heartButton}>
-              <MaterialCommunityIcons name='heart-outline' size={18} color={Colors.TEXT} />
+              <MaterialCommunityIcons
+                name="heart-outline"
+                size={18}
+                color={colors.TEXT}
+              />
             </View>
           </View>
         </View>
@@ -265,21 +277,40 @@ function GlobalPropertyListScreen() {
         </Text>
 
         <View style={styles.detailRow}>
-          <MaterialCommunityIcons name='map-marker-outline' size={16} color={Colors.GRAY_DARK} />
-          <Text style={styles.locationText} numberOfLines={1} ellipsizeMode='tail'>
+          <MaterialCommunityIcons
+            name="map-marker-outline"
+            size={16}
+            color={colors.GREY}
+          />
+          <Text
+            style={styles.locationText}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
             {locationLabel}
           </Text>
         </View>
 
         <View style={styles.tagRow}>
           <View style={styles.tagPill}>
-            <MaterialCommunityIcons name='home-outline' size={14} color={Colors.PRIMARY} />
+            <MaterialCommunityIcons
+              name="home-outline"
+              size={14}
+              color={colors.PRIMARY}
+            />
             <Text style={styles.tagText} numberOfLines={1}>
-              {item?.propertyTypeName || item?.propertyType?.name || item?.type || '-'}
+              {item?.propertyTypeName ||
+                item?.propertyType?.name ||
+                item?.type ||
+                '-'}
             </Text>
           </View>
           <View style={styles.tagPill}>
-            <MaterialCommunityIcons name='map-marker-path' size={14} color={Colors.PRIMARY} />
+            <MaterialCommunityIcons
+              name="map-marker-path"
+              size={14}
+              color={colors.PRIMARY}
+            />
             <Text style={styles.tagText} numberOfLines={1}>
               {statusMeta.label}
             </Text>
@@ -310,8 +341,12 @@ function GlobalPropertyListScreen() {
 
   const renderFilterSummary = () => {
     const chips = [
-      appliedSearchQuery ? { id: 'search', label: `Cari: ${appliedSearchQuery}` } : null,
-      appliedPropertyType ? { id: 'type', label: appliedPropertyType?.name } : null,
+      appliedSearchQuery
+        ? { id: 'search', label: `Cari: ${appliedSearchQuery}` }
+        : null,
+      appliedPropertyType
+        ? { id: 'type', label: appliedPropertyType?.name }
+        : null,
       appliedStatus ? { id: 'status', label: appliedStatus?.name } : null,
     ].filter(Boolean);
 
@@ -320,12 +355,26 @@ function GlobalPropertyListScreen() {
         <View style={styles.filterHeaderRow}>
           <Text style={styles.filterTitle}>Filter Properti</Text>
           <View style={styles.filterActionRow}>
-            <TouchableOpacity style={styles.resetButton} onPress={handleResetFilters}>
-              <MaterialCommunityIcons name='refresh' size={16} color={Colors.PRIMARY} />
+            <TouchableOpacity
+              style={styles.resetButton}
+              onPress={handleResetFilters}
+            >
+              <MaterialCommunityIcons
+                name="refresh"
+                size={16}
+                color={colors.PRIMARY}
+              />
               <Text style={styles.resetText}>Reset</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.openFilterButton} onPress={goToFilterScreen}>
-              <MaterialCommunityIcons name='tune' size={16} color={Colors.WHITE} />
+            <TouchableOpacity
+              style={styles.openFilterButton}
+              onPress={goToFilterScreen}
+            >
+              <MaterialCommunityIcons
+                name="tune"
+                size={16}
+                color={colors.WHITE}
+              />
               <Text style={styles.applyText}>Atur Filter</Text>
             </TouchableOpacity>
           </View>
@@ -354,9 +403,9 @@ function GlobalPropertyListScreen() {
     <BaseView
       title={'Semua Properti'}
       disableLeftMenu
-      containerStyle={{ flex: 1, backgroundColor: Colors.BACKGROUND }}
+      containerStyle={{ flex: 1, backgroundColor: colors.BACKGROUND }}
     >
-      <View unflex style={{ marginLeft: -0 }}>
+      <View style={[styles.adTop, { backgroundColor: colors.BACKGROUND }]}>
         <GlobalBannerAd />
       </View>
       {listGlobalPropertiesLoading && <LoadingPigeonsGLobal />}
@@ -371,7 +420,7 @@ function GlobalPropertyListScreen() {
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
         keyExtractor={item => item?.id || item?._type + item?.id}
-        estimatedItemSize={220}
+        estimatedItemSize={240}
         numColumns={2}
         contentContainerStyle={styles.listContainer}
         columnWrapperStyle={styles.columnWrapper}
@@ -393,32 +442,38 @@ function GlobalPropertyListScreen() {
         }
         onEndReached={() => {
           if (!globalIsFetchingMore && globalHasMore && globalLastVisible) {
-            fetchMoreGlobalProperties({ propertyTypeId: appliedPropertyType?.id });
+            fetchMoreGlobalProperties({
+              propertyTypeId: appliedPropertyType?.id,
+            });
           }
         }}
         onEndReachedThreshold={0.5}
         ListFooterComponent={
           <View style={{ padding: 20 }}>
             {globalIsFetchingMore && (
-              <ActivityIndicator size='large' color={Colors.PRIMARY} />
+              <ActivityIndicator size="large" color={colors.PRIMARY} />
             )}
             <View style={styles.spacer} />
           </View>
         }
       />
-      <View unflex style={{ paddingBottom: 40, backgroundColor: Colors.BACKGROUND }} />
+      <View
+        unflex
+        style={{ paddingBottom: 40, backgroundColor: colors.BACKGROUND }}
+      />
     </BaseView>
   );
 }
 
-// 🎨 STYLE UPDATE
-const styles = StyleSheet.create({
+const createStyles = colors =>
+  StyleSheet.create({
+    adTop: { paddingHorizontal: 12, paddingBottom: 8 },
   header: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: Colors.CARD,
+    backgroundColor: colors.CARD,
     borderBottomWidth: 1,
-    borderColor: Colors.WHITE_50,
+    borderColor: colors.GRAY_LIGHT,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -430,21 +485,26 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontFamily: Fonts.fontSemiBold,
-    color: Colors.TEXT,
+    color: colors.TEXT,
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 13,
     fontFamily: Fonts.fontRegular,
-    color: Colors.GRAY_DARK,
+    color: colors.GREY,
   },
   filterWrapper: {
-    backgroundColor: Colors.CARD,
+    backgroundColor: colors.CARD,
     padding: 12,
     borderRadius: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: Colors.WHITE_50,
+    borderColor: colors.GRAY_LIGHT,
+    shadowColor: '#000',
+    shadowOpacity: colors.BACKGROUND === '#0D1B2D' ? 0.18 : 0.08,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 5,
   },
   filterHeaderRow: {
     flexDirection: 'row',
@@ -459,7 +519,7 @@ const styles = StyleSheet.create({
   filterTitle: {
     fontSize: 16,
     fontFamily: Fonts.fontSemiBold,
-    color: Colors.TEXT,
+    color: colors.TEXT,
     marginBottom: 8,
   },
   chipRow: {
@@ -471,21 +531,21 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.WHITE,
+    backgroundColor: colors.BACKGROUND,
     borderRadius: 12,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderWidth: 1,
-    borderColor: Colors.WHITE_50,
+    borderColor: colors.GRAY_LIGHT,
   },
   chipText: {
-    color: Colors.TEXT,
+    color: colors.TEXT,
     fontFamily: Fonts.fontMedium,
     fontSize: 12,
   },
   listContainer: {
     padding: 12,
-    backgroundColor: Colors.BACKGROUND,
+    backgroundColor: colors.BACKGROUND,
     paddingTop: 8,
   },
   adCardSocial: {
@@ -497,25 +557,31 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderTopWidth: 0.5,
     borderBottomWidth: 0.5,
-    borderColor: '#e0e0e0',
+    borderColor: colors.GRAY_LIGHT,
   },
 
   card: {
-    backgroundColor: Colors.CARD,
+    backgroundColor:
+      colors.BACKGROUND === '#0D1B2D' ? '#121F38' : colors.CARD,
     borderRadius: 18,
     padding: 12,
     marginBottom: 14,
     marginHorizontal: 6,
     flex: 1,
     borderWidth: 1,
-    borderColor: Colors.WHITE_50,
+    borderColor: colors.GRAY_LIGHT,
+    shadowColor: '#000',
+    shadowOpacity: colors.BACKGROUND === '#0D1B2D' ? 0.22 : 0.1,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 5,
   },
   imageWrapper: {
     borderRadius: 16,
     overflow: 'hidden',
     width: '100%',
     aspectRatio: 1.15,
-    backgroundColor: Colors.WHITE,
+    backgroundColor: colors.GRAY_LIGHT,
     marginBottom: 12,
   },
   propertyImage: {
@@ -541,7 +607,7 @@ const styles = StyleSheet.create({
   propertyNameText: {
     fontSize: 17,
     fontFamily: Fonts.fontSemiBold,
-    color: Colors.TEXT,
+    color: colors.TEXT,
     marginBottom: 6,
   },
   detailRow: {
@@ -551,7 +617,7 @@ const styles = StyleSheet.create({
   },
   locationText: {
     fontSize: 13,
-    color: Colors.GRAY_DARK,
+    color: colors.GREY,
     marginLeft: 6,
     maxWidth: '85%',
   },
@@ -565,52 +631,44 @@ const styles = StyleSheet.create({
   tagPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.WHITE,
-    borderColor: Colors.GRAY_LIGHT,
+    backgroundColor:
+      colors.BACKGROUND === '#0D1B2D' ? '#0F1C34' : colors.BACKGROUND,
+    borderColor: colors.GRAY_LIGHT,
     borderWidth: 1,
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingVertical: 6,
     borderRadius: 10,
   },
   tagText: {
     marginLeft: 6,
-    color: Colors.TEXT,
+    color: colors.TEXT,
     fontFamily: Fonts.fontMedium,
     fontSize: 12,
   },
   priceText: {
     fontSize: 18,
     fontFamily: Fonts.fontBold,
-    color: Colors.PRIMARY,
+    color: colors.PRIMARY,
     marginTop: 8,
   },
   columnWrapper: {
     justifyContent: 'space-between',
   },
-  overlayRow: {
-    position: 'absolute',
-    top: 12,
-    left: 12,
-    right: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
   heartButton: {
-    backgroundColor: '#FFFFFFD0',
+    backgroundColor: '#00000040',
     borderRadius: 999,
     padding: 6,
     borderWidth: 1,
-    borderColor: Colors.WHITE_50,
+    borderColor: '#FFFFFF30',
   },
   statusText: {
-    color: Colors.TEXT,
+    color: colors.TEXT,
     fontSize: 12,
     fontFamily: Fonts.fontMedium,
   },
   filterSummary: {
     fontFamily: Fonts.fontRegular,
-    color: Colors.GRAY_DARK,
+    color: colors.GREY,
     fontSize: 12,
   },
   resetButton: {
@@ -618,21 +676,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 10,
     paddingVertical: 6,
-    backgroundColor: Colors.WHITE,
+    backgroundColor: colors.BACKGROUND,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: Colors.PRIMARY,
+    borderColor: colors.PRIMARY,
   },
   resetText: {
     marginLeft: 6,
-    color: Colors.PRIMARY,
+    color: colors.PRIMARY,
     fontFamily: Fonts.fontSemiBold,
     fontSize: 12,
   },
   openFilterButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.PRIMARY,
+    backgroundColor: colors.PRIMARY,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 10,
@@ -640,11 +698,10 @@ const styles = StyleSheet.create({
   },
   applyText: {
     marginLeft: 6,
-    color: Colors.WHITE,
+    color: colors.WHITE,
     fontFamily: Fonts.fontSemiBold,
     fontSize: 12,
   },
-  // --- STYLE DROPDOWN BAWAH ---
   dropdownContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -671,11 +728,20 @@ const styles = StyleSheet.create({
   searchButtonText: {
     fontFamily: Fonts.fontBold,
     fontSize: 12,
-    color: Colors.WHITE,
+    color: colors.WHITE,
   },
   spacer: {
     height: 20, // Untuk jarak di footer
   },
+  statusPill: color => ({
+    backgroundColor:
+      colors.BACKGROUND === '#0D1B2D' ? '#FFFFFF20' : colors.WHITE,
+    borderColor: color || colors.PRIMARY,
+    borderWidth: 0.8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  }),
 });
 
 export default GlobalPropertyListScreen;

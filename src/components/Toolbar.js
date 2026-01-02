@@ -52,7 +52,7 @@ const Toolbar = props => {
               <Image
                 source={logopigeon}
                 resizeMethod={'auto'}
-                resizeMode='stretch'
+                resizeMode="stretch"
                 style={Styles.logo}
               />
             )}

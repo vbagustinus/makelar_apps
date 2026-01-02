@@ -12,9 +12,7 @@ const { assetExts, sourceExts } = defaultConfig.resolver;
 // 2. Custom config: TAMBAHKAN SVG TRANSFORMER
 const customConfig = {
   transformer: {
-    babelTransformerPath: require.resolve(
-      'react-native-svg-transformer'
-    ),
+    babelTransformerPath: require.resolve('react-native-svg-transformer'),
   },
   resolver: {
     // SVG dikeluarkan dari asset

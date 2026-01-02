@@ -1,157 +1,122 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  StyleSheet,
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
+  ActivityIndicator,
   Dimensions,
   FlatList,
   RefreshControl,
-  ActivityIndicator,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-// Mengganti Ionicons jika tidak digunakan, namun saya biarkan importnya jika library masih dipakai
-// import { Ionicons } from '@react-native-vector-icons/ionicons';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import FastImage from '@d11/react-native-fast-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
-import { Colors, Sizes } from '../../styles';
-import FastImage from '@d11/react-native-fast-image';
-import { banner1, banner2, banner3, banner4, logotransparent } from '../../assets/images';
-import { Fonts, propertyCategories } from '../../constants';
-import { useNavigation } from '@react-navigation/native';
-import useAuthStore from '../../store/useAuthStore';
-import { getString, zustandMMKVStorage } from '../../helpers';
-import usePropertyStore from '../../store/usePropertyStore'; // DIUBAH: Import Store
-import { GlobalBannerAd } from '../ads';
 import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
+import { useNavigation } from '@react-navigation/native';
+import { Fonts, propertyCategories } from '../../constants';
+import { getString, zustandMMKVStorage } from '../../helpers';
+import useAuthStore from '../../store/useAuthStore';
+import usePropertyStore from '../../store/usePropertyStore';
+import { useThemeColors } from '../../styles';
+import useThemeStore from '../../store/useThemeStore';
+import { Text } from '../../components';
+import { banner1, banner2, banner3, banner4 } from '../../assets/images';
 
-// --- DATA DUMMY (Dibiarkan tetap relevan dengan properti) ---
-const categories = [
-  'Rumah',
-  'Apartemen',
-  'Tanah',
-  'Ruko',
-  'Kos',
-  'Villa',
-  'Gudang',
-];
+const { width } = Dimensions.get('window');
 
-const banners = [
+const promoBanners = [
   { id: 1, image: banner1 },
   { id: 2, image: banner2 },
   { id: 3, image: banner3 },
   { id: 4, image: banner4 },
 ];
 
-const properties = [
+const fallbackProperties = [
   {
     id: '1',
     title: 'Rumah Minimalis Modern',
-    price: 'Rp 980jt',
+    price: 'Rp 980000000',
     location: 'Jakarta Selatan',
     image: 'https://picsum.photos/seed/p1/600/400',
+    tag: 'Rumah',
   },
   {
     id: '2',
     title: 'Apartemen City View',
-    price: 'Rp 1,2M',
+    price: 'Rp 1200000000',
     location: 'Bandung',
     image: 'https://picsum.photos/seed/p2/600/400',
+    tag: 'Apartemen',
   },
   {
     id: '3',
-    title: 'Rumah Cluster Tenang',
-    price: 'Rp 760jt',
-    location: 'Bogor',
+    title: 'Ruko Strategis',
+    price: 'Rp 1800000000',
+    location: 'Bekasi',
     image: 'https://picsum.photos/seed/p3/600/400',
+    tag: 'Ruko',
   },
   {
     id: '4',
-    title: 'Ruko 2 Lantai',
-    price: 'Rp 1,8M',
-    location: 'Bekasi',
+    title: 'Gudang Luas',
+    price: 'Rp 2500000000',
+    location: 'Surabaya',
     image: 'https://picsum.photos/seed/p4/600/400',
+    tag: 'Industri/Gudang',
   },
 ];
-
-const { width } = Dimensions.get('window');
 
 const HomeScreen = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const fetchUserData = useAuthStore(state => state.fetchUserData);
-  const fetchTopUsersByPoint = useAuthStore(
-    state => state.fetchTopUsersByPoint,
+  const theme = useThemeStore(state => state.theme);
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
+  const [activeCategory, setActiveCategory] = useState(
+    propertyCategories?.[0]?.name || 'Rumah',
   );
-  const updateUserPoint = useAuthStore(state => state.updateUserPoint);
-  const listUser = useAuthStore(state => state.listUser);
-  const user = useAuthStore(state => state.user);
-  const tokenStorage = getString('token');
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchUserData = useAuthStore(state => state.fetchUserData);
   const token = useAuthStore(state => state.token);
+  const user = useAuthStore(state => state.user);
+
+  const {
+    totalProperties,
+    totalForSale,
+    totalForRent,
+    fetchPropertyCounts,
+    fetchLatestProperties,
+    fetchAllProperties,
+    latestProperties,
+    latestPropertiesLoading,
+    listAllProperties,
+    listAllPropertiesLoading,
+  } = usePropertyStore();
+
+  const tokenStorage = getString('token');
+
   const handleOpenProperty = property => {
     const isOwner = property?.uid && user?.uid && property.uid === user.uid;
-    const targetRoute = isOwner ? 'DetailPropertyScreen' : 'GlobalDetailPropertyScreen';
+    const targetRoute = isOwner
+      ? 'DetailPropertyScreen'
+      : 'GlobalDetailPropertyScreen';
     navigation.navigate(targetRoute, property);
   };
 
-  // DIUBAH: Mengambil variabel properti dari usePropertyStore
-  const {
-    totalProperties, // DIUBAH: totalPigeons
-    totalForSale, // DIUBAH: totalMale
-    totalForRent, // DIUBAH: totalFemale
-    fetchPropertyCounts, // DIUBAH: fetchPigeonCounts
-    fetchLatestProperties, // DIUBAH: fetchLatestPigeons
-    totalPropertyError, // DIUBAH: totalPigeonsError
-    totalPropertyLoading, // DIUBAH: totalPigeonsLoading
-    latestProperties, // DIUBAH: latestPigeons
-    latestPropertiesError, // DIUBAH: latestPigeonsError
-    latestPropertiesLoading, // DIUBAH: latestPigeonsLoading
-    fetchAllProperties, // DIUBAH: fetchAllPigeons
-    listAllProperties, // DIUBAH: listAllPigeons
-    listAllPropertiesLoading, // DIUBAH: listAllPigeonsLoading
-    listAllPropertiesError, // DIUBAH: listAllPigeonsError
-  } = usePropertyStore(); // DIUBAH: useBloodlineStore -> usePropertyStore
-
-  const [refreshing, setRefreshing] = React.useState(false);
-  const [successModal, setSuccessModal] = React.useState(false);
-
-  // console.log('listUser', listUser);
-
-  const goToPointScreen = () => {
-    if ((token || tokenStorage) && user) {
-      navigation.navigate('PointScreen');
-    } else {
-      goToProfileScreen();
-    }
-  };
-
-  const goToProfileScreen = () => {
-    navigation.navigate('Profil'); // Assuming 'Profil' is the profile screen name
-  };
-
-  // DIUBAH: Navigasi ke daftar properti pribadi
   const goToPropertyScreen = () => {
-    // Arahkan ke tab Properti; tab ini otomatis menampilkan AuthScreen jika belum login
     navigation.navigate('BloodLineScreen');
   };
 
-  // DIUBAH: Navigasi ke daftar properti global
-  const goToPropertyGlobalScreen = () => {
-    navigation.navigate('Semua'); // Asumsi 'Semua' adalah layar daftar properti global
-  };
-
-  const handleCategoryPress = label => {
-    const selectedType =
-      propertyCategories.find(cat => cat.name?.toLowerCase() === label.toLowerCase()) || null;
+  const goToPropertyGlobalScreen = filters => {
     navigation.navigate('Semua', {
-      filters: { propertyType: selectedType, status: null, search: '' },
+      filters,
       updatedAt: Date.now(),
     });
-  };
-
-  const goToLeaderBoardScreen = () => {
-    navigation.navigate('LeaderBoardScreen', { data: listUser });
   };
 
   useEffect(() => {
@@ -160,29 +125,32 @@ const HomeScreen = () => {
       await fetchUserData(tokenuid);
     };
     !user && (token || tokenStorage) && fetchUserInfo();
-  }, []);
+  }, [fetchUserData, token, tokenStorage, user]);
+
+  const initialData = useCallback(() => {
+    if (user && (token || tokenStorage)) {
+      fetchPropertyCounts();
+      fetchLatestProperties();
+    }
+    fetchAllProperties();
+  }, [
+    fetchAllProperties,
+    fetchLatestProperties,
+    fetchPropertyCounts,
+    token,
+    tokenStorage,
+    user,
+  ]);
 
   useEffect(() => {
     initialData();
-  }, [user]);
+  }, [initialData, user]);
 
-  const initialData = () => {
-    if (user && (token || tokenStorage)) {
-      fetchPropertyCounts(); // DIUBAH
-      fetchLatestProperties(); // DIUBAH
-      fetchTopUsersByPoint(5);
-    }
-    fetchAllProperties(); // DIUBAH
-  };
-
-  const onRefresh = React.useCallback(() => {
+  const onRefresh = useCallback(() => {
     setRefreshing(true);
-
     initialData();
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1500);
-  }, []);
+    setTimeout(() => setRefreshing(false), 1200);
+  }, [initialData]);
 
   const withCurrency = price => {
     if (price === 0) return 'Rp 0';
@@ -192,469 +160,761 @@ const HomeScreen = () => {
     return `Rp ${numeric.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
   };
 
-  // DIUBAH: Mengganti komponen lama yang tidak lagi relevan
-  const renderLatestProperties = ({ item }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() => handleOpenProperty(item)}
-      activeOpacity={0.85}
-    >
-      <View style={styles.cardImageWrapper}>
-        <FastImage
-          source={{ uri: item.imageUrl || item.image }}
-          style={styles.cardImage}
-        />
-        <View style={styles.cardBadge}>
-          <Text style={styles.cardBadgeText}>{item?.propertyTypeName || item?.propertyType?.name || 'Tipe'}</Text>
-        </View>
-      </View>
-      <Text style={styles.cardTitle} numberOfLines={2}>
-        {item.propertyName || item.title}
-      </Text>
-      <View style={styles.cardInfoRow}>
-        <MaterialDesignIcons
-          name='map-marker-outline'
-          size={14}
-          color={Colors.GRAY_DARK}
-        />
-        <Text style={styles.cardLocation} numberOfLines={1}>
-          {item.address || item.location || 'Lokasi belum diisi'}
-        </Text>
-      </View>
-      <Text style={styles.cardPrice}>{withCurrency(item.price)}</Text>
-    </TouchableOpacity>
-  );
+  const latestList = latestProperties?.length ? latestProperties : [];
+  const globalList = listAllProperties?.length
+    ? listAllProperties
+    : fallbackProperties;
 
   return (
-    <View style={styles.container}>
-      {/* Search Bar */}
-      <TouchableOpacity
-        style={[styles.searchContainer, { paddingTop: insets.top + 20 }]}
-        activeOpacity={0.8}
-        onPress={goToPropertyGlobalScreen}
-      >
-        <Text style={styles.searchBar}>🔍 Cari properti...</Text>
-      </TouchableOpacity>
+    <View style={styles.wrapper}>
+      <StatusBar
+        translucent
+        backgroundColor="transparent"
+        barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
+      />
+      <LinearGradient
+        colors={
+          theme === 'dark' ? ['#0E1C34', '#0B162A'] : ['#EAF3FF', '#F8FAFF']
+        }
+        style={StyleSheet.absoluteFill}
+      />
+      <View style={[styles.headerRow, { paddingTop: insets.top + 12 },]}>
+          <View style={styles.locationRow}>
+            <View style={styles.locationIcon}>
+              <MaterialDesignIcons
+                name="map-marker-radius"
+                size={20}
+                color={colors.PRIMARY}
+              />
+            </View>
+            <View>
+              <Text style={styles.locationLabel}>Lokasi Anda</Text>
+              <TouchableOpacity
+                style={styles.locationSelector}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.locationValue}>Jakarta, Indonesia</Text>
+                <MaterialDesignIcons
+                  name="chevron-down"
+                  size={18}
+                  color={colors.TEXT}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+          <View style={styles.headerActions}>
+            <TouchableOpacity style={styles.iconButton} activeOpacity={0.8}>
+              <MaterialDesignIcons
+                name="bell-outline"
+                size={20}
+                color={colors.TEXT}
+              />
+              <View style={styles.notificationDot} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.iconButton}
+              activeOpacity={0.8}
+              onPress={() => navigation.navigate('SettingsScreen')}
+            >
+              <MaterialDesignIcons
+                name="tune-variant"
+                size={20}
+                color={colors.TEXT}
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={[
+          styles.scrollContent,
+          
+        ]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={[Colors.PRIMARY]}
+            colors={[colors.PRIMARY]}
           />
         }
       >
-        {/* Categories */}
+        
+        <View style={styles.searchRow}>
+          <TouchableOpacity
+            style={styles.searchInput}
+            activeOpacity={0.85}
+            onPress={() => goToPropertyGlobalScreen(null)}
+          >
+            <MaterialDesignIcons name="magnify" size={20} color={colors.GREY} />
+            <Text style={styles.searchPlaceholder}>
+              Cari properti impian...
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.filterButton}
+            onPress={() => navigation.navigate('GlobalPropertyFilterScreen')}
+            activeOpacity={0.85}
+          >
+            <MaterialDesignIcons name="tune" size={20} color={colors.WHITE} />
+          </TouchableOpacity>
+        </View>
+
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           style={styles.categoryContainer}
+          contentContainerStyle={{ paddingRight: 16 }}
         >
-          {categories.map((item, index) => (
+          {propertyCategories.map(cat => {
+            const isActive =
+              activeCategory.toLowerCase() === cat.name.toLowerCase();
+            return (
+              <TouchableOpacity
+                key={cat.id}
+                onPress={() => {
+                  setActiveCategory(cat.name);
+                  goToPropertyGlobalScreen({
+                    propertyType: cat,
+                    status: null,
+                    search: '',
+                  });
+                }}
+                style={[
+                  styles.categoryChip,
+                  isActive && styles.categoryChipActive,
+                ]}
+                activeOpacity={0.85}
+              >
+                <MaterialDesignIcons
+                  name={
+                    cat.name === 'Apartemen'
+                      ? 'office-building'
+                      : cat.name === 'Tanah'
+                      ? 'image-filter-hdr'
+                      : 'home-outline'
+                  }
+                  size={16}
+                  color={isActive ? colors.WHITE : colors.TEXT}
+                />
+                <Text
+                  style={[
+                    styles.categoryText,
+                    isActive && { color: colors.WHITE },
+                  ]}
+                >
+                  {cat.name}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+
+        <Animated.View
+          entering={FadeInDown.duration(450)}
+          style={styles.heroCard}
+        >
+          <FastImage source={promoBanners[0].image} style={styles.heroImage} />
+          <LinearGradient
+            colors={
+              theme === 'dark'
+                ? ['#0C1B30', '#0C1B3090']
+                : ['#0B5AD840', '#0B5AD8CC']
+            }
+            style={styles.heroOverlay}
+          />
+          <View style={styles.heroContent}>
+            <Text style={styles.heroLabel}>Promo Spesial</Text>
+            <Text style={styles.heroTitle}>
+              Jual Beli & Sewa Jadi Lebih Mudah
+            </Text>
+            <Text style={styles.heroSubtitle}>
+              Temukan hunian impian dalam satu genggaman aplikasi Makelar.
+            </Text>
             <TouchableOpacity
-              key={index}
-              style={styles.categoryChip}
-              onPress={() => handleCategoryPress(item)}
+              style={styles.heroButton}
+              activeOpacity={0.9}
+              onPress={() => goToPropertyGlobalScreen(null)}
             >
-              <Text style={styles.categoryText}>{item}</Text>
+              <LinearGradient
+                colors={colors.GRADIENT_SKY}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.heroButtonInner}
+              >
+                <Text style={styles.heroButtonText}>Lihat Sekarang</Text>
+              </LinearGradient>
             </TouchableOpacity>
-          ))}
-        </ScrollView>
+          </View>
+        </Animated.View>
 
-        {/* Banner Slider */}
-        <ScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          style={styles.bannerWrapper}
-        >
-          {banners.map(b => (
-            <FastImage
-              key={b.id}
-              source={b.image}
-              style={styles.bannerImage}
-            />
-          ))}
-        </ScrollView>
-
-        {/* My Property Stats/Action Section (Jika user login) */}
-        {(token || tokenStorage) && user && (
+        {(token || tokenStorage) && (
           <Animated.View
-            entering={FadeInUp.delay(200)}
-            style={styles.userStatsContainer}
+            entering={FadeInDown.delay(150)}
+            style={styles.dashboardRow}
           >
-            <Text style={styles.sectionTitle}>Dashboard Saya</Text>
-
-            <View style={styles.statsRow}>
-              <TouchableOpacity
-                style={styles.statBox}
-                onPress={goToPropertyScreen}
-              >
-                <MaterialDesignIcons
-                  name='warehouse'
-                  size={30}
-                  color={Colors.PRIMARY}
-                />
-                <Text style={styles.statCount}>{totalProperties}</Text>
-                <Text style={styles.statLabel}>Total Properti</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.statBox}
-                onPress={goToPropertyScreen}
-              >
-                <MaterialDesignIcons
-                  name='sale'
-                  size={30}
-                  color={Colors.SUCCESS}
-                />
-                <Text style={styles.statCount}>{totalForSale}</Text>
-                <Text style={styles.statLabel}>Properti Dijual</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.statBox}
-                onPress={goToPropertyScreen}
-              >
-                <MaterialDesignIcons
-                  name='currency-usd'
-                  size={30}
-                  color={Colors.WARNING}
-                />
-                <Text style={styles.statCount}>{totalForRent}</Text>
-                <Text style={styles.statLabel}>Properti Disewa</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Tombol Aksi */}
-            <TouchableOpacity
-              style={styles.actionButton}
-              onPress={() => navigation.navigate('AddPropertyScreen')} // Asumsi AddPropertyScreen
-            >
-              <MaterialDesignIcons
-                name='plus-circle-outline'
-                size={18}
-                color={Colors.WHITE}
-              />
-              <Text style={styles.actionButtonText}>Tambah Properti Baru</Text>
-            </TouchableOpacity>
+            <DashboardStat
+              icon="home-analytics"
+              label="Total Properti"
+              value={totalProperties || 0}
+              colors={colors}
+              styles={styles}
+            />
+            <DashboardStat
+              icon="sale"
+              label="Properti Dijual"
+              value={totalForSale || 0}
+              colors={colors}
+              styles={styles}
+            />
+            <DashboardStat
+              icon="home-import-outline"
+              label="Properti Disewa"
+              value={totalForRent || 0}
+              colors={colors}
+              styles={styles}
+            />
           </Animated.View>
         )}
 
-        {/* Properti Terbaru (Latest Properties) */}
-        <Text style={styles.sectionTitle}>Properti Terbaru Anda</Text>
-        {latestPropertiesLoading ? (
-          <ActivityIndicator
-            size='large'
-            color={Colors.PRIMARY}
-            style={{ marginVertical: 20 }}
-          />
-        ) : latestProperties.length > 0 ? (
-          <FlatList
-            data={latestProperties}
-            numColumns={2}
-            keyExtractor={item => item.id}
-            scrollEnabled={false}
-            columnWrapperStyle={styles.propertyListColumn}
-            contentContainerStyle={styles.propertyListContainer}
-            renderItem={renderLatestProperties} // Menggunakan data dari Store
-          />
-        ) : (
-          <View style={styles.emptyDataContainer}>
-            <MaterialDesignIcons
-              name='inbox-outline'
-              size={50}
-              color={Colors.GREY}
+        <Animated.View
+          entering={FadeInDown.delay(200)}
+          style={styles.sectionContainer}
+        >
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Properti Terbaru Anda</Text>
+          </View>
+          {latestPropertiesLoading ? (
+            <ActivityIndicator
+              color={colors.PRIMARY}
+              style={{ marginVertical: 20 }}
             />
-            <Text style={styles.emptyDataText}>
-              Anda belum memiliki properti yang tersimpan.
-            </Text>
+          ) : latestList.length ? (
+            <FlatList
+              data={latestList}
+              numColumns={2}
+              scrollEnabled={false}
+              keyExtractor={item => item.id}
+              columnWrapperStyle={{ gap: 12 }}
+              contentContainerStyle={{ gap: 12 }}
+              renderItem={({ item }) => (
+                <PropertyCard
+                  item={item}
+                  colors={colors}
+                  onPress={() => handleOpenProperty(item)}
+                  withCurrency={withCurrency}
+                  styles={styles}
+                />
+              )}
+            />
+          ) : (
+            <View style={styles.emptyBox}>
+              <View style={styles.emptyIcon}>
+                <MaterialDesignIcons
+                  name="home-plus-outline"
+                  size={28}
+                  color={colors.PRIMARY}
+                />
+              </View>
+              <Text style={styles.emptyTitle}>Belum ada properti</Text>
+              <Text style={styles.emptyCaption}>
+                Anda belum memiliki properti yang tersimpan atau didaftarkan
+                saat ini.
+              </Text>
+              <TouchableOpacity
+                style={styles.primaryButton}
+                onPress={goToPropertyScreen}
+                activeOpacity={0.9}
+              >
+                <LinearGradient
+                  colors={colors.GRADIENT_SKY}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.primaryButtonInner}
+                >
+                  <Text style={styles.primaryButtonText}>
+                    + Tambah Sekarang
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          )}
+        </Animated.View>
+
+        <Animated.View
+          entering={FadeInDown.delay(250)}
+          style={styles.sectionContainer}
+        >
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Properti Pilihan Global</Text>
             <TouchableOpacity
-              style={styles.actionButton}
-              onPress={goToPropertyScreen}
+              onPress={() => goToPropertyGlobalScreen(null)}
+              activeOpacity={0.8}
             >
-              <Text style={styles.actionButtonText}>+ Tambah Sekarang</Text>
+              <Text style={styles.linkText}>Lihat Semua</Text>
             </TouchableOpacity>
           </View>
-        )}
+          {listAllPropertiesLoading ? (
+            <ActivityIndicator
+              color={colors.PRIMARY}
+              style={{ marginVertical: 20 }}
+            />
+          ) : (
+            <FlatList
+              data={globalList}
+              numColumns={2}
+              scrollEnabled={false}
+              keyExtractor={item => item.id}
+              columnWrapperStyle={{ gap: 12 }}
+              contentContainerStyle={{ gap: 12 }}
+              renderItem={({ item }) => (
+                <PropertyCard
+                  item={item}
+                  colors={colors}
+                  onPress={() => handleOpenProperty(item)}
+                  withCurrency={withCurrency}
+                  styles={styles}
+                />
+              )}
+            />
+          )}
+        </Animated.View>
 
-        {/* Global Properties Section (Properti Pilihan Global) */}
-        <Text style={styles.sectionTitle}>Properti Pilihan Global</Text>
-        {listAllPropertiesLoading ? (
-          <ActivityIndicator
-            size='large'
-            color={Colors.PRIMARY}
-            style={{ marginVertical: 20 }}
-          />
-        ) : (
-          <FlatList
-            data={listAllProperties.length > 0 ? listAllProperties : properties} // Gunakan data global atau dummy
-            numColumns={2}
-            keyExtractor={item => item.id}
-            scrollEnabled={false}
-            columnWrapperStyle={styles.propertyListColumn}
-            contentContainerStyle={styles.propertyListContainer}
-            renderItem={({ item }) => (
-              // Menggunakan struktur item properti yang sama
-              <TouchableOpacity
-                style={styles.card}
-                onPress={() => handleOpenProperty(item)}
-              >
-                <View style={styles.cardImageWrapper}>
-                  <FastImage
-                    source={{ uri: item.imageUrl || item.image }}
-                    style={styles.cardImage}
-                  />
-                  <View style={styles.cardBadge}>
-                    <Text style={styles.cardBadgeText}>
-                      {item?.propertyTypeName || item?.propertyType?.name || 'Tipe'}
-                    </Text>
-                  </View>
-                </View>
-                <Text style={styles.cardTitle} numberOfLines={2}>
-                  {item.propertyName || item.title}
-                </Text>
-                <View style={styles.cardInfoRow}>
-                  <MaterialDesignIcons
-                    name='map-marker-outline'
-                    size={14}
-                    color={Colors.GRAY_DARK}
-                  />
-                  <Text style={styles.cardLocation} numberOfLines={1}>
-                    {item.address || item.location || 'Lokasi belum diisi'}
-                  </Text>
-                </View>
-                <Text style={styles.cardPrice}>{withCurrency(item.price)}</Text>
-              </TouchableOpacity>
-            )}
-          />
-        )}
-
-        <View style={{ height: 100 }} />
+        <View style={{ height: 120 }} />
       </ScrollView>
 
-      {/* Floating Button Tambah Properti */}
       <TouchableOpacity
-        style={styles.fab}
+        style={styles.fabWrapper}
+        activeOpacity={0.9}
         onPress={goToPropertyScreen}
       >
-      <MaterialDesignIcons name='plus' size={24} color={Colors.WHITE} />
-    </TouchableOpacity>
+        <LinearGradient
+          colors={colors.GRADIENT_SKY}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.fab}
+        >
+          <MaterialDesignIcons name="plus" size={28} color={colors.WHITE} />
+        </LinearGradient>
+      </TouchableOpacity>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.BACKGROUND },
+const PropertyCard = ({ item, onPress, colors, withCurrency, styles }) => (
+  <TouchableOpacity
+    style={[
+      styles.card,
+      { backgroundColor: colors.CARD, borderColor: colors.GRAY_LIGHT },
+    ]}
+    onPress={onPress}
+    activeOpacity={0.9}
+  >
+    <View style={styles.cardImageWrapper}>
+      <FastImage
+        source={{ uri: item.imageUrl || item.image }}
+        style={styles.cardImage}
+      />
+      <View style={[styles.cardBadge, { backgroundColor: colors.WHITE }]}>
+        <Text style={[styles.cardBadgeText, { color: colors.TEXT }]}>
+          {item?.propertyTypeName ||
+            item?.propertyType?.name ||
+            item?.tag ||
+            'Properti'}
+        </Text>
+      </View>
+      <TouchableOpacity style={styles.cardHeart}>
+        <MaterialDesignIcons
+          name="heart-outline"
+          size={18}
+          color={colors.WHITE}
+        />
+      </TouchableOpacity>
+    </View>
+    <Text style={[styles.cardTitle, { color: colors.TEXT }]} numberOfLines={2}>
+      {item.propertyName || item.title}
+    </Text>
+    <View style={styles.cardInfoRow}>
+      <MaterialDesignIcons
+        name="map-marker-outline"
+        size={14}
+        color={colors.GREY}
+      />
+      <Text
+        style={[styles.cardLocation, { color: colors.GREY }]}
+        numberOfLines={1}
+      >
+        {item.address || item.location || 'Lokasi belum diisi'}
+      </Text>
+    </View>
+    <Text style={[styles.cardPrice, { color: colors.PRIMARY }]}>
+      {withCurrency(item.price)}
+    </Text>
+  </TouchableOpacity>
+);
 
-  searchContainer: {
-    padding: 16,
-    paddingTop: 40,
-    backgroundColor: Colors.PRIMARY,
-  },
-  searchBar: {
-    backgroundColor: '#e9eef5',
-    padding: 12,
-    borderRadius: 12,
-    fontSize: 16,
-    color: '#333',
-    fontFamily: Fonts.fontSemiBold,
-  },
+const DashboardStat = ({ icon, label, value, colors, styles }) => (
+  <View
+    style={[
+      styles.statCard,
+      { backgroundColor: colors.CARD, borderColor: colors.GRAY_LIGHT },
+    ]}
+  >
+    <View style={[styles.statIcon, { backgroundColor: colors.HAZE }]}>
+      <MaterialDesignIcons name={icon} size={20} color={colors.PRIMARY} />
+    </View>
+    <Text style={[styles.statValue, { color: colors.TEXT }]}>{value}</Text>
+    <Text style={[styles.statLabel, { color: colors.GREY }]}>{label}</Text>
+  </View>
+);
 
-  categoryContainer: {
-    paddingHorizontal: 12,
-    paddingTop: 10,
-    marginBottom: 10,
-  },
-  categoryChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    marginRight: 10,
-    borderWidth: 0.5,
-    borderColor: '#e0e0e0',
-  },
-  categoryText: { fontSize: 14, color: Colors.PRIMARY, fontFamily: Fonts.fontSemiBold, },
-
-  bannerWrapper: { marginTop: 10, height: 150, paddingHorizontal: 10 },
-  bannerImage: {
-    width: width - 40, // Sesuaikan lebar agar terlihat penuh
-    height: 150,
-    borderRadius: 14,
-    marginHorizontal: 10,
-  },
-
-  sectionTitle: {
-    marginTop: 24,
-    marginBottom: 12,
-    fontSize: 18,
-    fontFamily: Fonts.fontSemiBold,
-    color: '#333',
-    paddingHorizontal: 16,
-  },
-
-  // --- STATS / DASHBOARD USER ---
-  userStatsContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: Colors.WHITE,
-    marginTop: 10,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 15,
-    gap: 10,
-  },
-  statBox: {
-    flex: 1,
-    alignItems: 'center',
-    padding: 12,
-    backgroundColor: Colors.CARD,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.WHITE_50,
-  },
-  statCount: {
-    fontSize: 20,
-    fontFamily: Fonts.fontSemiBold,
-    color: Colors.BLACK,
-    marginTop: 5,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: Colors.GREY,
-    textAlign: 'center',
-    fontFamily: Fonts.fontRegular,
-  },
-
-  // --- LIST PROPERTI ---
-  propertyListContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 20,
-  },
-  propertyListColumn: {
-    gap: 12,
-  },
-  card: {
-    backgroundColor: Colors.CARD,
-    borderRadius: 16,
-    marginBottom: 16,
-    flex: 1,
-    marginHorizontal: 0,
-    borderWidth: 1,
-    borderColor: Colors.WHITE_50,
-    paddingBottom: 10,
-  },
-  cardImageWrapper: {
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  cardImage: {
-    width: '100%',
-    height: 130,
-    resizeMode: 'cover',
-  },
-  cardBadge: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    backgroundColor: Colors.WHITE,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: Colors.WHITE_50,
-  },
-  cardBadgeText: {
-    fontSize: 11,
-    fontFamily: Fonts.fontMedium,
-    color: Colors.TEXT,
-  },
-  cardTitle: {
-    fontFamily: Fonts.fontSemiBold,
-    fontSize: 14,
-    marginTop: 10,
-    paddingHorizontal: 10,
-    color: Colors.TEXT,
-  },
-  cardInfoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    marginTop: 4,
-  },
-  cardPrice: {
-    color: Colors.PRIMARY,
-    fontFamily: Fonts.fontBold,
-    paddingHorizontal: 10,
-    marginTop: 6,
-  },
-  cardLocation: {
-    color: Colors.GRAY_DARK,
-    fontSize: 12,
-    paddingHorizontal: 0,
-    marginTop: 4,
-    marginBottom: 4,
-    fontFamily: Fonts.fontRegular,
-  },
-
-  // --- TOMBOL AKSI BIASA ---
-  actionButton: {
-    flexDirection: 'row',
-    backgroundColor: Colors.PRIMARY,
-    padding: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 10,
-  },
-  actionButtonText: {
-    color: Colors.WHITE,
-    fontFamily: Fonts.fontSemiBold,
-    fontSize: 14,
-    marginLeft: 5,
-  },
-
-  // --- EMPTY STATE ---
-  emptyDataContainer: {
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: Colors.WHITE,
-    marginHorizontal: 16,
-    borderRadius: 12,
-  },
-  emptyDataText: {
-    marginTop: 10,
-    marginBottom: 10,
-    color: Colors.GREY,
-    fontSize: 14,
-    fontFamily: Fonts.fontSemiBold,
-  },
-
-  // --- FLOATING ACTION BUTTON ---
-  fab: {
-    position: 'absolute',
-    right: 16,
-    bottom: 26,
-    backgroundColor: Colors.PRIMARY,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-  },
-});
+const createStyles = colors =>
+  StyleSheet.create({
+    wrapper: { flex: 1 },
+    scrollContent: {
+      paddingHorizontal: 16,
+      paddingBottom: 24,
+      gap: 16,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 8,
+    },
+    locationRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+    locationIcon: {
+      width: 42,
+      height: 42,
+      borderRadius: 21,
+      backgroundColor: colors.HAZE,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    locationLabel: {
+      color: colors.GREY,
+      fontSize: 12,
+      fontFamily: Fonts.fontRegular,
+    },
+    locationSelector: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    locationValue: {
+      color: colors.TEXT,
+      fontSize: 16,
+      fontFamily: Fonts.fontSemiBold,
+    },
+    headerActions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+    iconButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: colors.CARD,
+      borderWidth: 1,
+      borderColor: colors.GRAY_LIGHT,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    notificationDot: {
+      position: 'absolute',
+      top: 8,
+      right: 10,
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: colors.WARNING,
+    },
+    searchRow: { flexDirection: 'row', gap: 10, alignItems: 'center' },
+    searchInput: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: colors.CARD,
+      borderRadius: 18,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      borderWidth: 1,
+      borderColor: colors.GRAY_LIGHT,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 8,
+      elevation: 2,
+    },
+    searchPlaceholder: {
+      color: colors.GREY,
+      fontFamily: Fonts.fontRegular,
+      fontSize: 14,
+    },
+    filterButton: {
+      width: 48,
+      height: 48,
+      borderRadius: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.PRIMARY,
+      shadowColor: colors.PRIMARY,
+      shadowOpacity: 0.25,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 5,
+    },
+    categoryContainer: { marginTop: 10 },
+    categoryChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      backgroundColor: colors.CARD,
+      borderRadius: 20,
+      marginRight: 10,
+      borderWidth: 1,
+      borderColor: colors.GRAY_LIGHT,
+      gap: 8,
+    },
+    categoryChipActive: {
+      backgroundColor: colors.PRIMARY,
+      borderColor: colors.PRIMARY,
+      shadowColor: colors.PRIMARY,
+      shadowOpacity: 0.2,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 3,
+    },
+    categoryText: {
+      fontSize: 13,
+      color: colors.TEXT,
+      fontFamily: Fonts.fontSemiBold,
+    },
+    heroCard: {
+      height: 200,
+      borderRadius: 24,
+      overflow: 'hidden',
+      position: 'relative',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.15,
+      shadowRadius: 16,
+      elevation: 6,
+    },
+    heroImage: { width: '100%', height: '100%' },
+    heroOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      borderRadius: 24,
+    },
+    heroContent: {
+      position: 'absolute',
+      left: 18,
+      right: 18,
+      bottom: 18,
+      gap: 6,
+    },
+    heroLabel: {
+      fontFamily: Fonts.fontSemiBold,
+      fontSize: 12,
+      color: colors.WHITE,
+      textTransform: 'uppercase',
+      letterSpacing: 0.8,
+    },
+    heroTitle: {
+      fontFamily: Fonts.fontBold,
+      fontSize: 20,
+      color: colors.WHITE,
+      lineHeight: 26,
+    },
+    heroSubtitle: {
+      fontFamily: Fonts.fontRegular,
+      fontSize: 13,
+      color: colors.WHITE_80,
+      lineHeight: 18,
+    },
+    heroButton: { alignSelf: 'flex-start', marginTop: 6 },
+    heroButtonInner: {
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      borderRadius: 14,
+    },
+    heroButtonText: {
+      color: colors.WHITE,
+      fontFamily: Fonts.fontSemiBold,
+      fontSize: 14,
+    },
+    dashboardRow: {
+      flexDirection: 'row',
+      gap: 10,
+      marginTop: 4,
+    },
+    statCard: {
+      flex: 1,
+      padding: 12,
+      borderRadius: 16,
+      borderWidth: 1,
+    },
+    statIcon: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 8,
+    },
+    statValue: {
+      fontFamily: Fonts.fontSemiBold,
+      fontSize: 18,
+    },
+    statLabel: {
+      fontFamily: Fonts.fontRegular,
+      fontSize: 12,
+      marginTop: 2,
+    },
+    sectionContainer: {
+      marginTop: 8,
+      backgroundColor: colors.CARD,
+      borderRadius: 18,
+      padding: 14,
+      borderWidth: 1,
+      borderColor: colors.GRAY_LIGHT,
+    },
+    sectionHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 10,
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontFamily: Fonts.fontSemiBold,
+      color: colors.TEXT,
+    },
+    linkText: {
+      fontFamily: Fonts.fontSemiBold,
+      color: colors.PRIMARY,
+      fontSize: 13,
+    },
+    card: {
+      flex: 1,
+      borderRadius: 16,
+      borderWidth: 1,
+      overflow: 'hidden',
+      paddingBottom: 12,
+    },
+    cardImageWrapper: {
+      height: width * 0.28,
+      position: 'relative',
+      overflow: 'hidden',
+    },
+    cardImage: { width: '100%', height: '100%', resizeMode: 'cover' },
+    cardBadge: {
+      position: 'absolute',
+      top: 10,
+      left: 10,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.GRAY_LIGHT,
+    },
+    cardBadgeText: {
+      fontSize: 11,
+      fontFamily: Fonts.fontMedium,
+    },
+    cardHeart: {
+      position: 'absolute',
+      top: 10,
+      right: 10,
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#00000040',
+    },
+    cardTitle: {
+      fontFamily: Fonts.fontSemiBold,
+      fontSize: 14,
+      marginTop: 10,
+      paddingHorizontal: 10,
+    },
+    cardInfoRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      paddingHorizontal: 10,
+      marginTop: 4,
+    },
+    cardLocation: {
+      fontSize: 12,
+      fontFamily: Fonts.fontRegular,
+      flex: 1,
+    },
+    cardPrice: {
+      fontFamily: Fonts.fontBold,
+      paddingHorizontal: 10,
+      marginTop: 6,
+      fontSize: 14,
+    },
+    emptyBox: {
+      borderStyle: 'dashed',
+      borderWidth: 1.2,
+      borderColor: colors.GRAY_LIGHT,
+      borderRadius: 16,
+      padding: 16,
+      alignItems: 'center',
+      gap: 10,
+      backgroundColor: colors.BACKGROUND,
+    },
+    emptyIcon: {
+      width: 50,
+      height: 50,
+      borderRadius: 25,
+      backgroundColor: colors.HAZE,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    emptyTitle: {
+      fontFamily: Fonts.fontSemiBold,
+      color: colors.TEXT,
+      fontSize: 16,
+    },
+    emptyCaption: {
+      fontFamily: Fonts.fontRegular,
+      color: colors.GREY,
+      fontSize: 13,
+      textAlign: 'center',
+      lineHeight: 18,
+    },
+    primaryButton: { width: '100%' },
+    primaryButtonInner: {
+      paddingVertical: 12,
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    primaryButtonText: {
+      color: colors.WHITE,
+      fontFamily: Fonts.fontSemiBold,
+      fontSize: 14,
+    },
+    fabWrapper: {
+      position: 'absolute',
+      bottom: 18,
+      alignSelf: 'center',
+      shadowColor: colors.PRIMARY,
+      shadowOpacity: 0.3,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: 8,
+    },
+    fab: {
+      width: 64,
+      height: 64,
+      borderRadius: 32,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+  });
 
 export default HomeScreen;
