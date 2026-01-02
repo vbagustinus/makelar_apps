@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -11,17 +11,22 @@ import { useNavigation } from '@react-navigation/native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
-import { Colors, Sizes, FontSize } from '../../styles';
+import { Colors, Sizes, FontSize, useThemeColors } from '../../styles';
 import { Fonts } from '../../constants';
 import { logo } from '../../assets/images';
 import { BaseView, Input } from '../../components';
 import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
 import useAuthStore from '../../store/useAuthStore';
 import LinearGradient from 'react-native-linear-gradient';
+import useThemeStore from '../../store/useThemeStore';
 
 function EditProfileScreen() {
   const navigation = useNavigation();
   const user = useAuthStore(state => state.user);
+  const colors = useThemeColors();
+  const theme = useThemeStore(state => state.theme);
+  const isDark = theme === 'dark';
+  const styles = useMemo(() => createStyles(colors, isDark), [colors, isDark]);
   const [photo, setPhoto] = useState(user?.photoURL || null);
   const [propertyName, setPropertyName] = useState(user?.displayName || '');
   const [phone, setPhone] = useState(
@@ -153,53 +158,67 @@ function EditProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  imageWrapper: {
-    alignItems: 'center',
-    marginVertical: Sizes.SIZE_30,
-  },
-  changePhotoContainer: {
-    borderRadius: 50,
-    width: 100,
-    height: 50,
-    borderWidth: 2,
-    borderColor: Colors.WHITE,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'absolute',
-    bottom: -15,
-    backgroundColor: Colors.PRIMARY,
-  },
-  image: {
-    width: Sizes.CUSTOM_SIZE(200),
-    height: Sizes.CUSTOM_SIZE(200),
-    borderRadius: Sizes.CUSTOM_SIZE(100),
-    borderWidth: 3,
-    borderColor: Colors.WHITE,
-  },
-  saveButton: {
-    width: '100%',
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
-  },
-  buttonGradient: {
-    width: '100%',
-    padding: 10,
-    paddingVertical: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  saveText: {
-    color: Colors.WHITE,
-    fontFamily: Fonts.fontSemiBold,
-    fontSize: FontSize.FONT_SIZE_16,
-  },
-});
+const createStyles = (colors, isDark) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.BACKGROUND,
+    },
+    imageWrapper: {
+      alignItems: 'center',
+      marginVertical: Sizes.SIZE_30,
+    },
+    changePhotoContainer: {
+      borderRadius: 50,
+      width: 100,
+      height: 50,
+      borderWidth: 2,
+      borderColor: colors.WHITE_80,
+      justifyContent: 'center',
+      alignItems: 'center',
+      position: 'absolute',
+      bottom: -15,
+      backgroundColor: colors.PRIMARY,
+      shadowColor: colors.BLACK,
+      shadowOpacity: isDark ? 0.25 : 0.15,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 6,
+    },
+    image: {
+      width: Sizes.CUSTOM_SIZE(200),
+      height: Sizes.CUSTOM_SIZE(200),
+      borderRadius: Sizes.CUSTOM_SIZE(100),
+      borderWidth: 3,
+      borderColor: colors.WHITE_80,
+      backgroundColor: colors.CARD,
+    },
+    saveButton: {
+      width: '100%',
+      borderRadius: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 20,
+      overflow: 'hidden',
+      shadowColor: colors.BLACK,
+      shadowOpacity: isDark ? 0.25 : 0.1,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: 4,
+    },
+    buttonGradient: {
+      width: '100%',
+      padding: 10,
+      paddingVertical: 15,
+      borderRadius: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    saveText: {
+      color: colors.WHITE,
+      fontFamily: Fonts.fontSemiBold,
+      fontSize: FontSize.FONT_SIZE_16,
+    },
+  });
 
 export default EditProfileScreen;

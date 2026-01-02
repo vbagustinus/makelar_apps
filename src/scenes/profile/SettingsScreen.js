@@ -14,15 +14,20 @@ import { Fonts } from '../../constants';
 import { useThemeColors } from '../../styles';
 import useThemeStore from '../../store/useThemeStore';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 
 const SettingsScreen = () => {
+  const navigation = useNavigation();
   const theme = useThemeStore(state => state.theme);
   const setTheme = useThemeStore(state => state.setTheme);
   const toggleTheme = useThemeStore(state => state.toggleTheme);
   const colors = useThemeColors();
   const insets = useSafeAreaInsets();
 
-  const styles = useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(
+    () => createStyles(colors, theme === 'dark'),
+    [colors, theme],
+  );
 
   return (
     <View
@@ -40,13 +45,18 @@ const SettingsScreen = () => {
         style={[styles.header, {paddingTop: insets.top + 20}]}
       >
         <View style={styles.headerContent}>
-          <View style={styles.headerIcon}>
+          <TouchableOpacity
+            unflex
+            onPress={() => navigation.goBack()}
+            style={styles.headerBack}
+            activeOpacity={0.8}
+          >
             <MaterialDesignIcons
-              name="tune-variant"
-              size={20}
+              name="chevron-left"
+              size={22}
               color={colors.WHITE}
             />
-          </View>
+          </TouchableOpacity>
           <View style={{ flex: 1 }}>
             <Text style={styles.headerTitle}>Pengaturan Tampilan</Text>
             <Text style={styles.headerSubtitle}>
@@ -118,7 +128,7 @@ const SettingsScreen = () => {
   );
 };
 
-const createStyles = colors =>
+const createStyles = (colors, isDark) =>
   StyleSheet.create({
     container: { flex: 1 },
     header: {
@@ -132,6 +142,14 @@ const createStyles = colors =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: 12,
+    },
+    headerBack: {
+      width: 38,
+      height: 38,
+      borderRadius: 19,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.WHITE_20,
     },
     headerIcon: {
       width: 38,
@@ -181,7 +199,7 @@ const createStyles = colors =>
       shadowRadius: 12,
       elevation: 3,
       borderWidth: 1,
-      borderColor: colors.GRAY_LIGHT,
+      borderColor: isDark ? colors.WHITE_20 : colors.GRAY_LIGHT,
     },
     row: {
       flexDirection: 'row',
@@ -221,7 +239,7 @@ const createStyles = colors =>
       borderRadius: 16,
       padding: 14,
       borderWidth: 1,
-      borderColor: colors.GRAY_LIGHT,
+      borderColor: isDark ? colors.WHITE_20 : colors.GRAY_LIGHT,
     },
     previewLabel: {
       fontFamily: Fonts.fontSemiBold,

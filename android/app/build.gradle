@@ -170,5 +170,5 @@ dependencies {
     // implementation 'com.google.firebase:firebase-crashlytics'
     // implementation 'com.google.firebase:firebase-analytics'
     implementation 'androidx.multidex:multidex:2.0.1'
-    implementation 'com.google.android.play:integrity:1.4.0'
+    implementation 'com.google.android.play:integrity:1.6.0'
 }

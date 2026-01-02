@@ -4,24 +4,22 @@ import {
   StatusBar,
   StyleSheet,
   Alert,
-  ImageBackground,
   TouchableOpacity as TouchableOpacityDefault,
 } from 'react-native';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import auth from '@react-native-firebase/auth';
 import FastImage from '@d11/react-native-fast-image';
-import { View, Text, TouchableOpacity, Button } from '../../components';
+import { View, Text, TouchableOpacity } from '../../components';
 import { Colors, Sizes, FontSize } from '../../styles';
-import { emptyimage, logo } from '../../assets/images';
 import { Fonts } from '../../constants';
 import { useNavigation } from '@react-navigation/native';
 import DeviceInfo from 'react-native-device-info';
 import useAuthStore from '../../store/useAuthStore';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import LinearGradient from 'react-native-linear-gradient';
-import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
 import { zustandMMKVStorage } from '../../helpers';
 import usePropertyStore from '../../store/usePropertyStore';
+import useThemeStore from '../../store/useThemeStore';
 
 function ProfileScreen() {
   const navigation = useNavigation();
@@ -29,6 +27,8 @@ function ProfileScreen() {
   const user = useAuthStore(state => state.user);
   const clearToken = useAuthStore(state => state.clearToken);
   const resetAllData = usePropertyStore(state => state.resetAllData);
+  const theme = useThemeStore(state => state.theme);
+  const isDark = theme === 'dark';
   const [deviceInfo, setDeviceInfo] = React.useState({
     appName: '',
     appVersion: '',
@@ -97,132 +97,162 @@ function ProfileScreen() {
     !user && fetchUserInfo();
   }, []);
 
+  const displayName = user?.displayName || 'Nama Pengguna';
+  const emailOrContact = user?.email || user?.phoneNumber || 'Kontak';
+  const phoneNumber = user?.phoneNumber || '';
+  const whatsappNumber = user?.whatsapp || user?.phoneNumber || '';
+  const profileInitial = (displayName || emailOrContact || 'U')
+    .charAt(0)
+    .toUpperCase();
+  const versionCardStyle = React.useMemo(
+    () => ({
+      backgroundColor: isDark ? Colors.WHITE_20 : Colors.WHITE,
+      borderColor: isDark ? Colors.WHITE_20 : Colors.GRAY_LIGHT,
+    }),
+    [isDark],
+  );
+
   return (
     <LinearGradient
       colors={Colors.GRADIENT_ROYAL}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 0 }}
+      start={{ x: 0.2, y: 0 }}
+      end={{ x: 0.8, y: 1 }}
       style={styles.mainContainer}
     >
-      <StatusBar barStyle={'light-content'} backgroundColor={Colors.WHITE} />
+      <StatusBar
+        barStyle={'light-content'}
+        backgroundColor="transparent"
+        translucent
+      />
 
-      {/* Header */}
-      <View unflex style={styles.profileInfo}>
-        <TouchableOpacityDefault
-          onPress={() => {
-            navigation.push('EditProfileScreen');
-          }}
-          style={{
-            flexDirection: 'row',
-            padding: 5,
-            paddingHorizontal: 10,
-            backgroundColor: Colors.WHITE_20,
-            marginTop: 20,
-            borderRadius: 10,
-            position: 'absolute',
-            right: 20,
-            top: 40,
-            zIndex: 99,
-            alignItems: 'center',
-          }}
-        >
-          <MaterialDesignIcons
-            name="account-box-edit-outline"
-            size={25}
-            color={Colors.WHITE}
-          />
-          <Text style={styles.userEdit}>{'Edit'}</Text>
-        </TouchableOpacityDefault>
-        <ImageBackground
-          blurRadius={10}
-          source={(user?.photoURL && { uri: user.photoURL }) || logo}
-          style={styles.headerContainer}
-          resizeMode="cover"
-        >
-          {/* Profile Image */}
-          <TouchableOpacity
-            onPress={() => {
-              global.showImagePreview([{ url: user?.photoURL }]);
-            }}
-            unflex
-            style={styles.profileImageContainer}
-          >
-            <FastImage
-              style={styles.profileImage}
-              source={(user?.photoURL && { uri: user.photoURL }) || logo}
-              resizeMode={FastImage.resizeMode.stretch}
-            />
-          </TouchableOpacity>
-          {/* User Name and Email */}
-          <LinearGradient
-            pointerEvents="box-none"
-            colors={Colors.GRADIENT_ROYAL90}
-            start={{ x: 1, y: 1 }}
-            end={{ x: 0, y: 0 }}
-            style={{
-              padding: Sizes.SIZE_15,
-              paddingHorizontal: 40,
-              borderRadius: 20,
-              marginTop: 20,
-            }}
-          >
-            <Text style={styles.userName}>
-              {user?.displayName || 'Nama Pengguna'}
-            </Text>
-            <Text style={styles.userEmail}>
-              {user?.email || user?.phoneNumber || 'Kontak'}
-            </Text>
-            {user?.phoneNumber ? (
-              <Text style={styles.userContact}>
-                Telepon: {user.phoneNumber}
-              </Text>
-            ) : null}
-            {user?.whatsapp ? (
-              <Text style={styles.userContact}>WhatsApp: {user.whatsapp}</Text>
-            ) : null}
-          </LinearGradient>
-        </ImageBackground>
-      </View>
-
-      {/* Scrollable Content */}
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        <View style={styles.profileHeader}>
+          <View style={styles.avatarStack}>
+            <LinearGradient
+              colors={Colors.GRADIENT_SKY}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.avatarHalo}
+            >
+              <TouchableOpacity
+                onPress={() => {
+                  if (user?.photoURL) {
+                    global.showImagePreview([{ url: user.photoURL }]);
+                  }
+                }}
+                unflex
+                style={styles.avatarContainer}
+              >
+                {user?.photoURL ? (
+                  <FastImage
+                    style={styles.avatarImage}
+                    source={{ uri: user.photoURL }}
+                    resizeMode={FastImage.resizeMode.cover}
+                  />
+                ) : (
+                  <Text style={styles.avatarInitial}>{profileInitial}</Text>
+                )}
+              </TouchableOpacity>
+            </LinearGradient>
+            <TouchableOpacityDefault
+              onPress={() => {
+                navigation.push('EditProfileScreen');
+              }}
+              style={styles.editButton}
+              activeOpacity={0.85}
+            >
+              <Ionicons
+                name="pencil"
+                size={FontSize.FONT_SIZE_18}
+                color={Colors.WHITE}
+              />
+            </TouchableOpacityDefault>
+          </View>
+          <Text style={styles.userName}>{displayName}</Text>
+          <Text style={styles.userEmail}>{emailOrContact}</Text>
+          <View style={styles.contactRow}>
+            {phoneNumber ? (
+              <LinearGradient
+                colors={Colors.GRADIENT_EMERALD}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.contactChip}
+              >
+                <Ionicons
+                  name="call"
+                  size={FontSize.FONT_SIZE_18}
+                  color={Colors.SUCCESS}
+                  style={styles.contactIcon}
+                />
+                <Text style={styles.contactText}>{phoneNumber}</Text>
+              </LinearGradient>
+            ) : null}
+            {whatsappNumber ? (
+              <LinearGradient
+                colors={Colors.GRADIENT_PURPLE_HAZE}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.contactChip}
+              >
+                <Ionicons
+                  name="logo-whatsapp"
+                  size={FontSize.FONT_SIZE_18}
+                  color={Colors.SUCCESS}
+                  style={styles.contactIcon}
+                />
+                <Text style={styles.contactText}>WA: {whatsappNumber}</Text>
+              </LinearGradient>
+            ) : null}
+          </View>
+        </View>
+
         <View style={styles.sectionContainer}>
-          {/* Account Settings */}
           <SettingItem
-            icon="settings-outline"
+            icon="color-palette-outline"
             label="Pengaturan Tema"
             onPress={() => navigation.push('SettingsScreen')}
+            gradient={Colors.GRADIENT_ROYAL90}
+            iconGradient={Colors.GRADIENT_SKY}
           />
           <SettingItem
-            icon="shield-outline"
+            icon="shield-checkmark-outline"
             label="Kebijakan Privasi"
             onPress={() => navigation.push('PrivacyScreen')}
+            gradient={Colors.GRADIENT_EMERALD}
+            iconGradient={Colors.GRADIENT_EMERALD}
           />
           <SettingItem
             icon="gift-outline"
             label="Dukungan"
             onPress={() => navigation.push('DonationScreen')}
+            gradient={Colors.GRADIENT_PURPLE_HAZE}
+            iconGradient={Colors.GRADIENT_PURPLE_HAZE}
           />
           <SettingItem
             icon="information-circle-outline"
             label="Tentang Aplikasi"
             onPress={() => navigation.push('AboutAppScreen')}
+            gradient={Colors.GRADIENT_SKY}
+            iconGradient={Colors.GRADIENT_SKY}
           />
           <SettingItem
             icon="log-out-outline"
             label="Keluar"
-            color={Colors.RED}
             onPress={confirmLogout}
-            backgroundColor={Colors.BLACK_50}
+            gradient={Colors.GRADIENT_SUNSET}
+            iconGradient={Colors.GRADIENT_SUNSET}
+            textColor={Colors.WHITE}
           />
-          <View style={styles.card}>
-            <View style={styles.infoContainer}>
-              <Text style={styles.label}>Versi</Text>
-              <Text style={styles.value}>{deviceInfo.appVersion}</Text>
-            </View>
+          <View style={[styles.versionCard, versionCardStyle]}>
+            <Text style={[styles.label, !isDark && styles.labelLight]}>
+              Versi
+            </Text>
+            <Text style={[styles.value, !isDark && styles.valueLight]}>
+              {deviceInfo.appVersion}
+            </Text>
           </View>
         </View>
       </ScrollView>
@@ -233,27 +263,37 @@ function ProfileScreen() {
 const SettingItem = ({
   icon,
   label,
-  color = Colors.WHITE,
   onPress,
-  backgroundColor = Colors.WHITE_20,
+  gradient,
+  iconGradient,
+  textColor = Colors.WHITE,
 }) => (
-  <TouchableOpacity
-    onPress={onPress}
-    style={[styles.settingItem, { backgroundColor }]}
-  >
-    <Ionicons
-      name={icon}
-      size={FontSize.FONT_SIZE_20}
-      color={color}
-      style={{ marginRight: Sizes.SIZE_15 }}
-    />
-    <Text style={[styles.settingLabel, { color }]}>{label}</Text>
-    <Ionicons
-      name="chevron-forward-outline"
-      size={FontSize.FONT_SIZE_16}
-      color={Colors.WHITE}
-      style={{ marginLeft: 'auto' }}
-    />
+  <TouchableOpacity onPress={onPress} activeOpacity={0.9} style={styles.settingWrapper}>
+    <LinearGradient
+      colors={gradient || Colors.GRADIENT_ROYAL90}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.settingItem}
+    >
+      <LinearGradient
+        colors={iconGradient || Colors.GRADIENT_SKY}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.settingIcon}
+      >
+        <Ionicons
+          name={icon}
+          size={FontSize.FONT_SIZE_20}
+          color={Colors.WHITE}
+        />
+      </LinearGradient>
+      <Text style={[styles.settingLabel, { color: textColor }]}>{label}</Text>
+      <Ionicons
+        name="chevron-forward-outline"
+        size={FontSize.FONT_SIZE_18}
+        color={Colors.WHITE_80}
+      />
+    </LinearGradient>
   </TouchableOpacity>
 );
 
@@ -261,111 +301,160 @@ const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
   },
-  headerContainer: {
-    paddingVertical: Sizes.SIZE_30,
+  scrollContent: {
+    paddingTop: Sizes.SIZE_40,
     paddingHorizontal: Sizes.SIZE_20,
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: Sizes.widthScreen - 100,
-    width: Sizes.widthScreen,
+    paddingBottom: Sizes.SIZE_40,
+  },
+  profileHeader: {
+    alignItems: 'center',
+    marginBottom: Sizes.SIZE_30,
+  },
+  avatarStack: {
+    alignItems: 'center',
     justifyContent: 'center',
+  },
+  avatarHalo: {
+    width: Sizes.CUSTOM_SIZE(160),
+    height: Sizes.CUSTOM_SIZE(160),
+    borderRadius: Sizes.CUSTOM_SIZE(80),
     alignItems: 'center',
+    justifyContent: 'center',
+    padding: Sizes.SIZE_5,
+    shadowColor: Colors.BLACK,
+    shadowOpacity: 0.45,
+    shadowOffset: { width: 0, height: 12 },
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  avatarContainer: {
+    width: Sizes.CUSTOM_SIZE(148),
+    height: Sizes.CUSTOM_SIZE(148),
+    borderRadius: Sizes.CUSTOM_SIZE(74),
+    backgroundColor: Colors.WHITE_20,
+    alignItems: 'center',
+    justifyContent: 'center',
     overflow: 'hidden',
-    borderBottomLeftRadius: Sizes.SIZE_40,
-    borderBottomRightRadius: Sizes.SIZE_40,
-    borderColor: Colors.WHITE_20,
-  },
-  profileInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingTop: Sizes.SIZE_20,
-    borderBottomLeftRadius: Sizes.SIZE_40,
-    borderBottomRightRadius: Sizes.SIZE_40,
-    borderColor: Colors.WHITE_20,
-  },
-  profileImageContainer: {
-    width: Sizes.CUSTOM_SIZE(120),
-    height: Sizes.CUSTOM_SIZE(120),
-    borderRadius: Sizes.CUSTOM_SIZE(60),
-    backgroundColor: Colors.LIGHT_GRAY,
-    borderWidth: 4,
+    borderWidth: 3,
     borderColor: Colors.WHITE_50,
-    overflow: 'hidden',
-    zIndex: 999,
   },
-  profileImage: {
-    width: Sizes.CUSTOM_SIZE(120),
-    height: Sizes.CUSTOM_SIZE(120),
-    borderRadius: Sizes.CUSTOM_SIZE(60),
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+  },
+  avatarInitial: {
+    fontSize: FontSize.FONT_SIZE_30,
+    color: Colors.WHITE,
+    fontFamily: Fonts.fontBold,
+  },
+  editButton: {
+    position: 'absolute',
+    right: Sizes.SIZE_5,
+    bottom: Sizes.SIZE_5,
+    backgroundColor: Colors.WHITE_20,
+    borderRadius: Sizes.SIZE_15,
+    padding: Sizes.SIZE_10,
+    borderWidth: 1,
+    borderColor: Colors.WHITE_20,
   },
   userName: {
     color: Colors.WHITE,
     fontFamily: Fonts.fontBold,
     fontSize: FontSize.FONT_SIZE_25,
     textAlign: 'center',
-  },
-  userEdit: {
-    color: Colors.WHITE,
-    fontFamily: Fonts.fontRegular,
-    fontSize: FontSize.FONT_SIZE_14,
-    textAlign: 'center',
-    marginLeft: 5,
+    marginTop: Sizes.SIZE_20,
   },
   userEmail: {
-    color: Colors.WARNING,
-    fontFamily: Fonts.fontItalic,
-    fontSize: FontSize.FONT_SIZE_14,
-    marginTop: 10,
-    textAlign: 'center',
-  },
-  userContact: {
-    color: Colors.WHITE,
+    color: Colors.WHITE_80,
     fontFamily: Fonts.fontRegular,
-    fontSize: FontSize.FONT_SIZE_12,
-    marginTop: 4,
+    fontSize: FontSize.FONT_SIZE_16,
+    marginTop: Sizes.SIZE_5,
     textAlign: 'center',
   },
-  scrollContent: {
-    paddingTop: Sizes.widthScreen - 100,
-    paddingBottom: Sizes.SIZE_20,
+  contactRow: {
+    marginTop: Sizes.SIZE_15,
+    alignItems: 'center',
+    width: '100%',
+  },
+  contactChip: {
+    width: '90%',
+    borderRadius: Sizes.CUSTOM_SIZE(30),
+    paddingVertical: Sizes.SIZE_10,
+    paddingHorizontal: Sizes.SIZE_15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: Sizes.SIZE_10,
+    borderWidth: 1,
+    borderColor: Colors.WHITE_20,
+  },
+  contactIcon: {
+    marginRight: Sizes.SIZE_10,
+  },
+  contactText: {
+    color: Colors.WHITE,
+    fontFamily: Fonts.fontSemiBold,
+    fontSize: FontSize.FONT_SIZE_16,
   },
   sectionContainer: {
-    marginHorizontal: Sizes.SIZE_20,
+    marginTop: Sizes.SIZE_10,
+  },
+  settingWrapper: {
+    marginBottom: Sizes.SIZE_15,
   },
   settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.WHITE_20,
     padding: Sizes.SIZE_15,
-    borderRadius: Sizes.SIZE_10,
-    marginBottom: Sizes.SIZE_10,
+    borderRadius: Sizes.SIZE_15,
+    borderWidth: 1,
+    borderColor: Colors.WHITE_20,
+    shadowColor: Colors.BLACK,
+    shadowOpacity: 0.35,
+    shadowOffset: { width: 0, height: 10 },
+    shadowRadius: 16,
+    elevation: 6,
+  },
+  settingIcon: {
+    width: Sizes.CUSTOM_SIZE(50),
+    height: Sizes.CUSTOM_SIZE(50),
+    borderRadius: Sizes.CUSTOM_SIZE(25),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Sizes.SIZE_15,
+    borderWidth: 1,
+    borderColor: Colors.WHITE_20,
   },
   settingLabel: {
-    fontFamily: Fonts.fontRegular,
-    fontSize: FontSize.FONT_SIZE_16,
-    color: Colors.WHITE,
+    flex: 1,
+    fontFamily: Fonts.fontSemiBold,
+    fontSize: FontSize.FONT_SIZE_18,
   },
-  card: {
+  versionCard: {
     backgroundColor: Colors.WHITE_20,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: Sizes.SIZE_15,
+    padding: Sizes.SIZE_15,
+    borderWidth: 1,
+    borderColor: Colors.WHITE_20,
     marginTop: Sizes.SIZE_10,
-  },
-  infoContainer: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
   },
   label: {
     fontSize: FontSize.FONT_SIZE_14,
-    color: Colors.WHITE,
+    color: Colors.WHITE_80,
     fontFamily: Fonts.fontRegular,
   },
+  labelLight: {
+    color: Colors.GRAY_DARK,
+  },
   value: {
-    fontSize: FontSize.FONT_SIZE_14,
+    fontSize: FontSize.FONT_SIZE_16,
     color: Colors.WHITE,
     fontFamily: Fonts.fontSemiBold,
+  },
+  valueLight: {
+    color: Colors.TEXT,
   },
 });
 

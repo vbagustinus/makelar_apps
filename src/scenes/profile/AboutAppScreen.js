@@ -1,14 +1,21 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ScrollView, StatusBar, StyleSheet, View, Image } from 'react-native';
 import { BaseView, Text } from '../../components';
-import { Colors, FontSize, Sizes } from '../../styles';
+import { FontSize } from '../../styles';
+import { useThemeColors } from '../../styles';
 import { useNavigation } from '@react-navigation/native';
 import { Fonts } from '../../constants';
-import LinearGradient from 'react-native-linear-gradient';
 import { logotransparent } from '../../assets/images';
+import useThemeStore from '../../store/useThemeStore';
 
 export default function AboutAppScreen({ navigation: { pop } }) {
   const navigation = useNavigation();
+  const colors = useThemeColors();
+  const theme = useThemeStore(state => state.theme);
+  const styles = useMemo(
+    () => createStyles(colors, theme === 'dark'),
+    [colors, theme],
+  );
   return (
     <BaseView
       onBackPress={pop}
@@ -93,104 +100,108 @@ export default function AboutAppScreen({ navigation: { pop } }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#f2f4f8',
-  },
-  content: {
-    padding: 16,
-    gap: 14,
-  },
-  hero: {
-    borderRadius: 20,
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: '#fdfdfd',
-    borderWidth: 1,
-    borderColor: '#e4e8f0',
-  },
-  heroLogo: {
-    width: 72,
-    height: 72,
-  },
-  heroTextWrap: {
-    flex: 1,
-    gap: 6,
-  },
-  heroTitle: {
-    fontFamily: Fonts.fontBold,
-    fontSize: FontSize.FONT_SIZE_18,
-    color: Colors.TEXT,
-  },
-  heroSubtitle: {
-    fontFamily: Fonts.fontRegular,
-    fontSize: FontSize.FONT_SIZE_14,
-    color: Colors.GRAY_DARK,
-    opacity: 0.9,
-    lineHeight: 20,
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 14,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#e4e8f0',
-    shadowColor: '#0d1b2a',
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-  },
-  cardRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  miniCard: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    borderRadius: 14,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: Colors.WHITE_20,
-  },
-  sectionTitle: {
-    color: Colors.TEXT,
-    fontSize: FontSize.FONT_SIZE_16,
-    fontFamily: Fonts.fontSemiBold,
-    marginBottom: 8,
-  },
-  subtitle: {
-    color: Colors.TEXT,
-    fontSize: FontSize.FONT_SIZE_16,
-    fontFamily: Fonts.fontSemiBold,
-    marginTop: 20,
-    marginBottom: 8,
-  },
-  text: {
-    color: Colors.GRAY_DARK,
-    fontSize: FontSize.FONT_SIZE_14,
-    fontFamily: Fonts.fontRegular,
-    lineHeight: 22,
-    opacity: 0.95,
-  },
-  bulletRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
-    marginBottom: 6,
-  },
-  bulletDot: {
-    color: '#2b5cff',
-    fontSize: 18,
-    lineHeight: 20,
-  },
-  bulletText: {
-    flex: 1,
-    color: Colors.GRAY_DARK,
-    fontSize: FontSize.FONT_SIZE_14,
-    fontFamily: Fonts.fontRegular,
-    lineHeight: 20,
-    opacity: 0.95,
-  },
-});
+const createStyles = (colors, isDark) =>
+  StyleSheet.create({
+    container: {
+      backgroundColor: colors.BACKGROUND,
+    },
+    content: {
+      padding: 16,
+      gap: 14,
+    },
+    hero: {
+      borderRadius: 20,
+      padding: 16,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      backgroundColor: colors.CARD,
+      borderWidth: 1,
+      borderColor: colors.GRAY_LIGHT,
+      shadowColor: colors.BLACK,
+      shadowOpacity: isDark ? 0.25 : 0.05,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 3,
+    },
+    heroLogo: {
+      width: 72,
+      height: 72,
+    },
+    heroTextWrap: {
+      flex: 1,
+      gap: 6,
+    },
+    heroTitle: {
+      fontFamily: Fonts.fontBold,
+      fontSize: FontSize.FONT_SIZE_18,
+      color: colors.TEXT,
+    },
+    heroSubtitle: {
+      fontFamily: Fonts.fontRegular,
+      fontSize: FontSize.FONT_SIZE_14,
+      color: colors.GREY,
+      lineHeight: 20,
+    },
+    card: {
+      backgroundColor: colors.CARD,
+      borderRadius: 14,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: colors.GRAY_LIGHT,
+      shadowColor: colors.BLACK,
+      shadowOpacity: isDark ? 0.25 : 0.05,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 3,
+    },
+    cardRow: {
+      flexDirection: 'row',
+      gap: 12,
+    },
+    miniCard: {
+      flex: 1,
+      backgroundColor: colors.CARD,
+      borderRadius: 14,
+      padding: 14,
+      borderWidth: 1,
+      borderColor: colors.GRAY_LIGHT,
+    },
+    sectionTitle: {
+      color: colors.TEXT,
+      fontSize: FontSize.FONT_SIZE_16,
+      fontFamily: Fonts.fontSemiBold,
+      marginBottom: 8,
+    },
+    subtitle: {
+      color: colors.TEXT,
+      fontSize: FontSize.FONT_SIZE_16,
+      fontFamily: Fonts.fontSemiBold,
+      marginTop: 20,
+      marginBottom: 8,
+    },
+    text: {
+      color: colors.GREY,
+      fontSize: FontSize.FONT_SIZE_14,
+      fontFamily: Fonts.fontRegular,
+      lineHeight: 22,
+    },
+    bulletRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 8,
+      marginBottom: 6,
+    },
+    bulletDot: {
+      color: colors.PRIMARY,
+      fontSize: 18,
+      lineHeight: 20,
+    },
+    bulletText: {
+      flex: 1,
+      color: colors.GREY,
+      fontSize: FontSize.FONT_SIZE_14,
+      fontFamily: Fonts.fontRegular,
+      lineHeight: 20,
+    },
+  });

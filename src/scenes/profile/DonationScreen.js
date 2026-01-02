@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import MaterialCommunityIcons from '@react-native-vector-icons/material-design-i
 import Clipboard from '@react-native-clipboard/clipboard';
 import LinearGradient from 'react-native-linear-gradient';
 import { BaseView } from '../../components';
-import { Colors, Sizes } from '../../styles';
+import { Colors, Sizes, useThemeColors } from '../../styles';
 import { Fonts } from '../../constants';
 import {
   binance,
@@ -24,6 +24,7 @@ import {
 } from '../../assets/images';
 import FastImage from '@d11/react-native-fast-image';
 import { useNavigation } from '@react-navigation/native';
+import useThemeStore from '../../store/useThemeStore';
 
 /// --- DATA DONASI ---
 const DONATION_OPTIONS = [
@@ -87,6 +88,10 @@ const DONATION_OPTIONS = [
 
 const DonationScreen = () => {
   const navigation = useNavigation();
+  const colors = useThemeColors();
+  const theme = useThemeStore(state => state.theme);
+  const isDark = theme === 'dark';
+  const styles = useMemo(() => createStyles(colors, isDark), [colors, isDark]);
 
   // Fungsi untuk menangani aksi donasi (link atau copy)
   const handleDonationAction = option => {
@@ -157,7 +162,7 @@ const DonationScreen = () => {
       title="Dukungan & Donasi"
       isScrollable={false}
       onBackPress={() => navigation.pop()}
-      containerStyle={{ flex: 1, backgroundColor: '#f2f4f8' }}
+      containerStyle={{ flex: 1, backgroundColor: colors.BACKGROUND }}
     >
       <ScrollView
         style={{ flex: 1 }}
@@ -186,94 +191,97 @@ const DonationScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 40,
-    gap: 12,
-  },
-  hero: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#e4e8f0',
-    shadowColor: '#0d1b2a',
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-  },
-  heroTextWrap: { gap: 6 },
-  heroTitle: {
-    fontFamily: Fonts.fontBold,
-    fontSize: Sizes.CUSTOM_SIZE(18),
-    color: Colors.TEXT,
-  },
-  heroSubtitle: {
-    fontFamily: Fonts.fontRegular,
-    fontSize: Sizes.CUSTOM_SIZE(12),
-    color: Colors.GRAY_DARK,
-    lineHeight: 18,
-  },
-  optionsList: {
-    marginTop: 8,
-    gap: 10,
-  },
-  cardContainer: {
-    borderRadius: 14,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#e4e8f0',
-    backgroundColor: '#ffffff',
-    shadowColor: '#0d1b2a',
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-  },
-  gradientCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 15,
-  },
-  icon: {
-    width: 40,
-    height: 40,
-    textAlign: 'center',
-  },
-  textWrapper: {
-    flex: 1,
-    marginLeft: 15,
-  },
-  cardTitle: {
-    fontFamily: Fonts.fontSemiBold,
-    fontSize: Sizes.CUSTOM_SIZE(14),
-    color: Colors.TEXT,
-  },
-  cardDescription: {
-    fontFamily: Fonts.fontRegular,
-    fontSize: Sizes.CUSTOM_SIZE(11),
-    color: Colors.TEXT,
-    marginTop: 2,
-  },
-  addressText: {
-    fontFamily: Fonts.fontItalic,
-    fontSize: Sizes.CUSTOM_SIZE(10),
-    color: Colors.TEXT,
-    marginTop: 5,
-  },
-  actionButton: {
-    padding: 8,
-    borderRadius: 50,
-    backgroundColor: Colors.PRIMARY,
-    marginLeft: 10,
-  },
-  footerNote: {
-    fontFamily: Fonts.fontMedium,
-    fontSize: Sizes.CUSTOM_SIZE(12),
-    color: Colors.TEXT,
-    textAlign: 'center',
-    marginTop: 20,
-  },
-});
+const createStyles = (colors, isDark) =>
+  StyleSheet.create({
+    scrollContent: {
+      padding: 16,
+      paddingBottom: 40,
+      gap: 12,
+    },
+    hero: {
+      backgroundColor: colors.CARD,
+      borderRadius: 16,
+      padding: 16,
+      borderWidth: 1,
+      borderColor: colors.GRAY_LIGHT,
+      shadowColor: colors.BLACK,
+      shadowOpacity: isDark ? 0.25 : 0.05,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 3,
+    },
+    heroTextWrap: { gap: 6 },
+    heroTitle: {
+      fontFamily: Fonts.fontBold,
+      fontSize: Sizes.CUSTOM_SIZE(18),
+      color: colors.TEXT,
+    },
+    heroSubtitle: {
+      fontFamily: Fonts.fontRegular,
+      fontSize: Sizes.CUSTOM_SIZE(12),
+      color: colors.GREY,
+      lineHeight: 18,
+    },
+    optionsList: {
+      marginTop: 8,
+      gap: 10,
+    },
+    cardContainer: {
+      borderRadius: 14,
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderColor: colors.GRAY_LIGHT,
+      backgroundColor: colors.CARD,
+      shadowColor: colors.BLACK,
+      shadowOpacity: isDark ? 0.25 : 0.05,
+      shadowRadius: 6,
+      shadowOffset: { width: 0, height: 2 },
+      elevation: 3,
+    },
+    gradientCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 15,
+    },
+    icon: {
+      width: 40,
+      height: 40,
+      textAlign: 'center',
+    },
+    textWrapper: {
+      flex: 1,
+      marginLeft: 15,
+    },
+    cardTitle: {
+      fontFamily: Fonts.fontSemiBold,
+      fontSize: Sizes.CUSTOM_SIZE(14),
+      color: colors.TEXT,
+    },
+    cardDescription: {
+      fontFamily: Fonts.fontRegular,
+      fontSize: Sizes.CUSTOM_SIZE(11),
+      color: colors.TEXT,
+      marginTop: 2,
+    },
+    addressText: {
+      fontFamily: Fonts.fontItalic,
+      fontSize: Sizes.CUSTOM_SIZE(10),
+      color: colors.TEXT,
+      marginTop: 5,
+    },
+    actionButton: {
+      padding: 8,
+      borderRadius: 50,
+      backgroundColor: colors.PRIMARY,
+      marginLeft: 10,
+    },
+    footerNote: {
+      fontFamily: Fonts.fontMedium,
+      fontSize: Sizes.CUSTOM_SIZE(12),
+      color: colors.TEXT,
+      textAlign: 'center',
+      marginTop: 20,
+    },
+  });
 
 export default DonationScreen;

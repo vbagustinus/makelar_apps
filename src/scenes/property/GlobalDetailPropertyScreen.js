@@ -10,6 +10,7 @@ import {
   Dimensions,
   Linking,
   Alert,
+  StatusBar,
 } from 'react-native';
 import MaterialCommunityIcons from '@react-native-vector-icons/material-design-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';

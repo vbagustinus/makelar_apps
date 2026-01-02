@@ -20,7 +20,7 @@ import { Fonts, propertyCategories } from '../../constants';
 import { getString, zustandMMKVStorage } from '../../helpers';
 import useAuthStore from '../../store/useAuthStore';
 import usePropertyStore from '../../store/usePropertyStore';
-import { useThemeColors } from '../../styles';
+import { Colors, useThemeColors } from '../../styles';
 import useThemeStore from '../../store/useThemeStore';
 import { Text } from '../../components';
 import { banner1, banner2, banner3, banner4 } from '../../assets/images';
@@ -515,7 +515,7 @@ const PropertyCard = ({ item, onPress, colors, withCurrency, styles }) => (
         source={{ uri: item.imageUrl || item.image }}
         style={styles.cardImage}
       />
-      <View style={[styles.cardBadge, { backgroundColor: colors.WHITE }]}>
+      <View style={[styles.cardBadge, { backgroundColor: colors.HAZE }]}>
         <Text style={[styles.cardBadgeText, { color: colors.TEXT }]}>
           {item?.propertyTypeName ||
             item?.propertyType?.name ||
@@ -820,6 +820,7 @@ const createStyles = colors =>
     cardBadgeText: {
       fontSize: 11,
       fontFamily: Fonts.fontMedium,
+      color: Colors.TEXT
     },
     cardHeart: {
       position: 'absolute',
