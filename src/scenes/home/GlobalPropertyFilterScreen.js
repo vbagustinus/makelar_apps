@@ -12,6 +12,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { BaseView, DropdownSearchableDefault } from '../../components';
 import { Fonts, propertyCategories, propertyStatuses } from '../../constants';
 import { useThemeColors } from '../../styles';
+import { setItem } from '../../helpers';
 
 function GlobalPropertyFilterScreen() {
   const navigation = useNavigation();
@@ -31,6 +32,12 @@ function GlobalPropertyFilterScreen() {
 
   const handleApply = () => {
     const filters = { propertyType, status, search: searchQuery };
+    const parts = [];
+    if (searchQuery) parts.push(`Cari: ${searchQuery}`);
+    if (propertyType?.name) parts.push(propertyType.name);
+    if (status?.name) parts.push(status.name);
+    const label = parts.length ? parts.join(' • ') : 'Semua properti';
+    setItem('lastFilterLabel', label);
     navigation.navigate('Main', {
       screen: 'Semua',
       params: { filters, updatedAt: Date.now() },
@@ -42,12 +49,20 @@ function GlobalPropertyFilterScreen() {
     setPropertyType(null);
     setStatus(null);
     setSearchQuery('');
+    setItem('lastFilterLabel', 'Semua properti');
+    // navigation.navigate('Main', {
+    //   screen: 'Semua',
+    //   params: { filters: null, updatedAt: Date.now() },
+    //   merge: true,
+    // });
+    navigation.goBack();
   };
 
   return (
     <BaseView
       title="Filter Properti"
-      disableLeftMenu
+      // disableLeftMenu
+      onBackPress={navigation.goBack}
       containerStyle={{ flex: 1, backgroundColor: colors.BACKGROUND }}
     >
       <ScrollView

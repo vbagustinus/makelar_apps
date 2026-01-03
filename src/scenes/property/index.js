@@ -394,10 +394,7 @@ function PropertyScreen() {
         </View>
 
         <Animated.View
-          style={[
-            { overflow: 'hidden' },
-            collapsibleStyle,
-          ]}
+          style={[{ overflow: 'hidden' }, collapsibleStyle]}
           onLayout={e => {
             if (bodyHeightRef.current === 0) {
               bodyHeightRef.current = e.nativeEvent.layout.height;
@@ -569,8 +566,7 @@ const createStyles = colors =>
       overflow: 'hidden',
       backgroundColor: 'transparent',
     },
-    stickyHeader: {
-    },
+    stickyHeader: {},
     hero: {
       // flexDirection: 'row',
       justifyContent: 'space-between',

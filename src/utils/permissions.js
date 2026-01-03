@@ -26,6 +26,20 @@ export const requestLocationPermission = async () => {
 
       if (granted === PermissionsAndroid.RESULTS.GRANTED) return true;
 
+      // fallback: ask for coarse if fine denied but coarse available
+      const coarseGranted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+        {
+          title: 'Izin Lokasi Dibutuhkan',
+          message:
+            'Aplikasi ini memerlukan akses lokasi untuk menampilkan posisi Anda di peta.',
+          buttonPositive: 'Izinkan',
+          buttonNegative: 'Tolak',
+        },
+      );
+
+      if (coarseGranted === PermissionsAndroid.RESULTS.GRANTED) return true;
+
       showSettingsAlert(
         'Izin Lokasi Ditolak',
         'Silakan aktifkan izin lokasi di pengaturan aplikasi.',
@@ -33,6 +47,9 @@ export const requestLocationPermission = async () => {
     } catch (err) {
       console.warn(err);
     }
+  } else {
+    // iOS permission handled via plist, assume granted after prompt
+    return true;
   }
   return false;
 };

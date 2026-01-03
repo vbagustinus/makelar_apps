@@ -1,29 +1,40 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   ActivityIndicator,
   Dimensions,
   FlatList,
+  Linking,
   RefreshControl,
   ScrollView,
   StatusBar,
   StyleSheet,
   TouchableOpacity,
   View,
+  Platform,
 } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import FastImage from '@d11/react-native-fast-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
-import { useNavigation } from '@react-navigation/native';
+import Geolocation from '@react-native-community/geolocation';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Fonts, propertyCategories } from '../../constants';
-import { getString, zustandMMKVStorage } from '../../helpers';
+import { getString, setItem, zustandMMKVStorage } from '../../helpers';
+import { requestLocationPermission } from '../../utils/permissions';
 import useAuthStore from '../../store/useAuthStore';
 import usePropertyStore from '../../store/usePropertyStore';
 import { Colors, useThemeColors } from '../../styles';
 import useThemeStore from '../../store/useThemeStore';
 import { Text } from '../../components';
 import { banner1, banner2, banner3, banner4 } from '../../assets/images';
+import dayjs from 'dayjs';
 
 const { width } = Dimensions.get('window');
 
@@ -75,11 +86,25 @@ const HomeScreen = () => {
   const theme = useThemeStore(state => state.theme);
   const colors = useThemeColors();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const isMountedRef = useRef(true);
 
   const [activeCategory, setActiveCategory] = useState(
     propertyCategories?.[0]?.name || 'Rumah',
   );
   const [refreshing, setRefreshing] = useState(false);
+  const [locationLabel, setLocationLabel] = useState(
+    getString('lastLocationLabel') || 'Memuat lokasi...',
+  );
+  const [locating, setLocating] = useState(false);
+  const [locationError, setLocationError] = useState(false);
+  const [lastFilterLabel, setLastFilterLabel] = useState(
+    getString('lastFilterLabel') || 'Semua properti',
+  );
+  const [locationTimestamp, setLocationTimestamp] = useState(() => {
+    const saved = getString('lastLocationTime');
+    return saved ? Number(saved) : null;
+  });
+  const lastGeoRequestRef = useRef(0);
 
   const fetchUserData = useAuthStore(state => state.fetchUserData);
   const token = useAuthStore(state => state.token);
@@ -89,6 +114,7 @@ const HomeScreen = () => {
     totalProperties,
     totalForSale,
     totalForRent,
+    totalPropertyLoading,
     fetchPropertyCounts,
     fetchLatestProperties,
     fetchAllProperties,
@@ -113,11 +139,159 @@ const HomeScreen = () => {
   };
 
   const goToPropertyGlobalScreen = filters => {
+    if (filters?.propertyType?.name || filters?.propertyType?.id) {
+      const name = filters.propertyType.name || filters.propertyType.id;
+      setLastFilterLabel(`Tipe: ${name}`);
+      setItem('lastFilterLabel', `Tipe: ${name}`);
+    } else if (filters === null) {
+      setLastFilterLabel('Semua properti');
+      setItem('lastFilterLabel', 'Semua properti');
+    }
     navigation.navigate('Semua', {
       filters,
       updatedAt: Date.now(),
     });
   };
+
+  const openFilterScreen = () => {
+    setLastFilterLabel('Filter kustom');
+    setItem('lastFilterLabel', 'Filter kustom');
+    navigation.navigate('GlobalPropertyFilterScreen');
+  };
+
+  const fetchCityByCoords = async (latitude, longitude, signal) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`,
+        {
+          headers: {
+            'User-Agent': 'MakelarApp/1.0 (support@makelar.local)',
+          },
+          signal,
+        },
+      );
+      if (!response.ok) {
+        throw new Error('reverse geocode failed');
+      }
+      const data = await response.json();
+      const addr = data?.address || {};
+      return (
+        addr.city ||
+        addr.town ||
+        addr.village ||
+        addr.county ||
+        addr.state ||
+        'Lokasi ditemukan'
+      );
+    } catch (error) {
+      console.log('Reverse geocode error', error?.message);
+      if (signal?.aborted) return null;
+      return null;
+    }
+  };
+
+  const getCurrentPositionWithTimeout = () =>
+    new Promise(resolve => {
+      let didReturn = false;
+      const timer = setTimeout(() => {
+        if (!didReturn) {
+          didReturn = true;
+          resolve(null);
+        }
+      }, 12000);
+
+      Geolocation.getCurrentPosition(
+        pos => {
+          if (!didReturn) {
+            didReturn = true;
+            clearTimeout(timer);
+            resolve(pos);
+          }
+        },
+        error => {
+          console.log('Geolocation error', error?.message);
+          if (!didReturn) {
+            didReturn = true;
+            clearTimeout(timer);
+            resolve(null);
+          }
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+      );
+    });
+
+  const renderSkeletonGrid = (count = 4) => (
+    <View style={styles.skeletonGrid}>
+      {Array.from({ length: count }).map((_, idx) => (
+        <View key={idx} style={styles.skeletonCard}>
+          <View style={styles.skeletonImage} />
+          <View style={styles.skeletonLineShort} />
+          <View style={styles.skeletonLineLong} />
+        </View>
+      ))}
+    </View>
+  );
+
+  const openAppSettings = () => {
+    Linking.openSettings?.();
+  };
+
+  const updateUserLocation = useCallback(async () => {
+    if (locating) return;
+    const now = Date.now();
+    if (now - lastGeoRequestRef.current < 5000) {
+      return;
+    }
+    lastGeoRequestRef.current = now;
+    setLocating(true);
+    setLocationError(false);
+    setLocationLabel('Mendeteksi lokasi...');
+    const abortController = new AbortController();
+    try {
+      if (Platform.OS === 'ios' && Geolocation.requestAuthorization) {
+        Geolocation.requestAuthorization('whenInUse');
+      }
+      const granted = await requestLocationPermission();
+      if (!granted) {
+        setLocationLabel('Lokasi tidak aktif');
+        setLocationError(true);
+        return;
+      }
+
+      const position = await getCurrentPositionWithTimeout();
+
+      if (!position?.coords) {
+        setLocationLabel('Tidak dapat mengambil lokasi');
+        setLocationError(true);
+        return;
+      }
+
+      const { latitude, longitude } = position.coords;
+      const city = await fetchCityByCoords(
+        latitude,
+        longitude,
+        abortController.signal,
+      );
+      if (isMountedRef.current) {
+        setLocationLabel(
+          city || `Lat ${latitude.toFixed(2)}, Lon ${longitude.toFixed(2)}`,
+        );
+        setLocationTimestamp(now);
+        setItem(
+          'lastLocationLabel',
+          city || `Lat ${latitude.toFixed(2)}, Lon ${longitude.toFixed(2)}`,
+        );
+        setItem('lastLocationTime', String(now));
+        setItem('lastLat', String(latitude));
+        setItem('lastLon', String(longitude));
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setLocating(false);
+      }
+      abortController.abort();
+    }
+  }, [locating]);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -145,6 +319,22 @@ const HomeScreen = () => {
   useEffect(() => {
     initialData();
   }, [initialData, user]);
+
+  useEffect(() => {
+    updateUserLocation();
+  }, [updateUserLocation]);
+
+  useFocusEffect(
+    useCallback(() => {
+      setLastFilterLabel(getString('lastFilterLabel') || 'Semua properti');
+    }, []),
+  );
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -178,59 +368,78 @@ const HomeScreen = () => {
         }
         style={StyleSheet.absoluteFill}
       />
-      <View style={[styles.headerRow, { paddingTop: insets.top + 12 },]}>
-          <View style={styles.locationRow}>
-            <View style={styles.locationIcon}>
-              <MaterialDesignIcons
-                name="map-marker-radius"
-                size={20}
-                color={colors.PRIMARY}
-              />
-            </View>
-            <View>
-              <Text style={styles.locationLabel}>Lokasi Anda</Text>
-              <TouchableOpacity
-                style={styles.locationSelector}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.locationValue}>Jakarta, Indonesia</Text>
+      <View style={[styles.headerRow, { paddingTop: insets.top + 12 }]}>
+        <View style={styles.locationRow}>
+          <View style={styles.locationIcon}>
+            <MaterialDesignIcons
+              name="map-marker-radius"
+              size={20}
+              color={colors.PRIMARY}
+            />
+          </View>
+          <View>
+            <Text style={styles.locationLabel}>Lokasi Anda</Text>
+            <TouchableOpacity
+              style={styles.locationSelector}
+              activeOpacity={0.8}
+              onPress={updateUserLocation}
+            >
+              <Text style={styles.locationValue}>
+                {locating ? 'Mendeteksi...' : locationLabel}
+                {locationTimestamp && !locating
+                  ? ` • ${dayjs(locationTimestamp).format('HH:mm')}`
+                  : ''}
+              </Text>
+              {!locationError && (
                 <MaterialDesignIcons
-                  name="chevron-down"
+                  name="refresh"
                   size={18}
                   color={colors.TEXT}
                 />
+              )}
+            </TouchableOpacity>
+            {locationError ? (
+              <TouchableOpacity
+                style={styles.locationSettings}
+                onPress={openAppSettings}
+                activeOpacity={0.8}
+              >
+                <MaterialDesignIcons
+                  name="cog-outline"
+                  size={16}
+                  color={colors.PRIMARY}
+                />
+                <Text style={styles.locationSettingsText}>Buka Pengaturan</Text>
               </TouchableOpacity>
-            </View>
+            ) : null}
           </View>
-          <View style={styles.headerActions}>
-            <TouchableOpacity style={styles.iconButton} activeOpacity={0.8}>
+        </View>
+        <View style={styles.headerActions}>
+          {/* <TouchableOpacity style={styles.iconButton} activeOpacity={0.8}>
               <MaterialDesignIcons
                 name="bell-outline"
                 size={20}
                 color={colors.TEXT}
               />
               <View style={styles.notificationDot} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.iconButton}
-              activeOpacity={0.8}
-              onPress={() => navigation.navigate('SettingsScreen')}
-            >
-              <MaterialDesignIcons
-                name="tune-variant"
-                size={20}
-                color={colors.TEXT}
-              />
-            </TouchableOpacity>
-          </View>
+            </TouchableOpacity> */}
+          <TouchableOpacity
+            style={styles.iconButton}
+            activeOpacity={0.8}
+            onPress={() => navigation.navigate('SettingsScreen')}
+          >
+            <MaterialDesignIcons
+              name="tune-variant"
+              size={20}
+              color={colors.TEXT}
+            />
+          </TouchableOpacity>
         </View>
+      </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[
-          styles.scrollContent,
-          
-        ]}
+        contentContainerStyle={[styles.scrollContent]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -239,7 +448,6 @@ const HomeScreen = () => {
           />
         }
       >
-        
         <View style={styles.searchRow}>
           <TouchableOpacity
             style={styles.searchInput}
@@ -253,12 +461,28 @@ const HomeScreen = () => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.filterButton}
-            onPress={() => navigation.navigate('GlobalPropertyFilterScreen')}
+            onPress={openFilterScreen}
             activeOpacity={0.85}
           >
             <MaterialDesignIcons name="tune" size={20} color={colors.WHITE} />
           </TouchableOpacity>
         </View>
+
+        {/* <View style={styles.filterChipRow}>
+          <MaterialDesignIcons
+            name="filter-variant"
+            size={16}
+            color={colors.PRIMARY}
+          />
+          <Text style={styles.filterChipText}>{lastFilterLabel}</Text>
+          <TouchableOpacity
+            onPress={openFilterScreen}
+            activeOpacity={0.8}
+            style={styles.filterChipAction}
+          >
+            <Text style={styles.filterChipActionText}>Atur</Text>
+          </TouchableOpacity>
+        </View> */}
 
         <ScrollView
           horizontal
@@ -324,7 +548,7 @@ const HomeScreen = () => {
             style={styles.heroOverlay}
           />
           <View style={styles.heroContent}>
-            <Text style={styles.heroLabel}>Promo Spesial</Text>
+            <Text style={styles.heroLabel}></Text>
             <Text style={styles.heroTitle}>
               Jual Beli & Sewa Jadi Lebih Mudah
             </Text>
@@ -348,34 +572,44 @@ const HomeScreen = () => {
           </View>
         </Animated.View>
 
-        {(token || tokenStorage) && (
-          <Animated.View
-            entering={FadeInDown.delay(150)}
-            style={styles.dashboardRow}
-          >
-            <DashboardStat
-              icon="home-analytics"
-              label="Total Properti"
-              value={totalProperties || 0}
-              colors={colors}
-              styles={styles}
-            />
-            <DashboardStat
-              icon="sale"
-              label="Properti Dijual"
-              value={totalForSale || 0}
-              colors={colors}
-              styles={styles}
-            />
-            <DashboardStat
-              icon="home-import-outline"
-              label="Properti Disewa"
-              value={totalForRent || 0}
-              colors={colors}
-              styles={styles}
-            />
-          </Animated.View>
-        )}
+        {(token || tokenStorage) &&
+          (totalPropertyLoading ? (
+            <Animated.View
+              entering={FadeInDown.delay(120)}
+              style={styles.dashboardRow}
+            >
+              {[1, 2, 3].map(item => (
+                <View key={item} style={styles.statSkeleton} />
+              ))}
+            </Animated.View>
+          ) : (
+            <Animated.View
+              entering={FadeInDown.delay(150)}
+              style={styles.dashboardRow}
+            >
+              <DashboardStat
+                icon="home-analytics"
+                label="Total Properti"
+                value={totalProperties || 0}
+                colors={colors}
+                styles={styles}
+              />
+              <DashboardStat
+                icon="sale"
+                label="Properti Dijual"
+                value={totalForSale || 0}
+                colors={colors}
+                styles={styles}
+              />
+              <DashboardStat
+                icon="home-import-outline"
+                label="Properti Disewa"
+                value={totalForRent || 0}
+                colors={colors}
+                styles={styles}
+              />
+            </Animated.View>
+          ))}
 
         <Animated.View
           entering={FadeInDown.delay(200)}
@@ -385,10 +619,7 @@ const HomeScreen = () => {
             <Text style={styles.sectionTitle}>Properti Terbaru Anda</Text>
           </View>
           {latestPropertiesLoading ? (
-            <ActivityIndicator
-              color={colors.PRIMARY}
-              style={{ marginVertical: 20 }}
-            />
+            renderSkeletonGrid(4)
           ) : latestList.length ? (
             <FlatList
               data={latestList}
@@ -455,10 +686,7 @@ const HomeScreen = () => {
             </TouchableOpacity>
           </View>
           {listAllPropertiesLoading ? (
-            <ActivityIndicator
-              color={colors.PRIMARY}
-              style={{ marginVertical: 20 }}
-            />
+            renderSkeletonGrid(6)
           ) : (
             <FlatList
               data={globalList}
@@ -606,7 +834,23 @@ const createStyles = colors =>
       fontSize: 16,
       fontFamily: Fonts.fontSemiBold,
     },
-    headerActions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+    locationSettings: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      marginTop: 4,
+    },
+    locationSettingsText: {
+      color: colors.PRIMARY,
+      fontFamily: Fonts.fontSemiBold,
+      fontSize: 12,
+    },
+    headerActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      marginRight: 20,
+    },
     iconButton: {
       width: 40,
       height: 40,
@@ -661,6 +905,36 @@ const createStyles = colors =>
       shadowRadius: 10,
       shadowOffset: { width: 0, height: 4 },
       elevation: 5,
+    },
+    filterChipRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      marginTop: 6,
+      backgroundColor: colors.CARD,
+      borderRadius: 14,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderWidth: 1,
+      borderColor: colors.GRAY_LIGHT,
+      alignSelf: 'flex-start',
+    },
+    filterChipText: {
+      color: colors.TEXT,
+      fontSize: 12,
+      fontFamily: Fonts.fontRegular,
+    },
+    filterChipAction: {
+      marginLeft: 6,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: 10,
+      backgroundColor: colors.HAZE,
+    },
+    filterChipActionText: {
+      color: colors.PRIMARY,
+      fontFamily: Fonts.fontSemiBold,
+      fontSize: 12,
     },
     categoryContainer: { marginTop: 10 },
     categoryChip: {
@@ -747,6 +1021,14 @@ const createStyles = colors =>
       gap: 10,
       marginTop: 4,
     },
+    statSkeleton: {
+      flex: 1,
+      height: 90,
+      borderRadius: 18,
+      backgroundColor: colors.HAZE,
+      borderWidth: 1,
+      borderColor: colors.GRAY_LIGHT,
+    },
     statCard: {
       flex: 1,
       padding: 12,
@@ -820,7 +1102,7 @@ const createStyles = colors =>
     cardBadgeText: {
       fontSize: 11,
       fontFamily: Fonts.fontMedium,
-      color: Colors.TEXT
+      color: Colors.TEXT,
     },
     cardHeart: {
       position: 'absolute',
@@ -915,6 +1197,39 @@ const createStyles = colors =>
       borderRadius: 32,
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    skeletonGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 12,
+    },
+    skeletonCard: {
+      width: (width - 16 * 2 - 12) / 2,
+      backgroundColor: colors.CARD,
+      borderRadius: 16,
+      padding: 12,
+      borderWidth: 1,
+      borderColor: colors.GRAY_LIGHT,
+    },
+    skeletonImage: {
+      width: '100%',
+      height: 110,
+      borderRadius: 12,
+      backgroundColor: colors.HAZE,
+      marginBottom: 10,
+    },
+    skeletonLineShort: {
+      width: '60%',
+      height: 12,
+      backgroundColor: colors.HAZE,
+      borderRadius: 8,
+      marginBottom: 6,
+    },
+    skeletonLineLong: {
+      width: '80%',
+      height: 12,
+      backgroundColor: colors.HAZE,
+      borderRadius: 8,
     },
   });
 

@@ -153,7 +153,9 @@ const GlobalDetailPropertyScreen = () => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle={colors.BACKGROUND === '#0D1B2D' ? 'light-content' : 'dark-content'}
+        barStyle={
+          colors.BACKGROUND === '#0D1B2D' ? 'light-content' : 'dark-content'
+        }
       />
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -182,7 +184,10 @@ const GlobalDetailPropertyScreen = () => {
             <TouchableOpacity
               style={[
                 styles.iconCircle,
-                { backgroundColor: colors.CARD, borderColor: colors.GRAY_LIGHT },
+                {
+                  backgroundColor: colors.CARD,
+                  borderColor: colors.GRAY_LIGHT,
+                },
               ]}
               onPress={() => navigation.goBack()}
             >
@@ -195,7 +200,10 @@ const GlobalDetailPropertyScreen = () => {
             <TouchableOpacity
               style={[
                 styles.iconCircle,
-                { backgroundColor: colors.CARD, borderColor: colors.GRAY_LIGHT },
+                {
+                  backgroundColor: colors.CARD,
+                  borderColor: colors.GRAY_LIGHT,
+                },
               ]}
             >
               <MaterialCommunityIcons
@@ -269,7 +277,9 @@ const GlobalDetailPropertyScreen = () => {
                 },
               ]}
             >
-              <Text style={[styles.badgeSecondaryText, { color: colors.PRIMARY }]}>
+              <Text
+                style={[styles.badgeSecondaryText, { color: colors.PRIMARY }]}
+              >
                 Recommended
               </Text>
             </View>
@@ -285,7 +295,10 @@ const GlobalDetailPropertyScreen = () => {
             <View
               style={[
                 styles.tag,
-                { backgroundColor: statusChipBg, borderColor: colors.GRAY_LIGHT },
+                {
+                  backgroundColor: statusChipBg,
+                  borderColor: colors.GRAY_LIGHT,
+                },
               ]}
             >
               <MaterialCommunityIcons
@@ -301,7 +314,10 @@ const GlobalDetailPropertyScreen = () => {
               <View
                 style={[
                   styles.tag,
-                  { backgroundColor: statusChipBg, borderColor: colors.GRAY_LIGHT },
+                  {
+                    backgroundColor: statusChipBg,
+                    borderColor: colors.GRAY_LIGHT,
+                  },
                 ]}
               >
                 <MaterialCommunityIcons
@@ -335,7 +351,13 @@ const GlobalDetailPropertyScreen = () => {
               {item?.distance || 'Dekat'}
             </Text>
             <View style={[styles.bullet, { backgroundColor: colors.GREY }]} />
-            <Text style={[styles.infoText, styles.linkText, { color: colors.PRIMARY }]}>
+            <Text
+              style={[
+                styles.infoText,
+                styles.linkText,
+                { color: colors.PRIMARY },
+              ]}
+            >
               300 Reviews
             </Text>
           </View>
@@ -383,12 +405,16 @@ const GlobalDetailPropertyScreen = () => {
             </>
           )}
 
-          <Text style={[styles.sectionTitle, { color: colors.TEXT }]}>Harga</Text>
+          <Text style={[styles.sectionTitle, { color: colors.TEXT }]}>
+            Harga
+          </Text>
           <Text style={[styles.price, { color: colors.PRIMARY }]}>
             {formatPrice(item?.price)}
           </Text>
 
-          <Text style={[styles.sectionTitle, { marginTop: 16, color: colors.TEXT }]}>
+          <Text
+            style={[styles.sectionTitle, { marginTop: 16, color: colors.TEXT }]}
+          >
             Alamat
           </Text>
           <View style={styles.metaRow}>
@@ -397,8 +423,11 @@ const GlobalDetailPropertyScreen = () => {
               size={18}
               color={colors.TEXT}
             />
-            <Text style={[styles.metaText, { flex: 1, color: colors.TEXT }]} numberOfLines={2}>
-              {addressLine || 'Alamat belum diisi'}
+            <Text
+              style={[styles.metaText, { flex: 1, color: colors.TEXT }]}
+              numberOfLines={2}
+            >
+              {item?.address || 'Alamat belum diisi'}
             </Text>
           </View>
 
@@ -415,7 +444,12 @@ const GlobalDetailPropertyScreen = () => {
 
           {item?.description ? (
             <>
-              <Text style={[styles.sectionTitle, { marginTop: 16, color: colors.TEXT }]}>
+              <Text
+                style={[
+                  styles.sectionTitle,
+                  { marginTop: 16, color: colors.TEXT },
+                ]}
+              >
                 Deskripsi
               </Text>
               <Text style={[styles.description, { color: colors.TEXT }]}>

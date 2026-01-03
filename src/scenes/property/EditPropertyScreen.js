@@ -9,7 +9,7 @@ import {
 } from '../../components';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { launchImageLibrary } from 'react-native-image-picker';
-import { Colors, FontSize, Sizes } from '../../styles';
+import { Colors, FontSize, Sizes, useThemeColors } from '../../styles';
 import {
   propertyCategories,
   propertyStatuses,
@@ -23,6 +23,7 @@ import useAuthStore from '../../store/useAuthStore';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import FastImage from '@d11/react-native-fast-image';
 import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // ===============================================
 // Komponen Layar Tambah Properti
@@ -33,6 +34,9 @@ const EditPropertyScreen = () => {
   const route = useRoute();
   const item = route.params || {};
   const originalImagesRef = useRef(item?.imageUrls || []);
+  const insets = useSafeAreaInsets();
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors, insets), [colors, insets]);
 
   const token = useAuthStore(state => state.token);
   const user = useAuthStore(state => state.user);
@@ -1539,7 +1543,7 @@ const EditPropertyScreen = () => {
 
   return (
     <BaseView
-      title="Tambah Properti Baru"
+      title="Ubah Properti"
       isScrollable={false}
       loading={globalLoading || locationLoading}
       onBackPress={() => navigation.pop()}
@@ -1793,156 +1797,184 @@ const EditPropertyScreen = () => {
           {propertyType?.name === 'Kos/Kontrakan' && renderKosForm()}
           {propertyType?.name === 'Industri/Gudang' && renderWarehouseForm()}
 
-          {/* TOMBOL SIMPAN */}
-          <TouchableOpacity
-            onPress={handleSubmit}
-            disabled={!isFormComplete}
-            style={[styles.submitButton, { opacity: isFormComplete ? 1 : 0.5 }]}
+          {/* TOMBOL UPDATE */}
+          <View
+            style={[
+              styles.submitButtonWrapper,
+              { paddingBottom: insets.bottom + 40 },
+            ]}
           >
-            <Text style={styles.submitText}>Update Aset</Text>
-          </TouchableOpacity>
-          <View style={{ height: 40 }} />
+            <TouchableOpacity
+              onPress={handleSubmit}
+              disabled={!isFormComplete}
+              style={[
+                styles.submitButton,
+                { opacity: isFormComplete ? 1 : 0.5 },
+              ]}
+              activeOpacity={0.9}
+            >
+              <Text style={styles.submitText}>Update Aset</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </KeyboardAwareScrollView>
     </BaseView>
   );
 };
-const styles = StyleSheet.create({
-  screen: { flex: 1, padding: 20, backgroundColor: Colors.WHITE },
-  scrollContainer: { paddingBottom: 120, flexGrow: 1 },
-  submitButton: {
-    width: '100%',
-    alignSelf: 'center',
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
-    backgroundColor: Colors.PRIMARY,
-    paddingVertical: 15,
-  },
-  buttonGradient: {
-    width: '100%',
-    paddingVertical: 15,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.PRIMARY,
-  },
-  submitText: {
-    color: Colors.WHITE,
-    fontFamily: Fonts.fontSemiBold,
-    fontSize: FontSize.MEDIUM,
-  },
-  containerRadioButtonInput: {
-    backgroundColor: '#ffffff30',
-    borderRadius: 12,
-    padding: 12,
-    marginVertical: 10,
-    borderWidth: 1,
-    borderColor: '#ffffff30',
-  },
-  radioButton: { marginTop: 10 },
-  titleRadioButton: {
-    fontSize: 12,
-    color: Colors.GRAY_DARK,
-    marginBottom: 4,
-    fontFamily: Fonts.fontRegular,
-  },
-  imageWrapper: {
-    alignItems: 'center',
-    borderRadius: 14,
-    marginVertical: 8,
-    borderWidth: 1,
-    borderColor: Colors.GRAY_LIGHT, // lebih soft
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    backgroundColor: Colors.WHITE,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  singleAddContainer: {
-    width: '90%',
-    aspectRatio: 1.5,
-    borderRadius: 15,
-    backgroundColor: Colors.WHITE,
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'center',
-    marginVertical: 15,
-    borderWidth: 2,
-    borderColor: Colors.GRAY_DARK,
-    borderStyle: 'dashed',
-  },
-  placeholder: { justifyContent: 'center', alignItems: 'center' },
-  placeholderIcon: { fontSize: 40, color: Colors.GRAY_DARK },
-  placeholderText: {
-    color: Colors.GRAY_DARK,
-    marginTop: 5,
-    fontFamily: Fonts.fontRegular,
-  },
-  photoGrid: { justifyContent: 'center', alignItems: 'center', flex: 1 },
-  mainPhotoContainer: {
-    width: '100%',
-    aspectRatio: 1.5,
-    borderWidth: 1,
-    borderColor: Colors.WHITE_20,
-    overflow: 'hidden',
-    backgroundColor: Colors.BLACK_20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flex: 1,
-  },
-  mainPhoto: { width: '100%', height: '100%' },
-  label: {
-    fontSize: 12,
-    color: Colors.GRAY_DARK,
-    marginBottom: 4,
-    fontFamily: Fonts.fontRegular,
-  },
-  sideGrid: {
-    width: '100%',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  sidePhotoContainer: {
-    width: Sizes.widthScreen / 5.5,
-    height: Sizes.widthScreen / 5.5,
-    borderRadius: 12,
-    backgroundColor: Colors.WHITE_20,
-    margin: 5,
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  sidePhoto: { width: '100%', height: '100%', borderRadius: 12 },
-  addSlotContainer: {
-    backgroundColor: Colors.WHITE_20,
-    borderWidth: 1,
-    borderColor: Colors.WHITE_50,
-  },
-  addText: {
-    color: Colors.GRAY_DARK,
-    fontFamily: Fonts.fontRegular,
-    fontSize: 13,
-  },
-  removeButton: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    backgroundColor: Colors.BLACK_50,
-    borderBottomLeftRadius: 15,
-    padding: 3,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-  },
-});
+const createStyles = (colors, insets) =>
+  StyleSheet.create({
+    screen: { padding: 20, backgroundColor: colors.BACKGROUND },
+    scrollContainer: {
+      flexGrow: 1,
+      paddingBottom: insets.bottom + 80,
+    },
+    submitButton: {
+      width: '100%',
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.PRIMARY,
+      paddingVertical: 16,
+      shadowColor: colors.PRIMARY,
+      shadowOpacity: 0.25,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 6,
+    },
+    submitButtonWrapper: {
+      marginTop: 20,
+      borderRadius: 16,
+      backgroundColor: colors.CARD,
+      padding: 10,
+      shadowColor: colors.BLACK,
+      shadowOpacity: 0.12,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 6 },
+      elevation: 6,
+    },
+    buttonGradient: {
+      width: '100%',
+      paddingVertical: 15,
+      borderRadius: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.PRIMARY,
+    },
+    submitText: {
+      color: colors.WHITE,
+      fontFamily: Fonts.fontSemiBold,
+      fontSize: FontSize.MEDIUM,
+    },
+    containerRadioButtonInput: {
+      backgroundColor: colors.CARD,
+      borderRadius: 12,
+      padding: 12,
+      marginVertical: 10,
+      borderWidth: 1,
+      borderColor: colors.GRAY_LIGHT,
+    },
+    radioButton: { marginTop: 10 },
+    titleRadioButton: {
+      fontSize: 12,
+      color: colors.TEXT,
+      marginBottom: 4,
+      fontFamily: Fonts.fontRegular,
+    },
+    imageWrapper: {
+      alignItems: 'center',
+      borderRadius: 14,
+      marginVertical: 8,
+      borderWidth: 1,
+      borderColor: colors.GRAY_LIGHT,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      backgroundColor: colors.CARD,
+      shadowColor: colors.BLACK,
+      shadowOpacity: 0.04,
+      shadowRadius: 6,
+      shadowOffset: { width: 0, height: 2 },
+      elevation: 2,
+    },
+    singleAddContainer: {
+      width: '90%',
+      aspectRatio: 1.5,
+      borderRadius: 15,
+      backgroundColor: colors.CARD,
+      justifyContent: 'center',
+      alignItems: 'center',
+      alignSelf: 'center',
+      marginVertical: 15,
+      borderWidth: 2,
+      borderColor: colors.GRAY_LIGHT,
+      borderStyle: 'dashed',
+    },
+    placeholder: { justifyContent: 'center', alignItems: 'center' },
+    placeholderIcon: { fontSize: 40, color: colors.GREY },
+    placeholderText: {
+      color: colors.GREY,
+      marginTop: 5,
+      fontFamily: Fonts.fontRegular,
+    },
+    photoGrid: { justifyContent: 'center', alignItems: 'center', flex: 1 },
+    mainPhotoContainer: {
+      width: '100%',
+      aspectRatio: 1.5,
+      borderWidth: 1,
+      borderColor: colors.WHITE_20,
+      overflow: 'hidden',
+      backgroundColor: colors.HAZE,
+      justifyContent: 'center',
+      alignItems: 'center',
+      flex: 1,
+    },
+    mainPhoto: { width: '100%', height: '100%' },
+    label: {
+      fontSize: 12,
+      color: colors.GRAY_DARK,
+      marginBottom: 4,
+      fontFamily: Fonts.fontRegular,
+    },
+    sideGrid: {
+      width: '100%',
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 20,
+    },
+    sidePhotoContainer: {
+      width: Sizes.widthScreen / 5.5,
+      height: Sizes.widthScreen / 5.5,
+      borderRadius: 12,
+      backgroundColor: colors.WHITE_20,
+      margin: 5,
+      justifyContent: 'center',
+      alignItems: 'center',
+      overflow: 'hidden',
+      position: 'relative',
+    },
+    sidePhoto: { width: '100%', height: '100%', borderRadius: 12 },
+    addSlotContainer: {
+      backgroundColor: colors.WHITE_20,
+      borderWidth: 1,
+      borderColor: colors.WHITE_50,
+    },
+    addText: {
+      color: colors.TEXT,
+      fontFamily: Fonts.fontRegular,
+      fontSize: 13,
+    },
+    removeButton: {
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      backgroundColor: colors.BLACK_50,
+      borderBottomLeftRadius: 15,
+      padding: 3,
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 10,
+    },
+  });
 
 export default EditPropertyScreen;

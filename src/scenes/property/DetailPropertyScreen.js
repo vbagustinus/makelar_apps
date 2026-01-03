@@ -65,6 +65,7 @@ const DetailPropertyScreen = () => {
     ].filter(Boolean);
     return locationParts.join(', ');
   }, [item.address, item.village, item.district, item.city, item.province]);
+  console.log('addressLine', item);
 
   const featureCards = useMemo(
     () =>
@@ -138,7 +139,9 @@ const DetailPropertyScreen = () => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle={colors.BACKGROUND === '#0D1B2D' ? 'light-content' : 'dark-content'}
+        barStyle={
+          colors.BACKGROUND === '#0D1B2D' ? 'light-content' : 'dark-content'
+        }
       />
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -167,7 +170,10 @@ const DetailPropertyScreen = () => {
             <TouchableOpacity
               style={[
                 styles.iconCircle,
-                { backgroundColor: colors.CARD, borderColor: colors.GRAY_LIGHT },
+                {
+                  backgroundColor: colors.CARD,
+                  borderColor: colors.GRAY_LIGHT,
+                },
               ]}
               onPress={() => navigation.goBack()}
             >
@@ -180,7 +186,10 @@ const DetailPropertyScreen = () => {
             <TouchableOpacity
               style={[
                 styles.iconCircle,
-                { backgroundColor: colors.CARD, borderColor: colors.GRAY_LIGHT },
+                {
+                  backgroundColor: colors.CARD,
+                  borderColor: colors.GRAY_LIGHT,
+                },
               ]}
             >
               <MaterialCommunityIcons
@@ -254,7 +263,9 @@ const DetailPropertyScreen = () => {
                 },
               ]}
             >
-              <Text style={[styles.badgeSecondaryText, { color: colors.PRIMARY }]}>
+              <Text
+                style={[styles.badgeSecondaryText, { color: colors.PRIMARY }]}
+              >
                 Recommended
               </Text>
             </View>
@@ -270,7 +281,10 @@ const DetailPropertyScreen = () => {
             <View
               style={[
                 styles.tag,
-                { backgroundColor: colors.BACKGROUND, borderColor: colors.GRAY_LIGHT },
+                {
+                  backgroundColor: colors.BACKGROUND,
+                  borderColor: colors.GRAY_LIGHT,
+                },
               ]}
             >
               <MaterialCommunityIcons
@@ -278,13 +292,18 @@ const DetailPropertyScreen = () => {
                 size={14}
                 color={colors.TEXT}
               />
-              <Text style={[styles.tagText, { color: colors.TEXT }]}>{statusMeta.label}</Text>
+              <Text style={[styles.tagText, { color: colors.TEXT }]}>
+                {statusMeta.label}
+              </Text>
             </View>
             {item.category ? (
               <View
                 style={[
                   styles.tag,
-                  { backgroundColor: colors.BACKGROUND, borderColor: colors.GRAY_LIGHT },
+                  {
+                    backgroundColor: colors.BACKGROUND,
+                    borderColor: colors.GRAY_LIGHT,
+                  },
                 ]}
               >
                 <MaterialCommunityIcons
@@ -292,7 +311,9 @@ const DetailPropertyScreen = () => {
                   size={14}
                   color={colors.TEXT}
                 />
-                <Text style={[styles.tagText, { color: colors.TEXT }]}>{item.category}</Text>
+                <Text style={[styles.tagText, { color: colors.TEXT }]}>
+                  {item.category}
+                </Text>
               </View>
             ) : null}
           </View>
@@ -316,7 +337,13 @@ const DetailPropertyScreen = () => {
               {item.distance || 'Dekat'}
             </Text>
             <View style={[styles.bullet, { backgroundColor: colors.GREY }]} />
-            <Text style={[styles.infoText, styles.linkText, { color: colors.PRIMARY }]}>
+            <Text
+              style={[
+                styles.infoText,
+                styles.linkText,
+                { color: colors.PRIMARY },
+              ]}
+            >
               300 Reviews
             </Text>
           </View>
@@ -324,7 +351,9 @@ const DetailPropertyScreen = () => {
           {featureCards.length > 0 && (
             <>
               <View style={styles.sectionHeader}>
-                <Text style={[styles.sectionTitle, { color: colors.TEXT }]}>Informasi</Text>
+                <Text style={[styles.sectionTitle, { color: colors.TEXT }]}>
+                  Informasi
+                </Text>
               </View>
               <View style={styles.featureColumn}>
                 {featureCards.map((feature, idx) => (
@@ -362,12 +391,16 @@ const DetailPropertyScreen = () => {
             </>
           )}
 
-          <Text style={[styles.sectionTitle, { color: colors.TEXT }]}>Harga</Text>
+          <Text style={[styles.sectionTitle, { color: colors.TEXT }]}>
+            Harga
+          </Text>
           <Text style={[styles.price, { color: colors.PRIMARY }]}>
             {formatPrice(item.price)}
           </Text>
 
-          <Text style={[styles.sectionTitle, { marginTop: 16, color: colors.TEXT }]}>
+          <Text
+            style={[styles.sectionTitle, { marginTop: 16, color: colors.TEXT }]}
+          >
             Alamat
           </Text>
           <View style={styles.metaRow}>
@@ -376,8 +409,11 @@ const DetailPropertyScreen = () => {
               size={18}
               color={colors.TEXT}
             />
-            <Text style={[styles.metaText, { flex: 1, color: colors.TEXT }]} numberOfLines={2}>
-              {addressLine || 'Alamat belum diisi'}
+            <Text
+              style={[styles.metaText, { flex: 1, color: colors.TEXT }]}
+              numberOfLines={2}
+            >
+              {item?.address || 'Alamat belum diisi'}
             </Text>
           </View>
 
@@ -394,7 +430,12 @@ const DetailPropertyScreen = () => {
 
           {item.description ? (
             <>
-              <Text style={[styles.sectionTitle, { marginTop: 16, color: colors.TEXT }]}>
+              <Text
+                style={[
+                  styles.sectionTitle,
+                  { marginTop: 16, color: colors.TEXT },
+                ]}
+              >
                 Deskripsi
               </Text>
               <Text style={[styles.description, { color: colors.TEXT }]}>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,8 +11,7 @@ import {
   Keyboard,
 } from 'react-native';
 import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
-import LinearGradient from 'react-native-linear-gradient';
-import { Colors, Sizes } from '../styles';
+import { useThemeColors } from '../styles';
 import { Fonts } from '../constants';
 import CountrySelect from 'react-native-country-select';
 
@@ -24,6 +23,8 @@ export const DropdownSearchable = ({
   onSelect,
   value, // Initial value from outside
 }) => {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [isVisible, setIsVisible] = useState(false);
   const [selectedValue, setSelectedValue] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -62,7 +63,7 @@ export const DropdownSearchable = ({
         <MaterialDesignIcons
           name={iconName}
           size={20}
-          color={Colors.TEXT}
+          color={colors.GREY}
           style={styles.icon}
         />
         <View style={styles.textContainer}>
@@ -70,7 +71,7 @@ export const DropdownSearchable = ({
           <Text
             style={[
               styles.input,
-              { color: selectedValue ? Colors.TEXT : Colors.GRAY_DARK },
+              { color: selectedValue ? colors.TEXT : colors.GREY },
             ]}
           >
             {selectedValue || placeholder}
@@ -79,7 +80,7 @@ export const DropdownSearchable = ({
         <MaterialDesignIcons
           name="chevron-down"
           size={20}
-          color={Colors.GRAY_DARK}
+          color={colors.GREY}
           style={styles.iconRight}
         />
       </TouchableOpacity>
@@ -102,7 +103,7 @@ export const DropdownSearchable = ({
               <TextInput
                 style={styles.searchInput}
                 placeholder="Cari..."
-                placeholderTextColor={Colors.GRAY_DARK}
+                placeholderTextColor={colors.GREY}
                 value={searchTerm}
                 onChangeText={handleSearch}
               />
@@ -127,7 +128,7 @@ export const DropdownSearchable = ({
                       <Text
                         style={[
                           styles.optionText,
-                          { color: item?.color || Colors.TEXT },
+                          { color: item?.color || colors.TEXT },
                         ]}
                       >
                         {item?.name}
@@ -136,7 +137,7 @@ export const DropdownSearchable = ({
                         <Text
                           style={[
                             styles.optionText,
-                            { fontSize: 12, color: Colors.GRAY_BLACK },
+                            { fontSize: 12, color: colors.GREY },
                           ]}
                         >
                           {item?.description}
@@ -174,6 +175,8 @@ export const DropdownSearchableDefault = ({
   value,
   styleContainer = {},
 }) => {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [isVisible, setIsVisible] = useState(false);
   const [selectedValue, setSelectedValue] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -212,14 +215,14 @@ export const DropdownSearchableDefault = ({
         <MaterialDesignIcons
           name={iconName}
           size={20}
-          color={Colors.GRAY_DARK}
+          color={colors.GREY}
           style={styles.icon}
         />
         <View style={styles.textContainer}>
           <Text
             style={[
               styles.input,
-              { color: selectedValue ? Colors.TEXT : Colors.GRAY_MEDIUM },
+              { color: selectedValue ? colors.TEXT : colors.GREY },
             ]}
           >
             {selectedValue || placeholder}
@@ -228,7 +231,7 @@ export const DropdownSearchableDefault = ({
         <MaterialDesignIcons
           name="chevron-down"
           size={20}
-          color={Colors.GRAY_DARK}
+          color={colors.GREY}
           style={styles.iconRight}
         />
       </TouchableOpacity>
@@ -251,7 +254,7 @@ export const DropdownSearchableDefault = ({
               <TextInput
                 style={styles.searchInput}
                 placeholder="Search..."
-                placeholderTextColor="#ffffff70"
+                placeholderTextColor={colors.GREY}
                 value={searchTerm}
                 onChangeText={handleSearch}
               />
@@ -288,6 +291,8 @@ export const DropdownSearchableCountry = ({
   value,
   styleContainer = {},
 }) => {
+  const colors = useThemeColors();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [isVisible, setIsVisible] = useState(false);
   const [selectedValue, setSelectedValue] = useState('');
 
@@ -315,14 +320,14 @@ export const DropdownSearchableCountry = ({
         <MaterialDesignIcons
           name={iconName}
           size={20}
-          color={Colors.GRAY_DARK}
+          color={colors.GREY}
           style={styles.icon}
         />
         <View style={styles.textContainer}>
           <Text
             style={[
               styles.input,
-              { color: selectedValue ? Colors.TEXT : Colors.GRAY_DARK },
+              { color: selectedValue ? colors.TEXT : colors.GREY },
             ]}
           >
             {selectedValue || placeholder}
@@ -331,7 +336,7 @@ export const DropdownSearchableCountry = ({
         <MaterialDesignIcons
           name="chevron-down-outline"
           size={20}
-          color={Colors.GRAY_DARK}
+          color={colors.GREY}
           style={styles.iconRight}
         />
       </TouchableOpacity>
@@ -353,101 +358,102 @@ export const DropdownSearchableCountry = ({
     </View>
   );
 };
-const styles = StyleSheet.create({
-  // CONTROLLER ====================================
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.WHITE,
-    borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    marginVertical: 8,
-    borderWidth: 1,
-    borderColor: Colors.GRAY_LIGHT,
-  },
+const createStyles = colors =>
+  StyleSheet.create({
+    // CONTROLLER ====================================
+    container: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.CARD,
+      borderRadius: 14,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      marginVertical: 8,
+      borderWidth: 1,
+      borderColor: colors.GRAY_LIGHT,
+    },
 
-  icon: {
-    marginRight: 12,
-    opacity: 0.8,
-  },
+    icon: {
+      marginRight: 12,
+      opacity: 0.8,
+    },
 
-  iconRight: {
-    marginLeft: 10,
-    opacity: 0.7,
-  },
+    iconRight: {
+      marginLeft: 10,
+      opacity: 0.7,
+    },
 
-  textContainer: {
-    flex: 1,
-  },
+    textContainer: {
+      flex: 1,
+    },
 
-  label: {
-    fontSize: 11,
-    color: Colors.TEXT,
-    marginBottom: 2,
-    fontFamily: Fonts.fontMedium,
-    opacity: 0.85,
-  },
+    label: {
+      fontSize: 11,
+      color: colors.TEXT,
+      marginBottom: 2,
+      fontFamily: Fonts.fontMedium,
+      opacity: 0.85,
+    },
 
-  input: {
-    fontSize: 15,
-    color: Colors.TEXT,
-    fontFamily: Fonts.fontRegular,
-    paddingVertical: 4,
-  },
+    input: {
+      fontSize: 15,
+      color: colors.TEXT,
+      fontFamily: Fonts.fontRegular,
+      paddingVertical: 4,
+    },
 
-  // MODAL ==========================================
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.35)',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-  },
+    // MODAL ==========================================
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.35)',
+      justifyContent: 'center',
+      paddingHorizontal: 24,
+    },
 
-  modalContent: {
-    backgroundColor: Colors.WHITE,
-    borderRadius: 16,
-    padding: 18,
-    maxHeight: '60%',
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-  },
+    modalContent: {
+      backgroundColor: colors.CARD,
+      borderRadius: 16,
+      padding: 18,
+      maxHeight: '60%',
+      shadowColor: colors.BLACK,
+      shadowOpacity: 0.08,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 4 },
+    },
 
-  searchInput: {
-    borderWidth: 1,
-    borderColor: Colors.GRAY_LIGHT,
-    borderRadius: 10,
-    marginBottom: 12,
-    color: Colors.TEXT,
-    fontSize: 14,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    backgroundColor: Colors.GRAY_WHITE,
-  },
+    searchInput: {
+      borderWidth: 1,
+      borderColor: colors.GRAY_LIGHT,
+      borderRadius: 10,
+      marginBottom: 12,
+      color: colors.TEXT,
+      fontSize: 14,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+      backgroundColor: colors.BACKGROUND,
+    },
 
-  // LIST ============================================
-  option: {
-    paddingVertical: 12,
-    paddingHorizontal: 4,
-  },
+    // LIST ============================================
+    option: {
+      paddingVertical: 12,
+      paddingHorizontal: 4,
+    },
 
-  optionText: {
-    fontSize: 15,
-    color: Colors.TEXT,
-    fontFamily: Fonts.fontRegular,
-  },
+    optionText: {
+      fontSize: 15,
+      color: colors.TEXT,
+      fontFamily: Fonts.fontRegular,
+    },
 
-  emptyText: {
-    fontSize: 13,
-    color: Colors.GRAY_DARK,
-    textAlign: 'center',
-    paddingTop: 20,
-  },
+    emptyText: {
+      fontSize: 13,
+      color: colors.GREY,
+      textAlign: 'center',
+      paddingTop: 20,
+    },
 
-  // COUNTRY SELECT ==================================
-  countrySelectStyle: {
-    fontFamily: Fonts.fontRegular,
-  },
-});
+    // COUNTRY SELECT ==================================
+    countrySelectStyle: {
+      fontFamily: Fonts.fontRegular,
+    },
+  });

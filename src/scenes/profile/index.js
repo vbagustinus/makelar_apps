@@ -268,7 +268,11 @@ const SettingItem = ({
   iconGradient,
   textColor = Colors.WHITE,
 }) => (
-  <TouchableOpacity onPress={onPress} activeOpacity={0.9} style={styles.settingWrapper}>
+  <TouchableOpacity
+    onPress={onPress}
+    activeOpacity={0.9}
+    style={styles.settingWrapper}
+  >
     <LinearGradient
       colors={gradient || Colors.GRADIENT_ROYAL90}
       start={{ x: 0, y: 0 }}

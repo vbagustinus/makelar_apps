@@ -30,9 +30,7 @@ const SettingsScreen = () => {
   );
 
   return (
-    <View
-      style={[styles.container, { backgroundColor: colors.BACKGROUND,  }]}
-    >
+    <View style={[styles.container, { backgroundColor: colors.BACKGROUND }]}>
       <StatusBar
         translucent
         backgroundColor="transparent"
@@ -42,7 +40,7 @@ const SettingsScreen = () => {
         colors={colors.GRADIENT_ROYAL}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={[styles.header, {paddingTop: insets.top + 20}]}
+        style={[styles.header, { paddingTop: insets.top + 20 }]}
       >
         <View style={styles.headerContent}>
           <TouchableOpacity
