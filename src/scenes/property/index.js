@@ -19,7 +19,7 @@ const AnimatedFlashList = Animated.createAnimatedComponent(FlashList);
 import { Text, EmptyData } from '../../components';
 import { Fonts, propertyStatuses } from '../../constants';
 import { Sizes, useThemeColors } from '../../styles';
-import { LoadingPigeons } from './LoadingPigeons';
+import { LoadingProperties } from './LoadingProperties';
 import { GlobalBannerAd } from '../ads';
 import { logo } from '../../assets/images';
 import usePropertyStore from '../../store/usePropertyStore';
@@ -51,14 +51,22 @@ function PropertyScreen() {
   const deletePropertySuccess = usePropertyStore(
     state => state.deletePropertySuccess,
   );
+  const setPropertyStatus = usePropertyStore(state => state.setPropertyStatus);
+  const updatePropertySuccess = usePropertyStore(
+    state => state.updatePropertySuccess,
+  );
   const [searchQuery, setSearchQuery] = React.useState('');
   const [filterStatus, setFilterStatus] = React.useState('all'); // all | sale | rent
   const scrollY = React.useRef(new Animated.Value(0)).current;
   const [bodyHeight, setBodyHeight] = React.useState(0);
   const bodyHeightRef = React.useRef(0);
 
-  const getStatusMeta = statusId => {
-    const found = propertyStatuses.find(s => s.id === statusId);
+  const getStatusMeta = statusIdOrItem => {
+    const sId =
+      typeof statusIdOrItem === 'object'
+        ? statusIdOrItem?.statusId || statusIdOrItem?.status?.id
+        : statusIdOrItem;
+    const found = propertyStatuses.find(s => s.id === sId);
     return {
       label: found?.name || 'Status?',
       color: found?.color || colors.GRAY_MEDIUM,
@@ -77,25 +85,43 @@ function PropertyScreen() {
   }, [listPropertyError]);
 
   React.useEffect(() => {
-    if (deletePropertySuccess) {
+    if (deletePropertySuccess || updatePropertySuccess) {
       fetchProperties();
       fetchPropertyCounts();
     }
-  }, [deletePropertySuccess, fetchProperties, fetchPropertyCounts]);
+  }, [
+    deletePropertySuccess,
+    updatePropertySuccess,
+    fetchProperties,
+    fetchPropertyCounts,
+  ]);
 
   const filteredProperties = React.useMemo(() => {
     if (!searchQuery.trim()) return listProperty;
-    return listProperty.filter(prop =>
-      prop.propertyName?.toLowerCase().includes(searchQuery.toLowerCase()),
-    );
+    const query = searchQuery.toLowerCase();
+    return listProperty.filter(prop => {
+      const searchTerms = [
+        prop.propertyName,
+        prop.price,
+        prop.address,
+        prop.city?.name || prop.city,
+        prop.province?.name || prop.province,
+        prop.propertyTypeName,
+        getStatusMeta(prop).label,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return searchTerms.includes(query);
+    });
   }, [searchQuery, listProperty]);
 
   const statusFiltered = React.useMemo(() => {
     if (filterStatus === 'all') return filteredProperties;
     if (filterStatus === 'sale')
-      return filteredProperties.filter(p => p.statusId === 1);
+      return filteredProperties.filter(p => (p.statusId || p.status?.id) === 1);
     if (filterStatus === 'rent')
-      return filteredProperties.filter(p => p.statusId === 2);
+      return filteredProperties.filter(p => (p.statusId || p.status?.id) === 2);
     return filteredProperties;
   }, [filteredProperties, filterStatus]);
 
@@ -166,7 +192,7 @@ function PropertyScreen() {
 
   const renderPropertyItem = ({ item }) => {
     const imageUrl = item.imageUrl || item.imageUrls?.[0];
-    const statusMeta = getStatusMeta(item.statusId);
+    const statusMeta = getStatusMeta(item);
     const isOwner = item?.uid && user?.uid && item.uid === user.uid;
     const priceDisplay =
       item.price && !Number.isNaN(Number(item.price))
@@ -274,6 +300,62 @@ function PropertyScreen() {
               <Text style={styles.editActionText}>Edit</Text>
             </Pressable>
           )}
+
+          {isOwner && (
+            <Pressable
+              style={[
+                styles.soldAction,
+                {
+                  backgroundColor: statusMeta.color + '15',
+                  borderColor: statusMeta.color,
+                },
+              ]}
+              onPress={() => {
+                const currentId = item.statusId || item.status?.id;
+                let nextId = currentId;
+                if (currentId === 1) nextId = 3;
+                else if (currentId === 2) nextId = 4;
+                else if (currentId === 3) nextId = 1;
+                else if (currentId === 4) nextId = 2;
+
+                if (nextId === currentId) return;
+
+                Alert.alert(
+                  'Ubah Status',
+                  `Ubah status properti menjadi ${
+                    getStatusMeta(nextId).label
+                  }?`,
+                  [
+                    { text: 'Batal', style: 'cancel' },
+                    {
+                      text: 'Ya, Ubah',
+                      onPress: () => setPropertyStatus(item.id, nextId),
+                    },
+                  ],
+                );
+              }}
+            >
+              <MaterialCommunityIcons
+                name={
+                  item.statusId === 3 || item.statusId === 4
+                    ? 'refresh'
+                    : 'check-circle-outline'
+                }
+                size={16}
+                color={statusMeta.color}
+              />
+              <Text
+                style={[styles.soldActionText, { color: statusMeta.color }]}
+              >
+                {item.statusId === 1
+                  ? 'Set Terjual'
+                  : item.statusId === 2
+                  ? 'Set Terisi'
+                  : 'Aktifkan'}
+              </Text>
+            </Pressable>
+          )}
+
           <Pressable
             style={styles.shareAction}
             onPress={() => handleShare(item)}
@@ -514,7 +596,7 @@ function PropertyScreen() {
           }
         />
         {renderHeader()}
-        {listPropertyLoading && <LoadingPigeons />}
+        {listPropertyLoading && <LoadingProperties />}
         {!listPropertyLoading && (
           <AnimatedFlashList
             style={{ flex: 1, backgroundColor: 'transparent' }}
@@ -876,6 +958,21 @@ const createStyles = colors =>
       color: colors.PRIMARY,
       fontFamily: Fonts.fontSemiBold,
       fontSize: 13,
+    },
+    soldAction: {
+      flex: 1.2,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 8,
+      paddingVertical: 10,
+      borderRadius: 12,
+      borderWidth: 1,
+      gap: 4,
+    },
+    soldActionText: {
+      fontFamily: Fonts.fontSemiBold,
+      fontSize: 12,
     },
     divider: {
       height: 1,

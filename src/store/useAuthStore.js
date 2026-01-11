@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import firestore from '@react-native-firebase/firestore';
-import { logEvent } from '@react-native-firebase/analytics';
+import analytics from '@react-native-firebase/analytics';
 import { getString, removeItem, setItem } from '../helpers';
 import storage from '@react-native-firebase/storage';
 import ImageResizer from 'react-native-image-resizer';
@@ -222,7 +222,7 @@ const useAuthStore = create((set, get) => ({
       setItem('user', JSON.stringify(user));
       set({ user, token: user?.uid, userLoading: false });
 
-      await logEvent('user', {
+      await analytics().logEvent('user', {
         id: user?.uid,
         ...user,
       });

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Colors, Sizes } from '../styles';
 import { Image, StatusBar, View } from 'react-native';
 import { TouchableOpacity, Text } from '../components';
-import { logopigeon } from '../assets/images';
+import { logo } from '../assets/images';
 import Styles from './styles';
 import LinearGradient from 'react-native-linear-gradient';
 import { emptyFunction } from '../helpers';
@@ -50,7 +50,7 @@ const Toolbar = props => {
               </Text>
             ) : (
               <Image
-                source={logopigeon}
+                source={logo}
                 resizeMethod={'auto'}
                 resizeMode="stretch"
                 style={Styles.logo}

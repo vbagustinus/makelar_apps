@@ -74,6 +74,9 @@ const EditPropertyScreen = () => {
   const [status, setStatus] = useState(null);
   const [certificateType, setCertificateType] = useState(null);
   const [address, setAddress] = useState(item?.address || '');
+  const [contactNumber, setContactNumber] = useState(
+    item?.contactNumber || userPhone || userWa || '',
+  );
 
   // State untuk Data Keuangan/Harga
   const [price, setPrice] = useState(item?.price ? String(item.price) : '');
@@ -139,19 +142,37 @@ const EditPropertyScreen = () => {
   );
 
   // --- FIELDS APARTEMEN ---
-  const [tower, setTower] = useState(item?.tower || '');
-  const [floorNumber, setFloorNumber] = useState(
-    item?.floorNumber ? String(item.floorNumber) : '',
+  const [tower, setTower] = useState(
+    item?.tower 
+      ? (typeof item.tower === 'object' ? item.tower.name || item.tower.value || '' : String(item.tower))
+      : ''
   );
-  const [unitNumber, setUnitNumber] = useState(item?.unitNumber || '');
+  const [floorNumber, setFloorNumber] = useState(
+    item?.floorNumber 
+      ? (typeof item.floorNumber === 'object' ? String(item.floorNumber.name || item.floorNumber.value || '') : String(item.floorNumber))
+      : ''
+  );
+  const [unitNumber, setUnitNumber] = useState(
+    item?.unitNumber 
+      ? (typeof item.unitNumber === 'object' ? item.unitNumber.name || item.unitNumber.value || '' : String(item.unitNumber))
+      : ''
+  );
   const [unitType, setUnitType] = useState(
-    item?.unitType ? { id: item.unitType, name: item.unitType } : null,
+    item?.unitType 
+      ? (typeof item.unitType === 'object' && item.unitType.id 
+          ? item.unitType 
+          : { id: item.unitType, name: item.unitType })
+      : null
   );
   const [maintenanceFee, setMaintenanceFee] = useState(
     item?.maintenanceFee ? String(item.maintenanceFee) : '',
   );
   const [balcony, setBalcony] = useState(
-    item?.balcony ? { id: item.balcony, name: item.balcony } : '',
+    item?.balcony 
+      ? (typeof item.balcony === 'object' && item.balcony.id 
+          ? item.balcony 
+          : { id: item.balcony, name: item.balcony })
+      : null
   );
   const [apartmentFacilities, setApartmentFacilities] = useState(
     item?.apartmentFacilities || '',
@@ -271,64 +292,45 @@ const EditPropertyScreen = () => {
           landArea.trim() !== '' &&
           buildingArea.trim() !== '' &&
           bedrooms.trim() !== '' &&
-          bathrooms.trim() !== '' &&
-          floors.trim() !== '' &&
-          builtYear.trim() !== ''
+          bathrooms.trim() !== ''
         );
       case 'Apartemen':
-        return (
+        console.log('=== Apartment Validation Debug ===');
+        console.log('buildingArea:', buildingArea, 'valid:', buildingArea.trim() !== '');
+        console.log('bedrooms:', bedrooms, 'valid:', bedrooms.trim() !== '');
+        console.log('bathrooms:', bathrooms);
+        console.log('floorNumber:', floorNumber);
+        console.log('unitNumber:', unitNumber);
+        console.log('unitType:', unitType);
+        // For apartment, only buildingArea and bedrooms are required
+        // Other fields like floorNumber, unitNumber, unitType are optional
+        const isValid = (
           buildingArea.trim() !== '' &&
-          floorNumber.trim() !== '' &&
-          unitNumber.trim() !== '' &&
-          unitType?.id
+          bedrooms.trim() !== ''
         );
+        console.log('Overall apartment validation:', isValid);
+        return isValid;
       case 'Tanah':
         return (
-          landArea.trim() !== '' &&
-          landShape?.id &&
-          frontageWidth.trim() !== '' &&
-          zoning?.id &&
-          contour?.id &&
-          roadType?.id
+          landArea.trim() !== ''
         );
       case 'Ruko':
         return (
           landArea.trim() !== '' &&
-          buildingArea.trim() !== '' &&
-          floors.trim() !== '' &&
-          buildingWidth.trim() !== '' &&
-          buildingLength.trim() !== '' &&
-          restroomCount.trim() !== '' &&
-          electricityType?.id
+          buildingArea.trim() !== ''
         );
       case 'Kantor':
         return (
-          buildingArea.trim() !== '' &&
-          floorNumber.trim() !== '' &&
-          officeType?.id &&
-          meetingRoomCount.trim() !== '' &&
-          workspaceCapacity.trim() !== '' &&
-          toiletType?.id
+          buildingArea.trim() !== ''
         );
       case 'Kos/Kontrakan':
         return (
           totalRooms.trim() !== '' &&
-          occupiedRooms.trim() !== '' &&
-          roomFacilities.trim() !== '' &&
-          bathroomInside?.id &&
-          incomePerMonth.trim() !== '' &&
-          rules?.id
+          roomFacilities.trim() !== ''
         );
       case 'Industri/Gudang':
         return (
-          buildingArea.trim() !== '' &&
-          buildingWidth.trim() !== '' &&
-          buildingLength.trim() !== '' &&
-          ceilingHeight.trim() !== '' &&
-          loadingDock?.id &&
-          truckAccess?.id &&
-          powerCapacity.trim() !== '' &&
-          floorStrength.trim() !== ''
+          buildingArea.trim() !== ''
         );
       default:
         return false;
@@ -348,6 +350,7 @@ const EditPropertyScreen = () => {
     city?.id &&
     district?.id &&
     village?.id &&
+    (contactNumber.trim() !== '' || userPhone || userWa) &&
     checkTypeSpecificFields();
 
   // ===============================================
@@ -405,6 +408,8 @@ const EditPropertyScreen = () => {
   }, [listVillages]);
 
   const getOptionName = option => (option && option.name ? option.name : null);
+  const getOptionId = option =>
+    option?.id || option?.value || (typeof option === 'string' ? option : null);
 
   // ===============================================
   // HOOKS PENGAMBILAN DATA LOKASI
@@ -413,6 +418,32 @@ const EditPropertyScreen = () => {
   useEffect(() => {
     fetchProvinces();
   }, [fetchProvinces]);
+
+  // Prefetch data kota/kecamatan/kelurahan berdasarkan lokasi item agar opsi siap saat layar dibuka
+  useEffect(() => {
+    const provinceId =
+      item?.province?.id || item?.province?.value || item?.province;
+    const cityId = item?.city?.id || item?.city?.value || item?.city;
+    const districtId =
+      item?.district?.id || item?.district?.value || item?.district;
+
+    if (provinceId) {
+      fetchCitiesByProvince(provinceId);
+    }
+    if (cityId) {
+      fetchDistrictsByCity(cityId);
+    }
+    if (districtId) {
+      fetchVillagesByDistrict(districtId);
+    }
+  }, [
+    item?.province,
+    item?.city,
+    item?.district,
+    fetchCitiesByProvince,
+    fetchDistrictsByCity,
+    fetchVillagesByDistrict,
+  ]);
 
   // Prefill pilihan ketika data list sudah siap
   useEffect(() => {
@@ -472,28 +503,31 @@ const EditPropertyScreen = () => {
   }, [listVillages, item?.village]);
 
   useEffect(() => {
-    if (province?.id) {
+    const provinceId = getOptionId(province);
+    if (provinceId) {
       setCity(null);
       setDistrict(null);
       setVillage(null);
-      fetchCitiesByProvince(province.id);
+      fetchCitiesByProvince(provinceId);
     }
-  }, [province?.id, fetchCitiesByProvince]);
+  }, [province, fetchCitiesByProvince]);
 
   useEffect(() => {
-    if (city?.id) {
+    const cityId = getOptionId(city);
+    if (cityId) {
       setDistrict(null);
       setVillage(null);
-      fetchDistrictsByCity(city.id);
+      fetchDistrictsByCity(cityId);
     }
-  }, [city?.id, fetchDistrictsByCity]);
+  }, [city, fetchDistrictsByCity]);
 
   useEffect(() => {
-    if (district?.id) {
+    const districtId = getOptionId(district);
+    if (districtId) {
       setVillage(null);
-      fetchVillagesByDistrict(district.id);
+      fetchVillagesByDistrict(districtId);
     }
-  }, [district?.id, fetchVillagesByDistrict]);
+  }, [district, fetchVillagesByDistrict]);
 
   useEffect(() => {
     console.log('locationError', locationError);
@@ -505,71 +539,72 @@ const EditPropertyScreen = () => {
   });
 
   useEffect(() => {
-    if (item?.propertyTypeId) {
-      const match = propertyCategories.find(p => p.id === item.propertyTypeId);
+    const ptId = item?.propertyTypeId || item?.propertyType?.id;
+    if (ptId) {
+      const match = propertyCategories.find(p => p.id === ptId);
       if (match) setPropertyType(match);
     }
-    if (item?.statusId) {
-      const match = propertyStatuses.find(p => p.id === item.statusId);
+    const sId = item?.statusId || item?.status?.id;
+    if (sId) {
+      const match = propertyStatuses.find(p => p.id === sId);
       if (match) setStatus(match);
     }
-    if (item?.certificateTypeId) {
-      const match = certificateTypes.find(p => p.id === item.certificateTypeId);
+    const ctId = item?.certificateTypeId || item?.certificateType?.id;
+    if (ctId) {
+      const match = certificateTypes.find(p => p.id === ctId);
       if (match) setCertificateType(match);
     }
-    // district_id: "1203070"
-    // id: "1203070067"
-    // label: "PARGARUTAN JULU"
-    // name: "PARGARUTAN JULU"
-    // value: "1203070067"
     if (item?.province) {
+      const provinceId =
+        item.province?.id || item.province?.value || item.province;
       setProvince({
-        id: item.province?.id,
+        id: provinceId,
         name: item.province?.name,
         label: item.province?.label,
-        value: item.province?.value,
+        value: item.province?.value || provinceId,
       });
-      fetchCitiesByProvince(item.province);
     }
     if (item?.city) {
+      const cityId = item.city?.id || item.city?.value || item.city;
       setCity({
-        id: item.city?.id,
+        id: cityId,
         name: item.city?.name,
         label: item.city?.label,
-        value: item.city?.value,
+        value: item.city?.value || cityId,
       });
-      fetchDistrictsByCity(item.city);
     }
     if (item?.district) {
+      const districtId =
+        item.district?.id || item.district?.value || item.district;
       setDistrict({
-        id: item.district?.id,
+        id: districtId,
         name: item.district?.name,
         label: item.district?.label,
-        value: item.district?.value,
+        value: item.district?.value || districtId,
       });
-      fetchVillagesByDistrict(item.district);
     }
     if (item?.village) {
+      const villageId = item.village?.id || item.village?.value || item.village;
       setVillage({
-        id: item.village?.id,
+        id: villageId,
         name: item.village?.name,
         label: item.village?.label,
-        value: item.village?.value,
+        value: item.village?.value || villageId,
       });
     }
-  }, [
-    item,
-    fetchCitiesByProvince,
-    fetchDistrictsByCity,
-    fetchVillagesByDistrict,
-  ]);
+  }, [item]);
 
   useEffect(() => {
     if (updatePropertySuccess) {
       fetchProperties();
       showAd();
+      // Navigate back after a short delay to ensure ad is shown
+      setTimeout(() => {
+        resetFlags();
+        navigation.goBack();
+      }, 500);
     }
-  }, [updatePropertySuccess, fetchProperties, showAd]);
+  }, [updatePropertySuccess, fetchProperties, showAd, navigation, resetFlags]);
 
   useEffect(() => {
     if (!userPhone && !userWa) {
@@ -593,10 +628,10 @@ const EditPropertyScreen = () => {
       Alert.alert('Peringatan', 'Mohon lengkapi semua kolom yang wajib diisi.');
       return;
     }
-    if (!userPhone && !userWa) {
+    if (!contactNumber.trim() && !userPhone && !userWa) {
       Alert.alert(
         'Lengkapi Kontak',
-        'Isi dulu nomor HP atau WhatsApp di Edit Profil sebelum mengubah properti.',
+        'Isi dulu nomor kontak pengiklan atau lengkapi nomor HP/WA di Edit Profil sebelum mengubah properti.',
         [
           { text: 'Batal', style: 'cancel' },
           {
@@ -656,6 +691,7 @@ const EditPropertyScreen = () => {
       propertyId: item?.id,
       phoneNumber: user?.phoneNumber || null,
       whatsapp: user?.whatsapp || null,
+      contactNumber: contactNumber.trim() || user?.phoneNumber || user?.whatsapp,
       propertyTypeId: propertyType?.id,
       propertyTypeName: propertyType?.name,
       propertyName,
@@ -749,6 +785,7 @@ const EditPropertyScreen = () => {
     setStatus(null);
     setCertificateType(null);
     setAddress('');
+    setContactNumber(userPhone || userWa || '');
     setImages([]);
     setPrice('');
     setLandArea('');
@@ -1056,6 +1093,15 @@ const EditPropertyScreen = () => {
           keyboardType="numeric"
           value={buildingArea}
           onChangeText={setBuildingArea}
+        />
+
+        <Input
+          label="Jumlah Kamar Tidur"
+          placeholder="Contoh: 2"
+          iconName="bed-double-outline"
+          keyboardType="numeric"
+          value={bedrooms}
+          onChangeText={setBedrooms}
         />
 
         <Input
@@ -1749,6 +1795,15 @@ const EditPropertyScreen = () => {
             onSelect={setVillage}
             disabled={!district || formattedVillages.length === 0} // Nonaktif jika kecamatan belum dipilih
             loading={locationLoading}
+          />
+
+          <Input
+            label="Kontak Pengiklan (opsional)"
+            placeholder="Nomor telepon/WA yang bisa dihubungi"
+            iconName="phone"
+            keyboardType="phone-pad"
+            value={contactNumber}
+            onChangeText={setContactNumber}
           />
 
           {/* INPUT: Alamat Lengkap */}

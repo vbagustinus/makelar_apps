@@ -8,20 +8,11 @@ import {
   Pressable,
 } from 'react-native';
 import Icon from '@react-native-vector-icons/material-design-icons';
-import {
-  birdColors,
-  eyeColorOptions,
-  Fonts,
-  genderOptions,
-} from '../../constants';
+import { Fonts } from '../../constants';
 import { Colors } from '../../styles';
 import { useNavigation } from '@react-navigation/native';
-
-const PigeonCardBox = ({ item, isPrivate }) => {
+const PropertyCardBox = ({ item, isPrivate }) => {
   const navigation = useNavigation();
-  const gender = genderOptions.find(g => g.id === item.genderId);
-  const color = birdColors.find(c => c.id === item.colorId);
-  const eye = eyeColorOptions.find(e => e.id === item.eyeColorId);
 
   return (
     <Pressable
@@ -35,18 +26,22 @@ const PigeonCardBox = ({ item, isPrivate }) => {
       <View style={styles.card}>
         <ImageBackground
           blurRadius={6}
-          source={{ uri: item?.imageUrl }}
+          source={{ uri: item?.imageUrl || item?.imageUrls?.[0] }}
           style={styles.banner}
           resizeMode="cover"
           imageStyle={{ borderTopLeftRadius: 12, borderTopRightRadius: 12 }}
         >
           <View style={styles.content}>
             <Text style={styles.title} numberOfLines={1}>
-              {item?.name}
+              {item?.propertyName || 'Nama Properti'}
             </Text>
             <View style={styles.statItem}>
-              <Icon name="gender-male-female" size={18} color={Colors.PINK} />
-              <Text style={styles.statText}>{gender?.name}</Text>
+              <Icon name="currency-usd" size={16} color={Colors.GREEN} />
+              <Text style={styles.statText}>
+                {item?.price
+                  ? `Rp ${Number(item.price).toLocaleString('id-ID')}`
+                  : '-'}
+              </Text>
             </View>
           </View>
         </ImageBackground>
@@ -81,16 +76,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 5,
   },
-  subtitle: {
-    fontSize: 12,
-    color: Colors.WHITE_80,
-    fontFamily: Fonts.fontRegular,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    marginTop: 8,
-    justifyContent: 'space-between',
-  },
   statItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -103,4 +88,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PigeonCardBox;
+export default PropertyCardBox;

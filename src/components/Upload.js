@@ -96,7 +96,7 @@ export const Upload = ({ onUpload, initialImage = null }) => {
             color="#fff"
             style={styles.icon}
           />
-          <Text style={styles.title}>Upload your pigeon photo</Text>
+          <Text style={styles.title}>Upload photo</Text>
           <View style={styles.button}>
             <Text style={styles.buttonText}>Upload</Text>
           </View>

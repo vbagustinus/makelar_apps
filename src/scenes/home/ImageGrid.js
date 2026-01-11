@@ -10,7 +10,7 @@ import {
 import Carousel, { Pagination } from 'react-native-reanimated-carousel';
 import FastImage from '@d11/react-native-fast-image';
 import { Fonts } from '../../constants'; // Dipertahankan
-import { logo, logopigeon, logotransparent } from '../../assets/images'; // Dipertahankan
+import { logo, logotransparent } from '../../assets/images'; // Dipertahankan
 import { useSharedValue } from 'react-native-reanimated';
 import { Colors } from '../../styles';
 
@@ -30,7 +30,7 @@ const ImageCarousel = ({
   itemHeight = 250, // Tinggi gambar carousel (dapat disesuaikan)
   padding = 10, // Padding horizontal di sekitar gambar
   onPressImage = () => {},
-  logo: logopigeon, // Menggunakan logopigeon sebagai nama variabel agar lebih jelas
+  logo: defaultLogo, // Menggunakan logo default
 }) => {
   // Konversi array string URL menjadi format array objek
   const data = imageUrls.map((url, index) => ({
@@ -42,7 +42,7 @@ const ImageCarousel = ({
   const itemWidth = carouselWidth - padding * 2;
 
   const renderItem = ({ item, index }) => {
-    const imageSource = item.url ? { uri: item.url } : logopigeon; // Gunakan logo default jika URL kosong/null
+    const imageSource = item.url ? { uri: item.url } : logo; // Gunakan logo default jika URL kosong/null
 
     return (
       <View style={[styles.itemContainer, { paddingHorizontal: padding }]}>
@@ -60,7 +60,7 @@ const ImageCarousel = ({
               },
             ]}
             resizeMode={FastImage.resizeMode.cover}
-            defaultSource={logopigeon}
+            defaultSource={logo}
           />
         </TouchableOpacity>
       </View>

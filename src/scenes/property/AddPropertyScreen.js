@@ -67,6 +67,9 @@ const AddPropertyScreen = () => {
   const [status, setStatus] = useState(null);
   const [certificateType, setCertificateType] = useState(null);
   const [address, setAddress] = useState('');
+  const [contactNumber, setContactNumber] = useState(
+    userPhone || userWa || '',
+  );
 
   // State untuk Data Keuangan/Harga
   const [price, setPrice] = useState('');
@@ -74,9 +77,6 @@ const AddPropertyScreen = () => {
   // State untuk Detail Tambahan (misalnya, Luas)
   const [landArea, setLandArea] = useState('');
   const [buildingArea, setBuildingArea] = useState('');
-
-  // State untuk Pihak Terkait (Mengganti Silsilah Jantan/Betina)
-  // (saat ini tidak digunakan di UI)
 
   // --- FIELDS RUMAH (HOUSE) ---
   const [bedrooms, setBedrooms] = useState('');
@@ -158,64 +158,34 @@ const AddPropertyScreen = () => {
           landArea.trim() !== '' &&
           buildingArea.trim() !== '' &&
           bedrooms.trim() !== '' &&
-          bathrooms.trim() !== '' &&
-          floors.trim() !== '' &&
-          builtYear.trim() !== ''
+          bathrooms.trim() !== ''
         );
       case 'Apartemen':
         return (
           buildingArea.trim() !== '' &&
-          floorNumber.trim() !== '' &&
-          unitNumber.trim() !== '' &&
-          unitType?.id
+          bedrooms.trim() !== ''
         );
       case 'Tanah':
         return (
-          landArea.trim() !== '' &&
-          landShape?.id &&
-          frontageWidth.trim() !== '' &&
-          zoning?.id &&
-          contour?.id &&
-          roadType?.id
+          landArea.trim() !== ''
         );
       case 'Ruko':
         return (
           landArea.trim() !== '' &&
-          buildingArea.trim() !== '' &&
-          floors.trim() !== '' &&
-          buildingWidth.trim() !== '' &&
-          buildingLength.trim() !== '' &&
-          restroomCount.trim() !== '' &&
-          electricityType?.id
+          buildingArea.trim() !== ''
         );
       case 'Kantor':
         return (
-          buildingArea.trim() !== '' &&
-          floorNumber.trim() !== '' &&
-          officeType?.id &&
-          meetingRoomCount.trim() !== '' &&
-          workspaceCapacity.trim() !== '' &&
-          toiletType?.id
+          buildingArea.trim() !== ''
         );
       case 'Kos/Kontrakan':
         return (
           totalRooms.trim() !== '' &&
-          occupiedRooms.trim() !== '' &&
-          roomFacilities.trim() !== '' &&
-          bathroomInside?.id &&
-          incomePerMonth.trim() !== '' &&
-          rules?.id
+          roomFacilities.trim() !== ''
         );
       case 'Industri/Gudang':
         return (
-          buildingArea.trim() !== '' &&
-          buildingWidth.trim() !== '' &&
-          buildingLength.trim() !== '' &&
-          ceilingHeight.trim() !== '' &&
-          loadingDock?.id &&
-          truckAccess?.id &&
-          powerCapacity.trim() !== '' &&
-          floorStrength.trim() !== ''
+          buildingArea.trim() !== ''
         );
       default:
         return false;
@@ -235,6 +205,7 @@ const AddPropertyScreen = () => {
     city?.id &&
     district?.id &&
     village?.id &&
+    (contactNumber.trim() !== '' || userPhone || userWa) &&
     checkTypeSpecificFields();
 
   // ===============================================
@@ -359,10 +330,10 @@ const AddPropertyScreen = () => {
       );
       return;
     }
-    if (!userPhone && !userWa) {
+    if (!contactNumber.trim() && !userPhone && !userWa) {
       Alert.alert(
         'Lengkapi Kontak',
-        'Isi dulu nomor HP atau WhatsApp di Edit Profil sebelum menambah properti.',
+        'Isi dulu nomor kontak pengiklan atau lengkapi nomor HP/WA di Edit Profil.',
         [
           { text: 'Batal', style: 'cancel' },
           {
@@ -403,6 +374,7 @@ const AddPropertyScreen = () => {
     savePropertyData({
       phoneNumber: user?.phoneNumber || null,
       whatsapp: user?.whatsapp || null,
+      contactNumber: contactNumber.trim() || user?.phoneNumber || user?.whatsapp,
       propertyTypeId: propertyType?.id,
       propertyTypeName: propertyType?.name,
       propertyName,
@@ -495,6 +467,7 @@ const AddPropertyScreen = () => {
     setStatus(null);
     setCertificateType(null);
     setAddress('');
+    setContactNumber(userPhone || userWa || '');
     setImages([]);
     setPrice('');
     setLandArea('');
@@ -827,6 +800,15 @@ const AddPropertyScreen = () => {
           keyboardType="numeric"
           value={buildingArea}
           onChangeText={setBuildingArea}
+        />
+
+        <Input
+          label="Jumlah Kamar Tidur"
+          placeholder="Contoh: 2"
+          iconName="bed-double-outline"
+          keyboardType="numeric"
+          value={bedrooms}
+          onChangeText={setBedrooms}
         />
 
         <Input
@@ -1516,17 +1498,26 @@ const AddPropertyScreen = () => {
             }
             iconName="map-marker-outline" // Ikon diperbarui
             options={formattedVillages} // Menggunakan data yang diformat
-            value={village} // State kelurahan
-            onSelect={setVillage}
-            disabled={!district || formattedVillages.length === 0} // Nonaktif jika kecamatan belum dipilih
-            loading={locationLoading}
-          />
+          value={village} // State kelurahan
+          onSelect={setVillage}
+          disabled={!district || formattedVillages.length === 0} // Nonaktif jika kecamatan belum dipilih
+          loading={locationLoading}
+        />
 
-          {/* INPUT: Alamat Lengkap */}
-          <Input
-            label="Alamat Lengkap (Jalan, Nomor)"
-            placeholder="Masukkan Alamat Properti"
-            iconName="map-marker-outline"
+        <Input
+          label="Kontak Pengiklan (opsional)"
+          placeholder="Nomor telepon/WA yang bisa dihubungi"
+          iconName="phone"
+          keyboardType="phone-pad"
+          value={contactNumber}
+          onChangeText={setContactNumber}
+        />
+
+        {/* INPUT: Alamat Lengkap */}
+        <Input
+          label="Alamat Lengkap (Jalan, Nomor)"
+          placeholder="Masukkan Alamat Properti"
+          iconName="map-marker-outline"
             value={address}
             onChangeText={setAddress}
             multiline

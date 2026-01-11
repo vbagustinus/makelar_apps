@@ -211,6 +211,7 @@ export const DropdownSearchableDefault = ({
       <TouchableOpacity
         style={[styles.container, styleContainer]}
         onPress={() => setIsVisible(true)}
+        activeOpacity={0.7}
       >
         <MaterialDesignIcons
           name={iconName}
@@ -241,40 +242,41 @@ export const DropdownSearchableDefault = ({
         transparent={true}
         animationType="fade"
         onRequestClose={() => setIsVisible(false)}
-        onDismiss={() => setIsVisible(false)}
       >
-        <TouchableWithoutFeedback
-          onPress={() => {
-            setIsVisible(false);
-            Keyboard.dismiss();
-          }}
-        >
+        <TouchableWithoutFeedback onPress={() => setIsVisible(false)}>
           <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Search..."
-                placeholderTextColor={colors.GREY}
-                value={searchTerm}
-                onChangeText={handleSearch}
-              />
+            <TouchableWithoutFeedback>
+              <View style={styles.modalContent}>
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Cari..."
+                  placeholderTextColor={colors.GREY}
+                  value={searchTerm}
+                  onChangeText={handleSearch}
+                />
 
-              <FlatList
-                data={filteredOptions}
-                keyExtractor={item => item?.id?.toString()}
-                renderItem={({ item }) => (
-                  <TouchableOpacity
-                    style={styles.option}
-                    onPress={() => handleSelect(item)}
-                  >
-                    <Text style={styles.optionText}>{item?.name}</Text>
-                  </TouchableOpacity>
-                )}
-                ListEmptyComponent={() => (
-                  <Text style={styles.emptyText}>Tidak ada data tersedia.</Text>
-                )}
-              />
-            </View>
+                <FlatList
+                  data={filteredOptions}
+                  keyExtractor={item =>
+                    String(item?.id || item?.name || Math.random())
+                  }
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={styles.option}
+                      onPress={() => handleSelect(item)}
+                    >
+                      <Text style={styles.optionText}>{item?.name}</Text>
+                    </TouchableOpacity>
+                  )}
+                  ListEmptyComponent={() => (
+                    <Text style={styles.emptyText}>
+                      Tidak ada data tersedia.
+                    </Text>
+                  )}
+                  style={{ maxHeight: 300 }}
+                />
+              </View>
+            </TouchableWithoutFeedback>
           </View>
         </TouchableWithoutFeedback>
       </Modal>

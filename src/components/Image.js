@@ -1,7 +1,7 @@
 import React from 'react';
 import FastImage from '@d11/react-native-fast-image';
 import PropTypes from 'prop-types';
-import { logopigeon } from '../assets/images';
+import { logo } from '../assets/images';
 
 const Image = ({ imageSource, tintColor = undefined, imageStyle = {} }) => (
   <FastImage
@@ -9,7 +9,7 @@ const Image = ({ imageSource, tintColor = undefined, imageStyle = {} }) => (
     resizeMode={'contain'}
     tintColor={tintColor}
     style={[{ tintColor: tintColor }, imageStyle]}
-    defaultSource={logopigeon}
+    defaultSource={logo}
   />
 );
 

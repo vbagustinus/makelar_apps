@@ -1,1 +1,1 @@
-export * from './pigeonSlice';
+export * from './propertySlice';

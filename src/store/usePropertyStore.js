@@ -158,9 +158,13 @@ const usePropertyStore = create((set, get) => ({
 
   // Mengambil daftar kota/kabupaten berdasarkan ID provinsi
   fetchCitiesByProvince: async provinceId => {
-    console.log('provinceId', provinceId);
+    const resolvedProvinceId =
+      provinceId && typeof provinceId === 'object'
+        ? provinceId.id || provinceId.value
+        : provinceId;
+    console.log('provinceId', resolvedProvinceId);
 
-    if (!provinceId) {
+    if (!resolvedProvinceId) {
       set({ listCities: [] });
       return;
     }
@@ -173,7 +177,9 @@ const usePropertyStore = create((set, get) => ({
     });
     try {
       // Endpoint: /regencies/{provinceId}.json
-      const response = await fetch(`${API_BASE}/regencies/${provinceId}.json`);
+      const response = await fetch(
+        `${API_BASE}/regencies/${resolvedProvinceId}.json`,
+      );
       if (!response.ok) throw new Error('Gagal mengambil data Kota/Kabupaten.');
 
       const data = await response.json();
@@ -198,7 +204,9 @@ const usePropertyStore = create((set, get) => ({
 
   // Mengambil daftar kecamatan berdasarkan ID kota/kabupaten
   fetchDistrictsByCity: async cityId => {
-    if (!cityId) {
+    const resolvedCityId =
+      cityId && typeof cityId === 'object' ? cityId.id || cityId.value : cityId;
+    if (!resolvedCityId) {
       set({ listDistricts: [] });
       return;
     }
@@ -210,7 +218,9 @@ const usePropertyStore = create((set, get) => ({
     });
     try {
       // Endpoint: /districts/{cityId}.json
-      const response = await fetch(`${API_BASE}/districts/${cityId}.json`);
+      const response = await fetch(
+        `${API_BASE}/districts/${resolvedCityId}.json`,
+      );
       if (!response.ok) throw new Error('Gagal mengambil data Kecamatan.');
 
       const data = await response.json();
@@ -236,14 +246,20 @@ const usePropertyStore = create((set, get) => ({
 
   // Mengambil daftar kelurahan/desa berdasarkan ID kecamatan
   fetchVillagesByDistrict: async districtId => {
-    if (!districtId) {
+    const resolvedDistrictId =
+      districtId && typeof districtId === 'object'
+        ? districtId.id || districtId.value
+        : districtId;
+    if (!resolvedDistrictId) {
       set({ listVillages: [] });
       return;
     }
     set({ locationLoading: true, locationError: null, listVillages: [] });
     try {
       // Endpoint: /villages/{districtId}.json
-      const response = await fetch(`${API_BASE}/villages/${districtId}.json`);
+      const response = await fetch(
+        `${API_BASE}/villages/${resolvedDistrictId}.json`,
+      );
       if (!response.ok) throw new Error('Gagal mengambil data Kelurahan/Desa.');
 
       const data = await response.json();
@@ -304,8 +320,10 @@ const usePropertyStore = create((set, get) => ({
 
   // fetchGlobalProperties, fetchMoreGlobalProperties
   // 🔥 Global pagination function (ambil semua properti, bukan hanya user)
-  fetchGlobalProperties: async ({ propertyTypeId = null }) => {
-    // <-- TAMBAHKAN PARAMETER
+  fetchGlobalProperties: async ({
+    propertyTypeId = null,
+    locationFilters = null,
+  }) => {
     set({
       listGlobalPropertiesLoading: true,
       listGlobalPropertiesError: null,
@@ -316,16 +334,22 @@ const usePropertyStore = create((set, get) => ({
     try {
       let query = firestore().collection(COLLECTION_NAME);
 
-      // 1. APLIKASIKAN FILTER .WHERE()
       if (propertyTypeId !== null) {
-        console.log('propertyTypeId', propertyTypeId);
-        // Pastikan 'propertyTypeId' di Firestore adalah number jika Anda menggunakan perbandingan number
-        // Jika Anda menyimpannya sebagai string, gunakan string di sini.
-        // Saya asumsikan Anda menyimpannya sebagai number (atau string yang sama dengan ID di database).
         query = query.where('propertyTypeId', '==', propertyTypeId);
       }
 
-      // 2. APLIKASIKAN PENGURUTAN DAN BATAS
+      if (locationFilters) {
+        if (locationFilters.village?.id) {
+          query = query.where('village.id', '==', locationFilters.village.id);
+        } else if (locationFilters.district?.id) {
+          query = query.where('district.id', '==', locationFilters.district.id);
+        } else if (locationFilters.city?.id) {
+          query = query.where('city.id', '==', locationFilters.city.id);
+        } else if (locationFilters.province?.id) {
+          query = query.where('province.id', '==', locationFilters.province.id);
+        }
+      }
+
       const snapshot = await query
         .orderBy('createdAt', 'desc')
         .limit(PAGE_SIZE)
@@ -344,8 +368,7 @@ const usePropertyStore = create((set, get) => ({
         globalHasMore: newHasMore,
         globalLastVisible: newLastVisible,
       });
-
-      console.log('Fetched global properties (first 10):', properties);
+      console.log('Fetched global properties:', properties.length);
     } catch (error) {
       console.error('Error fetching global properties:', error);
       set({ listGlobalPropertiesError: error.message });
@@ -354,8 +377,10 @@ const usePropertyStore = create((set, get) => ({
     }
   },
 
-  fetchMoreGlobalProperties: async ({ propertyTypeId = null }) => {
-    // <-- TAMBAHKAN PARAMETER
+  fetchMoreGlobalProperties: async ({
+    propertyTypeId = null,
+    locationFilters = null,
+  }) => {
     const {
       globalHasMore,
       globalIsFetchingMore,
@@ -369,14 +394,26 @@ const usePropertyStore = create((set, get) => ({
     try {
       let query = firestore().collection(COLLECTION_NAME);
 
-      // 1. APLIKASIKAN FILTER .WHERE()
       if (propertyTypeId !== null) {
-        console.log('propertyTypeId', propertyTypeId);
-
         query = query.where('propertyTypeId', '==', propertyTypeId);
       }
 
-      // 2. APLIKASIKAN PENGURUTAN, START AFTER, DAN BATAS
+      if (locationFilters) {
+        if (locationFilters.village?.id) {
+          console.log('Filtering by village:', locationFilters.village.name);
+          query = query.where('village.id', '==', locationFilters.village.id);
+        } else if (locationFilters.district?.id) {
+          console.log('Filtering by district:', locationFilters.district.name);
+          query = query.where('district.id', '==', locationFilters.district.id);
+        } else if (locationFilters.city?.id) {
+          console.log('Filtering by city:', locationFilters.city.name);
+          query = query.where('city.id', '==', locationFilters.city.id);
+        } else if (locationFilters.province?.id) {
+          console.log('Filtering by province:', locationFilters.province.name);
+          query = query.where('province.id', '==', locationFilters.province.id);
+        }
+      }
+
       const snapshot = await query
         .orderBy('createdAt', 'desc')
         .startAfter(globalLastVisible)
@@ -537,6 +574,26 @@ const usePropertyStore = create((set, get) => ({
 
       set({
         listPropertyError: error.message || 'Failed to update property data.',
+      });
+    } finally {
+      set({ globalLoading: false });
+    }
+  },
+
+  setPropertyStatus: async (propertyId, statusId) => {
+    set({ updatePropertySuccess: false, globalLoading: true });
+
+    try {
+      await firestore().collection(COLLECTION_NAME).doc(propertyId).update({
+        statusId: statusId,
+        updatedAt: firestore.FieldValue.serverTimestamp(),
+      });
+
+      set({ updatePropertySuccess: true });
+    } catch (error) {
+      console.error('Error setting property status:', error);
+      set({
+        listPropertyError: error.message || 'Failed to update status.',
       });
     } finally {
       set({ globalLoading: false });

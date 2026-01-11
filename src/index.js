@@ -24,7 +24,7 @@ import mobileAds from 'react-native-google-mobile-ads';
 import analytics from '@react-native-firebase/analytics';
 import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
 import HomeScreen from './scenes/home';
-import BloodLineScreen from './scenes/property';
+import PropertyScreen from './scenes/property';
 import ProfileScreen from './scenes/profile';
 import PrivacyScreen from './scenes/profile/privacypolicy';
 import AuthScreen from './scenes/auth';
@@ -35,7 +35,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Fonts } from './constants';
 import useAuthStore from './store/useAuthStore';
 import { getString } from './helpers';
-import LinearGradient from 'react-native-linear-gradient';
 import AddPropertyScreen from './scenes/property/AddPropertyScreen';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import AboutAppScreen from './scenes/profile/AboutAppScreen';
@@ -54,7 +53,6 @@ import GlobalPopup from './components/GlobalPopup';
 import GlobalModal from './components/GlobalModal';
 import GlobalImagePreview from './components/GlobalImagePreview';
 import EditProfileScreen from './scenes/profile/EditProfileScreen';
-import PointScreen from './scenes/home/PointScreen';
 import GlobalPropertyListScreen from './scenes/home/GlobalPropertyListScreen';
 import MapPickerScreen from './scenes/property/MapPickerScreen';
 import DonationScreen from './scenes/profile/DonationScreen';
@@ -110,9 +108,9 @@ const FloatingTabBar = ({ state, descriptors, navigation }) => {
           } else if (route.name === 'Semua') {
             iconName = 'home-search';
             label = 'All';
-          } else if (route.name === 'BloodLineScreen') {
+          } else if (route.name === 'PropertyScreen') {
             iconName = 'home-plus';
-            label = 'My Pigeon';
+            label = 'My Property';
           } else if (route.name === 'Profil') {
             iconName = 'account-tie';
             label = 'Profile';
@@ -164,8 +162,8 @@ function BottomNavigation() {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Semua" component={GlobalPropertyListScreen} />
       <Tab.Screen
-        name="BloodLineScreen"
-        component={tokenStorage || token ? BloodLineScreen : AuthScreen}
+        name="PropertyScreen"
+        component={tokenStorage || token ? PropertyScreen : AuthScreen}
       />
       <Tab.Screen
         name="Profil"
@@ -184,12 +182,6 @@ function StackNavigation() {
         options={{ headerShown: false }}
       />
       {/* HOME */}
-      <Stack.Screen
-        key="PointScreen"
-        name="PointScreen"
-        component={PointScreen}
-        options={{ headerStyleInterpolator: forFade, headerShown: false }}
-      />
       <Stack.Screen
         key="DonationScreen"
         name="DonationScreen"
@@ -215,7 +207,7 @@ function StackNavigation() {
         component={PrivacyScreen}
         options={{ headerStyleInterpolator: forFade, headerShown: false }}
       />
-      {/* PIGEON */}
+      {/* PROPERTY */}
       <Stack.Screen
         key="AddPropertyScreen"
         name="AddPropertyScreen"
@@ -361,11 +353,11 @@ function App() {
   };
 
   const linking = {
-    prefixes: ['mypigeon://'],
+    prefixes: ['makelar://'],
     config: {
       screens: {
         InfoScreen: 'home',
-        GlobalDetailPropertyScreen: 'pigeon', // e.g. mypigeon://pigeon?id=xxx
+        GlobalDetailPropertyScreen: 'property', // e.g. makelar://property?id=xxx
       },
     },
   };

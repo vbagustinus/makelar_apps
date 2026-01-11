@@ -9,7 +9,7 @@ import {
 } from 'rn-placeholder';
 import { Colors, Sizes } from '../../styles';
 
-export const LoadingPigeons = () => {
+export const LoadingProperties = () => {
   const renderShimmerItem = () => (
     <Placeholder Animation={Progressive} style={styles.placeholderContainer}>
       <View
@@ -39,7 +39,7 @@ export const LoadingPigeons = () => {
   );
 };
 
-export const LoadingPigeonsGLobal = () => {
+export const LoadingPropertiesGlobal = () => {
   const renderShimmerItem = () => (
     <Placeholder Animation={Progressive} style={styles.placeholderContainer}>
       <View

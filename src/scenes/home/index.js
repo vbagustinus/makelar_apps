@@ -135,7 +135,7 @@ const HomeScreen = () => {
   };
 
   const goToPropertyScreen = () => {
-    navigation.navigate('BloodLineScreen');
+    navigation.navigate('PropertyScreen');
   };
 
   const goToPropertyGlobalScreen = filters => {

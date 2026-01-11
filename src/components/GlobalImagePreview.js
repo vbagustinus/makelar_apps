@@ -3,7 +3,7 @@ import { Modal, TouchableOpacity, View, StyleSheet } from 'react-native';
 import ImageViewer from 'react-native-image-zoom-viewer';
 import Ionicons from '@react-native-vector-icons/ionicons';
 import { Colors } from '../styles';
-import { logopigeon } from '../assets/images';
+import { logo } from '../assets/images';
 
 const GlobalImagePreview = () => {
   const [visible, setVisible] = useState(false);
@@ -42,7 +42,7 @@ const GlobalImagePreview = () => {
         imageUrls={images}
         enableSwipeDown
         onSwipeDown={() => setVisible(false)}
-        failImageSource={logopigeon}
+        failImageSource={logo}
       />
     </Modal>
   );

@@ -1,747 +1,484 @@
-import * as React from 'react';
-import { BaseView, EmptyData } from '../../components';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Text,
-  Pressable,
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
   StyleSheet,
   TouchableOpacity,
   View,
-  ActivityIndicator,
+  StatusBar,
+  TextInput,
 } from 'react-native';
-import MaterialCommunityIcons from '@react-native-vector-icons/material-design-icons';
-import { FlashList } from '@shopify/flash-list';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from 'react-native-reanimated';
-import { Fonts, propertyStatuses } from '../../constants';
-import { useThemeColors } from '../../styles';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { LoadingPigeonsGLobal } from '../property/LoadingPigeons'; // Mungkin perlu diubah namanya
-import useAuthStore from '../../store/useAuthStore';
-import { GlobalBannerAd, GlobalNativeAd } from '../ads';
-import { logotransparent } from '../../assets/images';
-import usePropertyStore from '../../store/usePropertyStore'; // DIUBAH: Import Store
-import FastImage from '@d11/react-native-fast-image';
-import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
-
-dayjs.extend(relativeTime);
-
-const AnimatedFlashList = Animated.createAnimatedComponent(FlashList);
-
-const formatPrice = value => {
-  if (!value) return '-';
-  const numeric = Number(String(value).replace(/[^0-9]/g, ''));
-  if (Number.isNaN(numeric)) return value;
-  return `Rp ${numeric.toLocaleString('id-ID')}`;
-};
-
-const getStatusMeta = rawStatus => {
-  // rawStatus bisa berupa id (angka/string) atau object { id, name }
-  const statusId = rawStatus?.id ?? rawStatus;
-  const found =
-    propertyStatuses.find(s => `${s.id}` === `${statusId}`) ||
-    propertyStatuses.find(
-      s => s.name?.toLowerCase() === String(rawStatus || '').toLowerCase(),
-    );
-  return {
-    label: found?.name || (statusId ? `${statusId}` : 'Status'),
-    color: found?.color,
-  };
-};
-
-// --- CONTOH DATA PROPERTI BARU (Data dummy asli Anda tampaknya berupa data Agen/Perusahaan) ---
-// Saya akan membuat data properti sederhana untuk kartu yang lebih jelas:
-const dummyProperties = [
-  {
-    id: '1',
-    title: 'Rumah Minimalis Modern',
-    price: 'Rp 980.000.000',
-    location: 'Jakarta Selatan',
-    type: 'Rumah',
-    seller: 'PT Properti Jaya',
-    image: 'https://picsum.photos/seed/p1/600/400',
-  },
-  {
-    id: '2',
-    title: 'Apartemen City View Mewah',
-    price: 'Rp 1.200.000.000',
-    location: 'Bandung City',
-    type: 'Apartemen',
-    seller: 'Grup Megah',
-    image: 'https://picsum.photos/seed/p2/600/400',
-  },
-  {
-    id: '3',
-    title: 'Tanah Kavling Siap Bangun',
-    price: 'Rp 450.000.000',
-    location: 'Bogor Timur',
-    type: 'Tanah',
-    seller: 'Developer Mandiri',
-    image: 'https://picsum.photos/seed/p3/600/400',
-  },
-  {
-    id: '4',
-    title: 'Ruko 2 Lantai Strategis',
-    price: 'Rp 1.800.000.000',
-    location: 'Bekasi Pusat',
-    type: 'Ruko',
-    seller: 'Agen Pro X',
-    image: 'https://picsum.photos/seed/p4/600/400',
-  },
-  // Data dummy agen/perusahaan yang Anda berikan sebelumnya:
-  // Catatan: Saya akan menggunakan struktur kartu di bawah untuk menampilkan detail PROPERTI,
-  // bukan data agen/perusahaan yang ada di kode Anda sebelumnya.
-  // Jika Anda ingin menampilkan AGEN/PERUSAHAAN, silakan beritahu saya.
-];
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import MaterialCommunityIcons from '@react-native-vector-icons/material-design-icons';
+import { GlobalBannerAd, useInterstitialAd } from '../ads';
+import { useThemeColors } from '../../styles';
+import { Fonts, propertyStatuses } from '../../constants';
+import usePropertyStore from '../../store/usePropertyStore';
+import { Text } from '../../components';
+import { LoadingPropertiesGlobal } from '../property/LoadingProperties';
+import PropertyGlobalCard from './PropertyGlobalCard';
+import { setItem } from '../../helpers';
 
 function GlobalPropertyListScreen() {
-  // DIUBAH: Nama Komponen
   const navigation = useNavigation();
+  const route = useRoute();
+  const insets = useSafeAreaInsets();
   const colors = useThemeColors();
-  const styles = React.useMemo(() => createStyles(colors), [colors]);
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   const {
-    // DIUBAH: Variabel yang diambil dari usePropertyStore
-    totalProperties,
-    totalForSale,
-    totalForRent,
-    fetchPropertyCounts,
-    fetchLatestProperties,
+    listGlobalProperties,
+    listGlobalPropertiesLoading,
     fetchGlobalProperties,
     fetchMoreGlobalProperties,
-    listGlobalProperties, // DIUBAH
-    listPropertyLoading,
-    deletePropertySuccess,
-    listGlobalPropertiesLoading, // DIUBAH
-    isFetchingMore,
-    hasMoreProperty,
-    globalIsFetchingMore,
     globalHasMore,
-    globalLastVisible,
-  } = usePropertyStore(); // DIUBAH: Menggunakan usePropertyStore
-  const clearToken = useAuthStore(state => state.clearToken);
-  const user = useAuthStore(state => state.user);
-  const route = useRoute();
+    globalIsFetchingMore,
+  } = usePropertyStore();
 
-  const [appliedPropertyType, setAppliedPropertyType] = React.useState(null);
-  const [appliedStatus, setAppliedStatus] = React.useState(null);
-  const [appliedSearchQuery, setAppliedSearchQuery] = React.useState('');
-  const lastFiltersUpdateRef = React.useRef(null);
+  const { showAd } = useInterstitialAd();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
 
-  // --- LOGIKA ANIMASI SCROLL (TETAP SAMA) ---
-  const translateY = useSharedValue(0);
-  const headerAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: 1,
-    transform: [{ translateY: 0 }],
-  }));
-  // --- END LOGIKA ANIMASI SCROLL ---
+  // Read filters from navigation params
+  const filters = route.params?.filters || null;
+  const updatedAt = route.params?.updatedAt || 0;
 
-  React.useEffect(() => {
-    // Load awal tanpa filter; filter type backend akan dipicu tombol cari
-    fetchGlobalProperties({ propertyTypeId: null });
-  }, []);
+  // Derived states from filters
+  const selectedPropertyType = filters?.propertyType || null;
+  const selectedStatus = filters?.status || null;
+  const locationFilters = filters?.location || null;
+  const minPrice = filters?.minPrice || null;
+  const maxPrice = filters?.maxPrice || null;
 
-  React.useEffect(() => {
-    const updatedAt = route.params?.updatedAt;
-    if (!updatedAt || updatedAt === lastFiltersUpdateRef.current) return;
-    lastFiltersUpdateRef.current = updatedAt;
+  // Auto-fill search if passed from filters
+  useEffect(() => {
+    if (filters?.search) {
+      setSearchQuery(filters.search);
+    } else {
+      setSearchQuery('');
+    }
+  }, [filters]);
 
-    const incomingFilters = route.params?.filters || {};
-    const nextType = incomingFilters.propertyType || null;
-    const nextStatus = incomingFilters.status || null;
-    const nextSearch = incomingFilters.search || '';
-
-    setAppliedPropertyType(nextType);
-    setAppliedStatus(nextStatus);
-    setAppliedSearchQuery(nextSearch);
-
-    fetchGlobalProperties({ propertyTypeId: nextType?.id ?? null });
-  }, [route.params?.updatedAt, route.params?.filters, fetchGlobalProperties]);
-
-  const injectAds = (data, interval = 5) => {
-    const result = [];
-    // Data List Global Seharusnya dari listGlobalProperties,
-    // tapi kita pakai dummyProperties untuk contoh UI:
-    data.forEach((item, index) => {
-      result.push({ ...item, _type: 'property' }); // DIUBAH: type
-      // if ((index + 1) % interval === 0) {
-      //   result.push({ _type: 'ad', id: `ad-${index}` });
-      // }
+  // Initial Fetch & Filter Change
+  useEffect(() => {
+    const activeTypeId = selectedPropertyType?.id || null;
+    fetchGlobalProperties({
+      propertyTypeId: activeTypeId,
+      locationFilters: locationFilters,
     });
-    return result;
+  }, [selectedPropertyType, locationFilters, updatedAt]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    const activeTypeId = selectedPropertyType?.id || null;
+    await fetchGlobalProperties({
+      propertyTypeId: activeTypeId,
+      locationFilters: locationFilters,
+    });
+    setRefreshing(false);
   };
 
-  // Menggunakan data dari state store, atau data dummy jika store kosong
-  const propertiesToDisplay =
-    listGlobalProperties.length > 0 ? listGlobalProperties : dummyProperties;
-  const hasAnyData = propertiesToDisplay.length > 0;
+  const loadMore = () => {
+    if (!globalIsFetchingMore && globalHasMore) {
+      const activeTypeId = selectedPropertyType?.id || null;
+      fetchMoreGlobalProperties({
+        propertyTypeId: activeTypeId,
+        locationFilters: locationFilters,
+      });
+    }
+  };
 
-  const filteredProperties = React.useMemo(() => {
-    const query = appliedSearchQuery.trim().toLowerCase();
-    return propertiesToDisplay.filter(item => {
-      const matchesType =
-        !appliedPropertyType ||
-        `${item?.propertyTypeId || item?.propertyType?.id}` ===
-          `${appliedPropertyType?.id}` ||
-        (item?.propertyTypeName || item?.propertyType?.name || item?.type || '')
-          .toLowerCase()
-          .includes((appliedPropertyType?.name || '').toLowerCase());
+  // Client-side filtering (Search & Status)
+  const filteredProperties = useMemo(() => {
+    let data = listGlobalProperties || [];
 
-      const matchesStatus =
-        !appliedStatus ||
-        `${item?.statusId || item?.status?.id}` === `${appliedStatus?.id}` ||
-        (item?.status?.name || '')
-          .toLowerCase()
-          .includes((appliedStatus?.name || '').toLowerCase());
-
-      const matchesSearch =
-        !query ||
-        [
-          item?.propertyName,
-          item?.title,
-          item?.address,
-          item?.location,
-          item?.city,
-          item?.province,
-        ]
-          .filter(Boolean)
-          .some(field => field.toLowerCase().includes(query));
-
-      return matchesType && matchesStatus && matchesSearch;
-    });
-  }, [
-    propertiesToDisplay,
-    appliedPropertyType,
-    appliedStatus,
-    appliedSearchQuery,
-  ]);
-
-  const propertiesWithAds = injectAds(filteredProperties, 5);
-
-  const renderItem = ({ item }) => {
-    if (item?._type === 'ad') {
-      return (
-        <View style={styles.adCardSocial}>
-          <GlobalNativeAd />
-        </View>
+    // Filter by Status (Client-side)
+    if (selectedStatus) {
+      data = data.filter(
+        item => (item?.statusId || item?.status?.id) === selectedStatus.id,
       );
     }
 
-    const statusMeta = getStatusMeta(item.statusId || item.status?.id);
-    const imageUrl = item?.imageUrl || item?.image;
-    const priceDisplay = formatPrice(item?.price);
-    const locationLabel =
-      item?.address ||
-      item?.location ||
-      [item?.city, item?.province].filter(Boolean).join(', ') ||
-      '-';
+    // Filter by Min Price (Client-side)
+    if (minPrice) {
+      data = data.filter(item => {
+        const itemPrice = Number(String(item.price).replace(/[^0-9]/g, ''));
+        return !Number.isNaN(itemPrice) && itemPrice >= minPrice;
+      });
+    }
 
-    return (
-      <Pressable
-        onPress={() => navigation.navigate('GlobalDetailPropertyScreen', item)}
-        style={styles.card}
-      >
-        <View style={styles.imageWrapper}>
-          {imageUrl ? (
-            <FastImage
-              source={{ uri: imageUrl }}
-              style={styles.propertyImage}
-            />
-          ) : (
-            <View style={styles.imagePlaceholder}>
-              <MaterialCommunityIcons
-                name="image-off-outline"
-                size={28}
-                color={colors.GREY}
-              />
-            </View>
-          )}
-          <View style={styles.overlayRow}>
-            <View style={styles.statusPill(statusMeta.color || colors.PRIMARY)}>
-              <Text style={styles.statusText}>{statusMeta.label}</Text>
-            </View>
-            <View style={styles.heartButton}>
-              <MaterialCommunityIcons
-                name="heart-outline"
-                size={18}
-                color={colors.TEXT}
-              />
-            </View>
-          </View>
-        </View>
+    // Filter by Max Price (Client-side)
+    if (maxPrice) {
+      data = data.filter(item => {
+        const itemPrice = Number(String(item.price).replace(/[^0-9]/g, ''));
+        return !Number.isNaN(itemPrice) && itemPrice <= maxPrice;
+      });
+    }
 
-        <Text style={styles.propertyNameText} numberOfLines={2}>
-          {item?.propertyName || item?.title || 'Properti'}
-        </Text>
+    // Filter by Search Query (Client-side)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      data = data.filter(item => {
+        const searchTerms = [
+          item.propertyName,
+          item.price,
+          item.address,
+          item.description,
+          item.province?.name,
+          item.city?.name,
+          item.district?.name,
+          item.village?.name,
+          item.propertyTypeName,
+          propertyStatuses.find(
+            s => s.id === (item?.statusId || item?.status?.id),
+          )?.name,
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
 
-        <View style={styles.detailRow}>
-          <MaterialCommunityIcons
-            name="map-marker-outline"
-            size={16}
-            color={colors.GREY}
-          />
-          <Text
-            style={styles.locationText}
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {locationLabel}
-          </Text>
-        </View>
+        return searchTerms.includes(query);
+      });
+    }
 
-        <View style={styles.tagRow}>
-          <View style={styles.tagPill}>
-            <MaterialCommunityIcons
-              name="home-outline"
-              size={14}
-              color={colors.PRIMARY}
-            />
-            <Text style={styles.tagText} numberOfLines={1}>
-              {item?.propertyTypeName ||
-                item?.propertyType?.name ||
-                item?.type ||
-                '-'}
-            </Text>
-          </View>
-          <View style={styles.tagPill}>
-            <MaterialCommunityIcons
-              name="map-marker-path"
-              size={14}
-              color={colors.PRIMARY}
-            />
-            <Text style={styles.tagText} numberOfLines={1}>
-              {statusMeta.label}
-            </Text>
-          </View>
-        </View>
+    return injectAds(data);
+  }, [listGlobalProperties, searchQuery, selectedStatus, minPrice, maxPrice]);
 
-        <Text style={styles.priceText}>{priceDisplay}</Text>
-      </Pressable>
-    );
-  };
-
-  const handleResetFilters = () => {
-    setAppliedPropertyType(null);
-    setAppliedStatus(null);
-    setAppliedSearchQuery('');
-    fetchGlobalProperties({ propertyTypeId: null });
-  };
-
-  const goToFilterScreen = () => {
+  const handleOpenFilter = () => {
     navigation.navigate('GlobalPropertyFilterScreen', {
       currentFilters: {
-        propertyType: appliedPropertyType,
-        status: appliedStatus,
-        search: appliedSearchQuery,
+        propertyType: selectedPropertyType,
+        status: selectedStatus,
+        search: searchQuery,
+        location: locationFilters,
+        minPrice: minPrice,
+        maxPrice: maxPrice,
       },
     });
   };
 
-  const renderFilterSummary = () => {
-    const chips = [
-      appliedSearchQuery
-        ? { id: 'search', label: `Cari: ${appliedSearchQuery}` }
-        : null,
-      appliedPropertyType
-        ? { id: 'type', label: appliedPropertyType?.name }
-        : null,
-      appliedStatus ? { id: 'status', label: appliedStatus?.name } : null,
-    ].filter(Boolean);
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setItem('lastFilterLabel', 'Semua properti');
+    navigation.setParams({ filters: null });
+    fetchGlobalProperties({ propertyTypeId: null, locationFilters: null });
+  };
 
-    return (
-      <Animated.View style={[styles.filterWrapper, headerAnimatedStyle]}>
-        <View style={styles.filterHeaderRow}>
-          <Text style={styles.filterTitle}>Filter Properti</Text>
-          <View style={styles.filterActionRow}>
-            <TouchableOpacity
-              style={styles.resetButton}
-              onPress={handleResetFilters}
-            >
-              <MaterialCommunityIcons
-                name="refresh"
-                size={16}
-                color={colors.PRIMARY}
-              />
-              <Text style={styles.resetText}>Reset</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.openFilterButton}
-              onPress={goToFilterScreen}
-            >
-              <MaterialCommunityIcons
-                name="tune"
-                size={16}
-                color={colors.WHITE}
-              />
-              <Text style={styles.applyText}>Atur Filter</Text>
-            </TouchableOpacity>
+  const renderItem = ({ item }) => {
+    if (item.type === 'ad') {
+      return (
+        <View style={styles.adContainer}>
+          <View style={styles.adPlaceholder}>
+            <Text style={styles.adText}>Iklan</Text>
           </View>
         </View>
+      );
+    }
+    return <PropertyGlobalCard item={item} />;
+  };
 
-        <View style={styles.chipRow}>
-          {chips.length > 0 ? (
-            chips.map(chip => (
-              <View key={chip.id} style={styles.chip}>
-                <Text style={styles.chipText}>{chip.label}</Text>
-              </View>
-            ))
-          ) : (
-            <Text style={styles.filterSummary}>Belum ada filter aktif</Text>
-          )}
-        </View>
-
-        <Text style={styles.filterSummary}>
-          Menampilkan {filteredProperties.length} properti
+  const renderEmpty = () => {
+    if (listGlobalPropertiesLoading) return null;
+    return (
+      <View style={styles.emptyContainer}>
+        <MaterialCommunityIcons
+          name="home-search-outline"
+          size={64}
+          color={colors.GREY}
+        />
+        <Text style={styles.emptyTitle}>Tidak ada properti ditemukan</Text>
+        <Text style={styles.emptySubtitle}>
+          Coba ubah filter atau kata kunci pencarian Anda
         </Text>
-      </Animated.View>
+        {(selectedPropertyType ||
+          selectedStatus ||
+          locationFilters ||
+          minPrice ||
+          maxPrice ||
+          searchQuery) && (
+          <TouchableOpacity
+            style={styles.resetButton}
+            onPress={handleResetFilters}
+          >
+            <Text style={styles.resetButtonText}>Reset Filter</Text>
+          </TouchableOpacity>
+        )}
+      </View>
     );
   };
 
   return (
-    <BaseView
-      title={'Semua Properti'}
-      disableLeftMenu
-      containerStyle={{ flex: 1, backgroundColor: colors.BACKGROUND }}
-    >
-      <View style={[styles.adTop, { backgroundColor: colors.BACKGROUND }]}>
-        <GlobalBannerAd />
-      </View>
-      {listGlobalPropertiesLoading && <LoadingPigeonsGLobal />}
+    <View style={styles.screen}>
+      <StatusBar
+        backgroundColor={colors.BACKGROUND}
+        barStyle={
+          colors.BACKGROUND === '#0D1B2D' ? 'light-content' : 'dark-content'
+        }
+      />
 
-      <AnimatedFlashList
-        style={{ flex: 1 }}
-        onScroll={event => {
-          translateY.value = event.nativeEvent.contentOffset.y;
-        }}
-        scrollEventThrottle={16}
-        data={propertiesWithAds}
-        renderItem={renderItem}
-        showsVerticalScrollIndicator={false}
-        keyExtractor={item => item?.id || item?._type + item?.id}
-        estimatedItemSize={240}
-        numColumns={2}
-        contentContainerStyle={styles.listContainer}
-        columnWrapperStyle={styles.columnWrapper}
-        ListHeaderComponent={renderFilterSummary}
-        ListEmptyComponent={
-          <EmptyData
-            message={
-              hasAnyData
-                ? 'Tidak ada properti yang cocok dengan filter.'
-                : 'Belum ada data properti global.'
-            }
-            description={
-              hasAnyData
-                ? 'Coba ubah kata kunci atau reset filter.'
-                : 'Data properti dari semua pengguna di seluruh dunia akan muncul di sini.'
-            }
-            illustration={logotransparent}
+      {/* Search Header (Custom, User Liked This) */}
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+        {/* Removed Back Button based on request */}
+        <View style={styles.searchBar}>
+          <MaterialCommunityIcons
+            name="magnify"
+            size={20}
+            color={colors.GREY}
           />
-        }
-        onEndReached={() => {
-          if (!globalIsFetchingMore && globalHasMore && globalLastVisible) {
-            fetchMoreGlobalProperties({
-              propertyTypeId: appliedPropertyType?.id,
-            });
+          <TextInput
+            style={styles.input}
+            placeholder="Cari nama properti..."
+            placeholderTextColor={colors.GREY}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <MaterialCommunityIcons
+                name="close-circle"
+                size={18}
+                color={colors.GREY}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+        <TouchableOpacity style={styles.filterBtn} onPress={handleOpenFilter}>
+          <MaterialCommunityIcons
+            name="tune"
+            size={24}
+            color={
+              selectedPropertyType ||
+              selectedStatus ||
+              locationFilters ||
+              minPrice ||
+              maxPrice
+                ? colors.PRIMARY
+                : colors.TEXT
+            }
+          />
+          {(selectedPropertyType ||
+            selectedStatus ||
+            locationFilters ||
+            minPrice ||
+            maxPrice) && <View style={styles.badge} />}
+        </TouchableOpacity>
+      </View>
+
+      {/* Filter Chips Display */}
+      {(selectedPropertyType || locationFilters) && (
+        <View style={styles.activeFiltersRow}>
+          {selectedPropertyType && (
+            <View style={styles.chip}>
+              <Text style={styles.chipText}>{selectedPropertyType.name}</Text>
+            </View>
+          )}
+          {locationFilters?.province && (
+            <View style={styles.chip}>
+              <Text style={styles.chipText}>
+                {locationFilters.village?.name ||
+                  locationFilters.district?.name ||
+                  locationFilters.city?.name ||
+                  locationFilters.province?.name}
+              </Text>
+            </View>
+          )}
+          {(minPrice || maxPrice) && (
+            <View style={styles.chip}>
+              <Text style={styles.chipText}>
+                {minPrice && maxPrice
+                  ? `Rp ${minPrice.toLocaleString(
+                      'id-ID',
+                    )} - ${maxPrice.toLocaleString('id-ID')}`
+                  : minPrice
+                  ? `> Rp ${minPrice.toLocaleString('id-ID')}`
+                  : `< Rp ${maxPrice.toLocaleString('id-ID')}`}
+              </Text>
+            </View>
+          )}
+        </View>
+      )}
+
+      {listGlobalPropertiesLoading && !listGlobalProperties.length ? (
+        <LoadingPropertiesGlobal />
+      ) : (
+        <FlatList
+          data={filteredProperties}
+          keyExtractor={(item, index) => item.id || String(index)}
+          renderItem={renderItem}
+          numColumns={2}
+          columnWrapperStyle={styles.columnWrapper}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[colors.PRIMARY]}
+            />
           }
-        }}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={
-          <View style={{ padding: 20 }}>
-            {globalIsFetchingMore && (
-              <ActivityIndicator size="large" color={colors.PRIMARY} />
-            )}
-            <View style={styles.spacer} />
-          </View>
-        }
-      />
-      <View
-        unflex
-        style={{ paddingBottom: 40, backgroundColor: colors.BACKGROUND }}
-      />
-    </BaseView>
+          ListHeaderComponent={
+            <View style={{ marginVertical: 10 }}>
+              <GlobalBannerAd />
+            </View>
+          }
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            globalIsFetchingMore && (
+              <View style={{ padding: 20, alignItems: 'center' }}>
+                <ActivityIndicator size="small" color={colors.PRIMARY} />
+              </View>
+            )
+          }
+          ListEmptyComponent={renderEmpty}
+        />
+      )}
+    </View>
   );
 }
 
+// Helper to inject Ads
+// Ensure ad objects don't break keyExtractor (use distinct IDs)
+const injectAds = (data, interval = 6) => {
+  if (!data) return [];
+  const withAds = [];
+  data.forEach((item, index) => {
+    withAds.push(item);
+    if ((index + 1) % interval === 0 && index !== data.length - 1) {
+      withAds.push({ id: `ad-local-${index}`, type: 'ad' });
+    }
+  });
+  return withAds;
+};
+
 const createStyles = colors =>
   StyleSheet.create({
-    adTop: { paddingHorizontal: 12, paddingBottom: 8 },
+    screen: {
+      flex: 1,
+      backgroundColor: colors.BACKGROUND,
+    },
     header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+      paddingBottom: 12,
+      backgroundColor: colors.BACKGROUND,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.GRAY_LIGHT,
+    },
+    // Custom Search Bar Style from Step 508
+    searchBar: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.CARD,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      height: 44,
+      borderWidth: 1,
+      borderColor: colors.GRAY_LIGHT,
+    },
+    input: {
+      flex: 1,
+      marginLeft: 8,
+      fontFamily: Fonts.fontRegular,
+      fontSize: 14,
+      color: colors.TEXT,
+    },
+    filterBtn: {
+      padding: 10,
+      marginLeft: 8,
+      position: 'relative',
+    },
+    badge: {
+      position: 'absolute',
+      top: 8,
+      right: 8,
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: colors.PRIMARY_LIGHT,
+      borderWidth: 1,
+      borderColor: colors.BACKGROUND,
+    },
+    activeFiltersRow: {
+      flexDirection: 'row',
       paddingHorizontal: 16,
       paddingVertical: 12,
-      backgroundColor: colors.CARD,
-      borderBottomWidth: 1,
-      borderColor: colors.GRAY_LIGHT,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      gap: 12,
-    },
-    headerText: {
-      flex: 1,
-    },
-    headerTitle: {
-      fontSize: 18,
-      fontFamily: Fonts.fontSemiBold,
-      color: colors.TEXT,
-      marginBottom: 4,
-    },
-    headerSubtitle: {
-      fontSize: 13,
-      fontFamily: Fonts.fontRegular,
-      color: colors.GREY,
-    },
-    filterWrapper: {
-      backgroundColor: colors.CARD,
-      padding: 12,
-      borderRadius: 16,
-      marginBottom: 12,
-      borderWidth: 1,
-      borderColor: colors.GRAY_LIGHT,
-      shadowColor: '#000',
-      shadowOpacity: colors.BACKGROUND === '#0D1B2D' ? 0.18 : 0.08,
-      shadowRadius: 12,
-      shadowOffset: { width: 0, height: 6 },
-      elevation: 5,
-    },
-    filterHeaderRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
       gap: 8,
-    },
-    filterActionRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    filterTitle: {
-      fontSize: 16,
-      fontFamily: Fonts.fontSemiBold,
-      color: colors.TEXT,
-      marginBottom: 8,
-    },
-    chipRow: {
-      flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 8,
-      marginBottom: 6,
     },
     chip: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: colors.BACKGROUND,
-      borderRadius: 12,
-      paddingHorizontal: 10,
+      backgroundColor: colors.PRIMARY_LIGHT,
+      paddingHorizontal: 12,
       paddingVertical: 6,
-      borderWidth: 1,
-      borderColor: colors.GRAY_LIGHT,
+      borderRadius: 20,
     },
     chipText: {
-      color: colors.TEXT,
-      fontFamily: Fonts.fontMedium,
       fontSize: 12,
-    },
-    listContainer: {
-      padding: 12,
-      backgroundColor: colors.BACKGROUND,
-      paddingTop: 8,
-    },
-    adCardSocial: {
-      marginHorizontal: 0,
-      marginBottom: 10,
-      backgroundColor: 'transparent',
-      padding: 18,
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderTopWidth: 0.5,
-      borderBottomWidth: 0.5,
-      borderColor: colors.GRAY_LIGHT,
-    },
-
-    card: {
-      backgroundColor:
-        colors.BACKGROUND === '#0D1B2D' ? '#121F38' : colors.CARD,
-      borderRadius: 18,
-      padding: 12,
-      marginBottom: 14,
-      marginHorizontal: 6,
-      flex: 1,
-      borderWidth: 1,
-      borderColor: colors.GRAY_LIGHT,
-      shadowColor: '#000',
-      shadowOpacity: colors.BACKGROUND === '#0D1B2D' ? 0.22 : 0.1,
-      shadowRadius: 12,
-      shadowOffset: { width: 0, height: 8 },
-      elevation: 5,
-    },
-    imageWrapper: {
-      borderRadius: 16,
-      overflow: 'hidden',
-      width: '100%',
-      aspectRatio: 1.15,
-      backgroundColor: colors.GRAY_LIGHT,
-      marginBottom: 12,
-    },
-    propertyImage: {
-      width: '100%',
-      height: '100%',
-      resizeMode: 'cover',
-    },
-    imagePlaceholder: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    overlayRow: {
-      position: 'absolute',
-      top: 12,
-      left: 12,
-      right: 12,
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    },
-
-    propertyNameText: {
-      fontSize: 17,
-      fontFamily: Fonts.fontSemiBold,
-      color: colors.TEXT,
-      marginBottom: 6,
-    },
-    detailRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: 6,
-    },
-    locationText: {
-      fontSize: 13,
-      color: colors.GREY,
-      marginLeft: 6,
-      maxWidth: '85%',
-    },
-    tagRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginTop: 6,
-      gap: 8,
-      flexWrap: 'wrap',
-    },
-    tagPill: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor:
-        colors.BACKGROUND === '#0D1B2D' ? '#0F1C34' : colors.BACKGROUND,
-      borderColor: colors.GRAY_LIGHT,
-      borderWidth: 1,
-      paddingHorizontal: 8,
-      paddingVertical: 6,
-      borderRadius: 10,
-    },
-    tagText: {
-      marginLeft: 6,
-      color: colors.TEXT,
-      fontFamily: Fonts.fontMedium,
-      fontSize: 12,
-    },
-    priceText: {
-      fontSize: 18,
-      fontFamily: Fonts.fontBold,
       color: colors.PRIMARY,
-      marginTop: 8,
+      fontFamily: Fonts.fontMedium,
+    },
+    listContent: {
+      padding: 12,
+      paddingBottom: 40,
     },
     columnWrapper: {
       justifyContent: 'space-between',
+      // gap: 12 is supported in new RN, but let's be safe if it's not
     },
-    heartButton: {
-      backgroundColor: '#00000040',
-      borderRadius: 999,
-      padding: 6,
-      borderWidth: 1,
-      borderColor: '#FFFFFF30',
-    },
-    statusText: {
-      color: colors.TEXT,
-      fontSize: 12,
-      fontFamily: Fonts.fontMedium,
-    },
-    filterSummary: {
-      fontFamily: Fonts.fontRegular,
-      color: colors.GREY,
-      fontSize: 12,
-    },
-    resetButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: 10,
-      paddingVertical: 6,
-      backgroundColor: colors.BACKGROUND,
-      borderRadius: 10,
-      borderWidth: 1,
-      borderColor: colors.PRIMARY,
-    },
-    resetText: {
-      marginLeft: 6,
-      color: colors.PRIMARY,
-      fontFamily: Fonts.fontSemiBold,
-      fontSize: 12,
-    },
-    openFilterButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: colors.PRIMARY,
-      paddingHorizontal: 14,
-      paddingVertical: 8,
-      borderRadius: 10,
-      marginLeft: 8,
-    },
-    applyText: {
-      marginLeft: 6,
-      color: colors.WHITE,
-      fontFamily: Fonts.fontSemiBold,
-      fontSize: 12,
-    },
-    dropdownContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: '#ffffff30',
+    adContainer: {
+      flex: 1,
+      margin: 6,
+      height: 220,
       borderRadius: 12,
-      padding: 5,
-      paddingVertical: 10,
-      borderWidth: 1,
-      borderColor: '#ffffff30',
-      marginRight: 20,
+      overflow: 'hidden',
+      backgroundColor: '#f0f0f0',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
-    searchButton: {
+    adPlaceholder: {
+      backgroundColor: '#e0e0e0',
+      padding: 10,
+      borderRadius: 8,
+    },
+    adText: {
+      color: '#888',
+      fontSize: 12,
+    },
+    emptyContainer: {
+      flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: '#ffffff30',
-      borderRadius: 12,
-      padding: 10,
+      paddingTop: 80,
+    },
+    emptyTitle: {
+      marginTop: 16,
+      fontSize: 18,
+      fontFamily: Fonts.fontSemiBold,
+      color: colors.TEXT,
+    },
+    emptySubtitle: {
+      marginTop: 8,
+      fontSize: 14,
+      fontFamily: Fonts.fontRegular,
+      color: colors.GREY,
+      textAlign: 'center',
+      paddingHorizontal: 32,
+    },
+    resetButton: {
+      marginTop: 24,
       paddingHorizontal: 20,
-      marginRight: 20,
-      height: 40,
-      borderWidth: 1,
-      borderColor: '#ffffff30',
+      paddingVertical: 10,
+      backgroundColor: colors.PRIMARY,
+      borderRadius: 20,
     },
-    searchButtonText: {
-      fontFamily: Fonts.fontBold,
-      fontSize: 12,
+    resetButtonText: {
       color: colors.WHITE,
+      fontFamily: Fonts.fontSemiBold,
+      fontSize: 14,
     },
-    spacer: {
-      height: 20, // Untuk jarak di footer
-    },
-    statusPill: color => ({
-      backgroundColor:
-        colors.BACKGROUND === '#0D1B2D' ? '#FFFFFF20' : colors.WHITE,
-      borderColor: color || colors.PRIMARY,
-      borderWidth: 0.8,
-      paddingHorizontal: 10,
-      paddingVertical: 5,
-      borderRadius: 12,
-    }),
   });
 
 export default GlobalPropertyListScreen;
