@@ -218,6 +218,13 @@ function ProfileScreen() {
             iconGradient={Colors.GRADIENT_SKY}
           />
           <SettingItem
+            icon="heart-outline"
+            label="Favorit"
+            onPress={() => navigation.push('FavoritesScreen')}
+            gradient={Colors.GRADIENT_PURPLE_HAZE}
+            iconGradient={Colors.GRADIENT_PURPLE_HAZE}
+          />
+          <SettingItem
             icon="shield-checkmark-outline"
             label="Kebijakan Privasi"
             onPress={() => navigation.push('PrivacyScreen')}

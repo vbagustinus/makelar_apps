@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "android": "source ~/.bash_profile && react-native run-android",
-    "ios:dev": "yarn env:dev && react-native run-ios --configuration=DebugDev --scheme=AbsensiDparagon --simulator='iPhone 16'",
-    "ios:dev:d": "yarn setDevelopment && react-native run-ios --configuration=DebugDev --scheme=AbsensiDparagon --device='iPhone 11 Pro (18.2.1)'",
+    "ios:dev": "yarn env:dev && react-native run-ios --configuration=DebugDev --scheme=AbsensiDparagon",
+    "ios:dev:d": "yarn setDevelopment && sh -c 'test -n \"$IOS_DEVICE\" || (echo \"Set IOS_DEVICE\" && exit 1); react-native run-ios --configuration=DebugDev --scheme=AbsensiDparagon --device \"$IOS_DEVICE\"'",
     "ios:dev-release": "yarn setDevelopment && react-native run-ios --configuration=ReleaseDev --scheme=AbsensiDparagon",
-    "ios:prod": "yarn env:prod && react-native run-ios --configuration=Debug --scheme=AbsensiDparagon --simulator='iPhone 16 Pro'",
+    "ios:prod": "yarn env:prod && react-native run-ios --configuration=Debug --scheme=AbsensiDparagon",
     "ios:prod-release": "yarn setProduction && react-native run-ios --configuration=Release --scheme=AbsensiDparagon",
     "prebuild:ios:production": "bash scripts/env-to-xcconfig.sh .env.production ios/Config/DebugProduction.xcconfig && bash scripts/env-to-xcconfig.sh .env.production ios/Config/ReleaseProduction.xcconfig",
     "prebuild:ios:development": "bash scripts/env-to-xcconfig.sh .env.development ios/Config/DebugDevelopment.xcconfig && bash scripts/env-to-xcconfig.sh .env.development ios/Config/ReleaseDevelopment.xcconfig",
@@ -32,8 +32,8 @@
     "android:prod:r": "yarn env:prod && react-native run-android --mode=productionrelease --appId=com.makelar_apps",
     "android:clean": "cd android && ./gradlew clean && ./gradlew :app:uninstallAll && cd ..",
     "start:reset": "react-native start --reset-cache",
-    "start:development": "./prepare-env.sh development && npm run start:reset",
-    "start:production": "./prepare-env.sh production && npm run start:reset",
+    "start:development": "yarn env:dev && npm run start:reset",
+    "start:production": "yarn env:prod && npm run start:reset",
     "codepush:android:production": "revopush release-react MyRDL-iOS android -d prod-android",
     "clean": "watchman watch-del-all && rm -rf node_modules/ && touch yarn.lock && yarn cache clean && yarn install",
     "pretty": "prettier --write '**/*.{js,ts,tsx}'",
@@ -115,15 +115,10 @@
     "@react-native/babel-preset": "0.82.1",
     "@react-native/eslint-config": "0.82.1",
     "@react-native/metro-config": "0.82.1",
-    "@react-native/typescript-config": "0.82.1",
-    "@types/jest": "^29.5.13",
-    "@types/react": "^19.1.1",
-    "@types/react-test-renderer": "^19.1.0",
     "eslint": "^8.19.0",
     "jest": "^29.6.3",
     "prettier": "2.8.8",
-    "react-test-renderer": "19.1.1",
-    "typescript": "^5.8.3"
+    "react-test-renderer": "19.1.1"
   },
   "engines": {
     "node": ">=20"

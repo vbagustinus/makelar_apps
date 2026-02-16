@@ -148,6 +148,10 @@ function PropertyScreen() {
 
   const handleShare = async property => {
     try {
+      const propertyId = property?.id || property?.propertyId;
+      const shareUrl = propertyId
+        ? `https://makelar.vercel.app/property/${propertyId}`
+        : '';
       const messageParts = [
         property?.propertyName || 'Properti',
         property?.address || property?.city || '',
@@ -155,8 +159,12 @@ function PropertyScreen() {
           ? `Harga: Rp ${Number(property.price).toLocaleString('id-ID')}`
           : '',
       ].filter(Boolean);
+      if (shareUrl) {
+        messageParts.push(shareUrl);
+      }
       await Share.share({
         message: messageParts.join(' • '),
+        url: shareUrl || undefined,
       });
     } catch (error) {
       console.warn('Share failed', error);

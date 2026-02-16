@@ -26,6 +26,7 @@ import MaterialDesignIcons from '@react-native-vector-icons/material-design-icon
 import HomeScreen from './scenes/home';
 import PropertyScreen from './scenes/property';
 import ProfileScreen from './scenes/profile';
+import FavoritesScreen from './scenes/profile/FavoritesScreen';
 import PrivacyScreen from './scenes/profile/privacypolicy';
 import AuthScreen from './scenes/auth';
 import OTPScreen from './scenes/auth/OTPScreen';
@@ -251,6 +252,12 @@ function StackNavigation() {
         component={EditProfileScreen}
         options={{ headerStyleInterpolator: forFade, headerShown: false }}
       />
+      <Stack.Screen
+        key="FavoritesScreen"
+        name="FavoritesScreen"
+        component={FavoritesScreen}
+        options={{ headerStyleInterpolator: forFade, headerShown: false }}
+      />
       {/* GLOBAL */}
       <Stack.Screen
         key="UnderConstructionScreen"
@@ -353,11 +360,13 @@ function App() {
   };
 
   const linking = {
-    prefixes: ['makelar://'],
+    prefixes: ['makelar://', 'https://makelar.vercel.app'],
     config: {
       screens: {
         InfoScreen: 'home',
-        GlobalDetailPropertyScreen: 'property', // e.g. makelar://property?id=xxx
+        GlobalDetailPropertyScreen: {
+          path: 'property/:id',
+        },
       },
     },
   };

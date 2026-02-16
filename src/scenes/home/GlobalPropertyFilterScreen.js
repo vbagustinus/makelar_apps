@@ -60,37 +60,31 @@ function GlobalPropertyFilterScreen() {
   // --- LOCATION EFFECTS ---
   useEffect(() => {
     fetchProvinces();
-  }, []);
+  }, [fetchProvinces]);
 
   useEffect(() => {
     if (province) {
-      if (province.id !== currentFilters.location?.province?.id || !city) {
-        fetchCitiesByProvince(province.id);
-      } else {
-        fetchCitiesByProvince(province.id);
-      }
+      fetchCitiesByProvince(province.id);
+    } else {
+      fetchCitiesByProvince(null);
     }
-  }, [province]);
+  }, [province, fetchCitiesByProvince]);
 
   useEffect(() => {
     if (city) {
-      if (city.id !== currentFilters.location?.city?.id || !district) {
-        fetchDistrictsByCity(city.id);
-      } else {
-        fetchDistrictsByCity(city.id);
-      }
+      fetchDistrictsByCity(city.id);
+    } else {
+      fetchDistrictsByCity(null);
     }
-  }, [city]);
+  }, [city, fetchDistrictsByCity]);
 
   useEffect(() => {
     if (district) {
-      if (district.id !== currentFilters.location?.district?.id || !village) {
-        fetchVillagesByDistrict(district.id);
-      } else {
-        fetchVillagesByDistrict(district.id);
-      }
+      fetchVillagesByDistrict(district.id);
+    } else {
+      fetchVillagesByDistrict(null);
     }
-  }, [district]);
+  }, [district, fetchVillagesByDistrict]);
 
   // RESET LOGIC saat Parent berubah (User Interaction)
   const handleSelectProvince = item => {

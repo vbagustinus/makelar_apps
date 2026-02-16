@@ -88,8 +88,8 @@ android {
         applicationId "com.makelar_apps"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 4
-        versionName "1.0.1"
+        versionCode 5
+        versionName "1.0.2"
         resValue 'string', 'build_config_package','com.makelar_apps'
         multiDexEnabled true
         manifestPlaceholders = [

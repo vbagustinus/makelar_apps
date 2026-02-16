@@ -25,15 +25,18 @@ import LinearGradient from 'react-native-linear-gradient';
 import MaterialDesignIcons from '@react-native-vector-icons/material-design-icons';
 import Geolocation from '@react-native-community/geolocation';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { FlashList } from '@shopify/flash-list';
 import { Fonts, propertyCategories } from '../../constants';
 import { getString, setItem, zustandMMKVStorage } from '../../helpers';
 import { requestLocationPermission } from '../../utils/permissions';
 import useAuthStore from '../../store/useAuthStore';
 import usePropertyStore from '../../store/usePropertyStore';
+import useFavoriteStore from '../../store/useFavoriteStore';
 import { Colors, useThemeColors } from '../../styles';
 import useThemeStore from '../../store/useThemeStore';
 import { Text } from '../../components';
 import { banner1, banner2, banner3, banner4 } from '../../assets/images';
+import { GlobalBannerAd } from '../ads/GlobalBannerAd';
 import dayjs from 'dayjs';
 
 const { width } = Dimensions.get('window');
@@ -91,6 +94,8 @@ const HomeScreen = () => {
   const [activeCategory, setActiveCategory] = useState(
     propertyCategories?.[0]?.name || 'Rumah',
   );
+  const [heroIndex, setHeroIndex] = useState(0);
+  const heroListRef = useRef(null);
   const [refreshing, setRefreshing] = useState(false);
   const [locationLabel, setLocationLabel] = useState(
     getString('lastLocationLabel') || 'Memuat lokasi...',
@@ -109,6 +114,7 @@ const HomeScreen = () => {
   const fetchUserData = useAuthStore(state => state.fetchUserData);
   const token = useAuthStore(state => state.token);
   const user = useAuthStore(state => state.user);
+  const loadFavorites = useFavoriteStore(state => state.loadFavorites);
 
   const {
     totalProperties,
@@ -324,10 +330,30 @@ const HomeScreen = () => {
     updateUserLocation();
   }, [updateUserLocation]);
 
+  useEffect(() => {
+    if (promoBanners.length < 2) return;
+    const timer = setInterval(() => {
+      setHeroIndex(prev => {
+        const next = (prev + 1) % promoBanners.length;
+        heroListRef.current?.scrollToIndex({ index: next, animated: true });
+        return next;
+      });
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
       setLastFilterLabel(getString('lastFilterLabel') || 'Semua properti');
     }, []),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (user?.uid) {
+        loadFavorites();
+      }
+    }, [user?.uid, loadFavorites]),
   );
 
   useEffect(() => {
@@ -538,8 +564,25 @@ const HomeScreen = () => {
           entering={FadeInDown.duration(450)}
           style={styles.heroCard}
         >
-          <FastImage source={promoBanners[0].image} style={styles.heroImage} />
-          <LinearGradient
+          <FlatList
+            ref={heroListRef}
+            data={promoBanners}
+            keyExtractor={item => String(item.id)}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={e => {
+              const index = Math.round(e.nativeEvent.contentOffset.x / width);
+              setHeroIndex(index);
+            }}
+            renderItem={({ item }) => (
+              <FastImage
+                source={item.image}
+                style={[styles.heroImage, { width }]}
+              />
+            )}
+          />
+          {/* <LinearGradient
             colors={
               theme === 'dark'
                 ? ['#0C1B30', '#0C1B3090']
@@ -569,8 +612,28 @@ const HomeScreen = () => {
                 <Text style={styles.heroButtonText}>Lihat Sekarang</Text>
               </LinearGradient>
             </TouchableOpacity>
-          </View>
+          </View> */}
+          {promoBanners.length > 1 && (
+            <View style={styles.heroDots}>
+              {promoBanners.map((_, idx) => (
+                <View
+                  key={idx}
+                  style={[
+                    styles.heroDot,
+                    {
+                      opacity: heroIndex === idx ? 1 : 0.35,
+                      width: heroIndex === idx ? 16 : 8,
+                    },
+                  ]}
+                />
+              ))}
+            </View>
+          )}
         </Animated.View>
+
+        <View style={styles.bannerWrapper}>
+          <GlobalBannerAd />
+        </View>
 
         {(token || tokenStorage) &&
           (totalPropertyLoading ? (
@@ -621,13 +684,14 @@ const HomeScreen = () => {
           {latestPropertiesLoading ? (
             renderSkeletonGrid(4)
           ) : latestList.length ? (
-            <FlatList
+            <FlashList
               data={latestList}
               numColumns={2}
               scrollEnabled={false}
               keyExtractor={item => item.id}
               columnWrapperStyle={{ gap: 12 }}
               contentContainerStyle={{ gap: 12 }}
+              estimatedItemSize={220}
               renderItem={({ item }) => (
                 <PropertyCard
                   item={item}
@@ -688,13 +752,14 @@ const HomeScreen = () => {
           {listAllPropertiesLoading ? (
             renderSkeletonGrid(6)
           ) : (
-            <FlatList
+            <FlashList
               data={globalList}
               numColumns={2}
               scrollEnabled={false}
               keyExtractor={item => item.id}
               columnWrapperStyle={{ gap: 12 }}
               contentContainerStyle={{ gap: 12 }}
+              estimatedItemSize={220}
               renderItem={({ item }) => (
                 <PropertyCard
                   item={item}
@@ -729,57 +794,73 @@ const HomeScreen = () => {
   );
 };
 
-const PropertyCard = ({ item, onPress, colors, withCurrency, styles }) => (
-  <TouchableOpacity
-    style={[
-      styles.card,
-      { backgroundColor: colors.CARD, borderColor: colors.GRAY_LIGHT },
-    ]}
-    onPress={onPress}
-    activeOpacity={0.9}
-  >
-    <View style={styles.cardImageWrapper}>
-      <FastImage
-        source={{ uri: item.imageUrl || item.image }}
-        style={styles.cardImage}
-      />
-      <View style={[styles.cardBadge, { backgroundColor: colors.HAZE }]}>
-        <Text style={[styles.cardBadgeText, { color: colors.TEXT }]}>
-          {item?.propertyTypeName ||
-            item?.propertyType?.name ||
-            item?.tag ||
-            'Properti'}
+const PropertyCard = ({ item, onPress, colors, withCurrency, styles }) => {
+  const user = useAuthStore(state => state.user);
+  const isFavorite = useFavoriteStore(state =>
+    state.isFavorite(item?.id || item?.propertyId),
+  );
+  const toggleFavorite = useFavoriteStore(state => state.toggleFavorite);
+  return (
+    <TouchableOpacity
+      style={[
+        styles.card,
+        { backgroundColor: colors.CARD, borderColor: colors.GRAY_LIGHT },
+      ]}
+      onPress={onPress}
+      activeOpacity={0.9}
+    >
+      <View style={styles.cardImageWrapper}>
+        <FastImage
+          source={{ uri: item.imageUrl || item.image }}
+          style={styles.cardImage}
+        />
+        <View style={[styles.cardBadge, { backgroundColor: colors.HAZE }]}>
+          <Text style={[styles.cardBadgeText, { color: colors.TEXT }]}>
+            {item?.propertyTypeName ||
+              item?.propertyType?.name ||
+              item?.tag ||
+              'Properti'}
+          </Text>
+        </View>
+        {user?.uid ? (
+          <TouchableOpacity
+            style={styles.cardHeart}
+            onPress={() => toggleFavorite(item)}
+            activeOpacity={0.9}
+          >
+            <MaterialDesignIcons
+              name={isFavorite ? 'heart' : 'heart-outline'}
+              size={18}
+              color={isFavorite ? colors.ALERT : colors.WHITE}
+            />
+          </TouchableOpacity>
+        ) : null}
+      </View>
+      <Text
+        style={[styles.cardTitle, { color: colors.TEXT }]}
+        numberOfLines={2}
+      >
+        {item.propertyName || item.title}
+      </Text>
+      <View style={styles.cardInfoRow}>
+        <MaterialDesignIcons
+          name="map-marker-outline"
+          size={14}
+          color={colors.GREY}
+        />
+        <Text
+          style={[styles.cardLocation, { color: colors.GREY }]}
+          numberOfLines={1}
+        >
+          {item.address || item.location || 'Lokasi belum diisi'}
         </Text>
       </View>
-      <TouchableOpacity style={styles.cardHeart}>
-        <MaterialDesignIcons
-          name="heart-outline"
-          size={18}
-          color={colors.WHITE}
-        />
-      </TouchableOpacity>
-    </View>
-    <Text style={[styles.cardTitle, { color: colors.TEXT }]} numberOfLines={2}>
-      {item.propertyName || item.title}
-    </Text>
-    <View style={styles.cardInfoRow}>
-      <MaterialDesignIcons
-        name="map-marker-outline"
-        size={14}
-        color={colors.GREY}
-      />
-      <Text
-        style={[styles.cardLocation, { color: colors.GREY }]}
-        numberOfLines={1}
-      >
-        {item.address || item.location || 'Lokasi belum diisi'}
+      <Text style={[styles.cardPrice, { color: colors.PRIMARY }]}>
+        {withCurrency(item.price)}
       </Text>
-    </View>
-    <Text style={[styles.cardPrice, { color: colors.PRIMARY }]}>
-      {withCurrency(item.price)}
-    </Text>
-  </TouchableOpacity>
-);
+    </TouchableOpacity>
+  );
+};
 
 const DashboardStat = ({ icon, label, value, colors, styles }) => (
   <View
@@ -978,6 +1059,21 @@ const createStyles = colors =>
     heroOverlay: {
       ...StyleSheet.absoluteFillObject,
       borderRadius: 24,
+    },
+    heroDots: {
+      position: 'absolute',
+      bottom: 12,
+      left: 0,
+      right: 0,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: 6,
+    },
+    heroDot: {
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: colors.WHITE,
     },
     heroContent: {
       position: 'absolute',
@@ -1230,6 +1326,15 @@ const createStyles = colors =>
       height: 12,
       backgroundColor: colors.HAZE,
       borderRadius: 8,
+    },
+    bannerWrapper: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 16,
+      backgroundColor: colors.CARD,
+      borderWidth: 1,
+      borderColor: colors.GRAY_LIGHT,
+      paddingVertical: 6,
     },
   });
 

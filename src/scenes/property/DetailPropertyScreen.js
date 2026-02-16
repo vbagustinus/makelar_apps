@@ -11,31 +11,21 @@ import {
   StatusBar,
   Linking,
   Alert,
+  Share,
+  Platform,
 } from 'react-native';
 import MaterialCommunityIcons from '@react-native-vector-icons/material-design-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { useThemeColors, Sizes, Colors } from '../../styles';
-import { Fonts, propertyStatuses } from '../../constants';
+import { useThemeColors, Sizes } from '../../styles';
+import { Fonts } from '../../constants';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useAuthStore from '../../store/useAuthStore';
 import { GlobalBannerAd } from '../ads';
+import { usePropertyDetail } from '../../hooks/usePropertyDetail';
+import { logo } from '../../assets/images';
+import useFavoriteStore from '../../store/useFavoriteStore';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-const getStatusMeta = (statusId, colors) => {
-  const found = propertyStatuses.find(s => s.id === statusId);
-  return {
-    label: found?.name || 'Status',
-    color: found?.color || colors.PRIMARY,
-  };
-};
-
-const formatPrice = value => {
-  if (!value) return '-';
-  const numeric = Number(String(value).replace(/[^0-9]/g, ''));
-  if (Number.isNaN(numeric)) return value;
-  return `Rp ${numeric.toLocaleString('id-ID')}`;
-};
 
 const DetailPropertyScreen = () => {
   const navigation = useNavigation();
@@ -45,317 +35,26 @@ const DetailPropertyScreen = () => {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const user = useAuthStore(state => state.user);
 
-  const extractName = val => {
-    if (!val) return null;
-    if (typeof val === 'object')
-      return val.name || val.label || val.value || null;
-    return val;
-  };
-  const extractValue = val => {
-    if (!val) return '';
-    if (typeof val === 'object') {
-      return val.name || val.label || val.value || val.displayName || '';
-    }
-    return String(val);
-  };
-
   const item = route.params?.property || route.params || {};
-  const images =
-    (item?.imageUrls && item?.imageUrls.length > 0 && item?.imageUrls) ||
-    (item?.images && item?.images.length > 0 && item?.images) ||
-    (item?.imageUrl ? [item?.imageUrl] : []);
   const [activeIndex, setActiveIndex] = useState(0);
-  const previewImages = useMemo(
-    () => images.map(uri => ({ url: uri })),
-    [images],
-  );
-
-  const statusMeta = getStatusMeta(item?.statusId || item?.status?.id, colors);
-  const addressLine = useMemo(() => {
-    const locationParts = [
-      item?.address,
-      item?.village,
-      item?.district,
-      item?.city,
-      item?.province,
-    ].filter(Boolean);
-    return locationParts.join(', ');
-  }, [
-    item?.address,
-    item?.village,
-    item?.district,
-    item?.city,
-    item?.province,
-  ]);
-  console.log('addressLine', item);
-
-  const featureCards = useMemo(
-    () =>
-      [
-        item?.bedrooms
-          ? {
-              icon: 'bed-king-outline',
-              label: `${extractValue(item?.bedrooms)} Kamar`,
-            }
-          : null,
-        item?.bathrooms
-          ? {
-              icon: 'shower',
-              label: `${extractValue(item?.bathrooms)} Kamar Mandi`,
-            }
-          : null,
-        item?.buildingArea
-          ? {
-              icon: 'home-floor-1',
-              label: `${extractValue(item?.buildingArea)} m² Bangunan`,
-            }
-          : null,
-        item?.landArea
-          ? {
-              icon: 'ruler-square',
-              label: `${extractValue(item?.landArea)} m² Tanah`,
-            }
-          : null,
-        item?.floors
-          ? {
-              icon: 'stairs',
-              label: `${extractValue(item?.floors)} Lantai`,
-            }
-          : null,
-        item?.garage
-          ? {
-              icon: 'car',
-              label: `${extractValue(item?.garage)} Garasi`,
-            }
-          : null,
-        item?.electricPower
-          ? {
-              icon: 'lightning-bolt',
-              label: `${extractValue(item?.electricPower)} VA`,
-            }
-          : null,
-      ].filter(Boolean),
-    [
-      item?.bathrooms,
-      item?.bedrooms,
-      item?.buildingArea,
-      item?.floors,
-      item?.garage,
-      item?.landArea,
-      item?.electricPower,
-    ],
-  );
-
-  const additionalSpecs = useMemo(() => {
-    const specs = [];
-
-    // General
-    if (item?.builtYear)
-      specs.push({
-        label: 'Tahun Dibangun',
-        value: extractValue(item?.builtYear),
-      });
-    if (item?.renovationYear)
-      specs.push({
-        label: 'Tahun Renovasi',
-        value: extractValue(item?.renovationYear),
-      });
-    if (item?.facing)
-      specs.push({ label: 'Hadap', value: extractValue(item?.facing) });
-    if (item?.furnished)
-      specs.push({ label: 'Furnished', value: extractValue(item?.furnished) });
-    if (item?.waterSource)
-      specs.push({
-        label: 'Sumber Air',
-        value: extractValue(item?.waterSource),
-      });
-    if (item?.roadWidth)
-      specs.push({
-        label: 'Lebar Jalan',
-        value: `${extractValue(item?.roadWidth)} m`,
-      });
-    if (item?.carAccess)
-      specs.push({
-        label: 'Akses Mobil',
-        value: extractValue(item?.carAccess),
-      });
-    if (item?.condition)
-      specs.push({ label: 'Kondisi', value: extractValue(item?.condition) });
-    if (item?.environmentType)
-      specs.push({
-        label: 'Lingkungan',
-        value: extractValue(item?.environmentType),
-      });
-    if (item?.monthlyFee)
-      specs.push({
-        label: 'Iuran Bulanan',
-        value: formatPrice(extractValue(item?.monthlyFee)),
-      });
-    if (item?.imbNumber)
-      specs.push({ label: 'No. IMB', value: extractValue(item?.imbNumber) });
-    if (item?.legalOwnerName)
-      specs.push({
-        label: 'Nama di Sertifikat',
-        value: extractValue(item?.legalOwnerName),
-      });
-
-    // Apartment
-    if (item?.tower)
-      specs.push({ label: 'Tower', value: extractValue(item?.tower) });
-    if (item?.floorNumber)
-      specs.push({
-        label: 'Lantai Ke',
-        value: extractValue(item?.floorNumber),
-      });
-    if (item?.unitNumber)
-      specs.push({ label: 'No. Unit', value: extractValue(item?.unitNumber) });
-    if (item?.unitType)
-      specs.push({ label: 'Tipe Unit', value: extractValue(item?.unitType) });
-    if (item?.maintenanceFee)
-      specs.push({
-        label: 'Biaya IPL',
-        value: formatPrice(extractValue(item?.maintenanceFee)),
-      });
-    if (item?.balcony)
-      specs.push({ label: 'Balkon', value: extractValue(item?.balcony) });
-    if (item?.apartmentFacilities)
-      specs.push({
-        label: 'Fasilitas Apt',
-        value: extractValue(item?.apartmentFacilities),
-      });
-
-    // Land
-    if (item?.landShape)
-      specs.push({
-        label: 'Bentuk Tanah',
-        value: extractValue(item?.landShape),
-      });
-    if (item?.frontageWidth)
-      specs.push({
-        label: 'Lebar Depan',
-        value: `${extractValue(item?.frontageWidth)} m`,
-      });
-    if (item?.zoning)
-      specs.push({ label: 'Zoning', value: extractValue(item?.zoning) });
-    if (item?.contour)
-      specs.push({ label: 'Kontur', value: extractValue(item?.contour) });
-    if (item?.roadType)
-      specs.push({ label: 'Tipe Jalan', value: extractValue(item?.roadType) });
-
-    // Shop/Retail
-    if (item?.buildingWidth)
-      specs.push({
-        label: 'Lebar Bangunan',
-        value: `${extractValue(item?.buildingWidth)} m`,
-      });
-    if (item?.buildingLength)
-      specs.push({
-        label: 'Panjang Bangunan',
-        value: `${extractValue(item?.buildingLength)} m`,
-      });
-    if (item?.parkingSpace)
-      specs.push({
-        label: 'Parkir',
-        value: `${extractValue(item?.parkingSpace)} m²`,
-      });
-    if (item?.restroomCount)
-      specs.push({
-        label: 'Kamar Mandi',
-        value: extractValue(item?.restroomCount),
-      });
-    if (item?.electricityType)
-      specs.push({
-        label: 'Tipe Listrik',
-        value: extractValue(item?.electricityType),
-      });
-    if (item?.businessSuitableFor)
-      specs.push({
-        label: 'Cocok Untuk',
-        value: extractValue(item?.businessSuitableFor),
-      });
-
-    // Office
-    if (item?.officeType)
-      specs.push({
-        label: 'Tipe Kantor',
-        value: extractValue(item?.officeType),
-      });
-    if (item?.meetingRoomCount)
-      specs.push({
-        label: 'R. Meeting',
-        value: extractValue(item?.meetingRoomCount),
-      });
-    if (item?.workspaceCapacity)
-      specs.push({
-        label: 'Kapasitas',
-        value: `${extractValue(item?.workspaceCapacity)} orang`,
-      });
-    if (item?.pantry)
-      specs.push({ label: 'Pantry', value: extractValue(item?.pantry) });
-    if (item?.toiletType)
-      specs.push({
-        label: 'Tipe Toilet',
-        value: extractValue(item?.toiletType),
-      });
-
-    // Kos
-    if (item?.totalRooms)
-      specs.push({
-        label: 'Total Kamar',
-        value: extractValue(item?.totalRooms),
-      });
-    if (item?.occupiedRooms)
-      specs.push({
-        label: 'Kamar Terisi',
-        value: extractValue(item?.occupiedRooms),
-      });
-    if (item?.roomFacilities)
-      specs.push({
-        label: 'Fasilitas Kamar',
-        value: extractValue(item?.roomFacilities),
-      });
-    if (item?.bathroomInside)
-      specs.push({
-        label: 'K. Mandi Dalam',
-        value: extractValue(item?.bathroomInside),
-      });
-    if (item?.incomePerMonth)
-      specs.push({
-        label: 'Pendapatan/Bln',
-        value: formatPrice(extractValue(item?.incomePerMonth)),
-      });
-    if (item?.rules)
-      specs.push({ label: 'Aturan', value: extractValue(item?.rules) });
-
-    // Industry
-    if (item?.ceilingHeight)
-      specs.push({
-        label: 'Tinggi Atap',
-        value: `${extractValue(item?.ceilingHeight)} m`,
-      });
-    if (item?.loadingDock)
-      specs.push({
-        label: 'Loading Dock',
-        value: extractValue(item?.loadingDock),
-      });
-    if (item?.truckAccess)
-      specs.push({
-        label: 'Akses Truk',
-        value: extractValue(item?.truckAccess),
-      });
-    if (item?.powerCapacity)
-      specs.push({
-        label: 'Kapasitas Daya',
-        value: `${extractValue(item?.powerCapacity)} KVA`,
-      });
-    if (item?.floorStrength)
-      specs.push({
-        label: 'Kekuatan Lantai',
-        value: `${extractValue(item?.floorStrength)} ton/m²`,
-      });
-
-    return specs;
-  }, [item, extractValue]);
+  const [imageErrors, setImageErrors] = useState({});
+  const {
+    images,
+    previewImages,
+    statusMeta,
+    featureCards,
+    additionalSpecs,
+    formatPrice,
+    extractValue,
+  } = usePropertyDetail(item, colors);
+  const displayImages = images.length ? images : [null];
+  const favoriteId =
+    item?.id ||
+    item?.propertyId ||
+    route.params?.id ||
+    route.params?.propertyId;
+  const isFavorite = useFavoriteStore(state => state.isFavorite(favoriteId));
+  const toggleFavorite = useFavoriteStore(state => state.toggleFavorite);
 
   const openPreview = (startIndex = 0) => {
     if (!previewImages.length || !global.showImagePreview) {
@@ -369,11 +68,19 @@ const DetailPropertyScreen = () => {
     global.showImagePreview(ordered);
   };
 
-  const renderImage = ({ item: uri, index }) => (
-    <TouchableOpacity activeOpacity={0.9} onPress={() => openPreview(index)}>
-      <Image source={{ uri }} style={styles.heroImage} />
-    </TouchableOpacity>
-  );
+  const renderImage = ({ item: uri, index }) => {
+    const showFallback = !uri || imageErrors[index];
+    const source = showFallback ? logo : { uri };
+    return (
+      <TouchableOpacity activeOpacity={0.9} onPress={() => openPreview(index)}>
+        <Image
+          source={source}
+          style={styles.heroImage}
+          onError={() => setImageErrors(prev => ({ ...prev, [index]: true }))}
+        />
+      </TouchableOpacity>
+    );
+  };
 
   const isOwner = item?.uid && user?.uid && item?.uid === user.uid;
   const contactNumber =
@@ -387,12 +94,32 @@ const DetailPropertyScreen = () => {
     item?.whatsapp ||
     (isOwner ? user?.phoneNumber || user?.whatsapp : null);
 
-  const handleContact = async () => {
-    if (!contactNumber) {
-      Alert.alert('Info', 'Kontak pengiklan belum tersedia.');
-      return;
+  const getSanitizedNumber = raw => {
+    if (!raw) return '';
+    return String(raw).replace(/[^0-9+]/g, '');
+  };
+
+  const openWhatsapp = async (number, propertyLink) => {
+    const sanitized = getSanitizedNumber(number);
+    const waNumber = sanitized.replace(/^0/, '62').replace(/^\+/, '');
+    const messageBase = 'Saya mendapat info properti ini dari aplikasi Makelar';
+    const message = propertyLink
+      ? `${messageBase} dengan link ${propertyLink}, saya mau tahu `
+      : `${messageBase}, saya mau tahu `;
+    const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(
+      message,
+    )}`;
+    const supported = await Linking.canOpenURL(waUrl);
+    if (supported) {
+      Linking.openURL(waUrl);
+    } else {
+      Alert.alert('Gagal', 'Tidak bisa membuka WhatsApp.');
     }
-    const telUrl = `tel:${contactNumber}`;
+  };
+
+  const openTelephone = async number => {
+    const sanitized = getSanitizedNumber(number);
+    const telUrl = `tel:${sanitized}`;
     const supported = await Linking.canOpenURL(telUrl);
     if (supported) {
       Linking.openURL(telUrl);
@@ -401,39 +128,111 @@ const DetailPropertyScreen = () => {
     }
   };
 
-  return (
-    <View style={[styles.screen, { backgroundColor: colors.BACKGROUND }]}>
-      <StatusBar
-        translucent
-        backgroundColor="transparent"
-        barStyle={
-          colors.BACKGROUND === '#0D1B2D' ? 'light-content' : 'dark-content'
-        }
-      />
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingTop: Sizes.statusBar + 6,
-          paddingBottom: 100,
-          backgroundColor: colors.BACKGROUND,
-        }}
-      >
-        <View style={[styles.heroContainer, { backgroundColor: colors.CARD }]}>
-          <FlatList
-            data={images}
-            renderItem={renderImage}
-            keyExtractor={(uri, index) => `${uri}-${index}`}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onMomentumScrollEnd={e => {
-              const index = Math.round(
-                e.nativeEvent.contentOffset.x / SCREEN_WIDTH,
-              );
-              setActiveIndex(index);
-            }}
-          />
-          <View style={[styles.heroOverlay, { paddingTop: insets.top }]}>
+  const handleContact = async () => {
+    if (!contactNumber) {
+      Alert.alert('Info', 'Kontak pengiklan belum tersedia.');
+      return;
+    }
+    const routeId = route.params?.id || route.params?.propertyId;
+    const propertyId = item?.id || item?.propertyId || routeId;
+    const propertyLink = propertyId
+      ? `https://makelar.vercel.app/property/${propertyId}`
+      : '';
+    Alert.alert('Hubungi Pengiklan', 'Pilih metode kontak:', [
+      {
+        text: 'WhatsApp',
+        onPress: () => openWhatsapp(contactNumber, propertyLink),
+      },
+      {
+        text: 'Telepon',
+        onPress: () => openTelephone(contactNumber),
+      },
+      { text: 'Batal', style: 'cancel' },
+    ]);
+  };
+
+  const handleShare = async () => {
+    const routeId = route.params?.id || route.params?.propertyId;
+    const propertyId = item?.id || item?.propertyId || routeId;
+    if (!propertyId) {
+      Alert.alert('Info', 'ID properti belum tersedia.');
+      return;
+    }
+    const url = `https://makelar.vercel.app/property/${propertyId}`;
+    try {
+      await Share.share({
+        message: `Cek properti ini di Makelar: ${url}`,
+        url,
+      });
+    } catch (error) {
+      Alert.alert('Gagal', 'Tidak bisa membuka menu share.');
+    }
+  };
+
+  const handleToggleFavorite = () => {
+    if (!favoriteId) {
+      Alert.alert('Info', 'ID properti belum tersedia.');
+      return;
+    }
+    if (!user?.uid) {
+      Alert.alert('Info', 'Silakan login untuk menyimpan favorit.');
+      return;
+    }
+    toggleFavorite(item);
+  };
+
+  const openExternalMap = () => {
+    const lat =
+      Number(item?.latitude) ||
+      Number(item?.lat) ||
+      Number(item?.location?.latitude);
+    const lng =
+      Number(item?.longitude) ||
+      Number(item?.lng) ||
+      Number(item?.location?.longitude);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      Alert.alert('Info', 'Lokasi properti belum tersedia.');
+      return;
+    }
+    const label = encodeURIComponent(
+      extractValue(item?.propertyName || item?.title || 'Properti'),
+    );
+    const url =
+      Platform.OS === 'ios'
+        ? `http://maps.apple.com/?ll=${lat},${lng}&q=${label}`
+        : `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+    Linking.openURL(url);
+  };
+
+  const hasCoords = (() => {
+    const lat =
+      Number(item?.latitude) ||
+      Number(item?.lat) ||
+      Number(item?.location?.latitude);
+    const lng =
+      Number(item?.longitude) ||
+      Number(item?.lng) ||
+      Number(item?.location?.longitude);
+    return Number.isFinite(lat) && Number.isFinite(lng);
+  })();
+
+  if (!item || Object.keys(item).length === 0) {
+    return (
+      <View style={[styles.screen, { backgroundColor: colors.BACKGROUND }]}>
+        <StatusBar
+          translucent
+          backgroundColor="transparent"
+          barStyle={
+            colors.BACKGROUND === '#0D1B2D' ? 'light-content' : 'dark-content'
+          }
+        />
+        <View
+          style={[
+            styles.stickyHeader,
+            { paddingTop: insets.top + 8, paddingHorizontal: 16 },
+          ]}
+        >
+          <View style={styles.stickyHeaderRow}>
             <TouchableOpacity
               style={[
                 styles.iconCircle,
@@ -450,6 +249,108 @@ const DetailPropertyScreen = () => {
                 color={colors.TEXT}
               />
             </TouchableOpacity>
+            <View style={styles.headerActions}>
+              {user?.uid ? (
+                <TouchableOpacity
+                  style={[
+                    styles.iconCircle,
+                    {
+                      backgroundColor: colors.CARD,
+                      borderColor: colors.GRAY_LIGHT,
+                    },
+                  ]}
+                  onPress={handleToggleFavorite}
+                >
+                  <MaterialCommunityIcons
+                    name={isFavorite ? 'heart' : 'heart-outline'}
+                    size={20}
+                    color={isFavorite ? colors.ALERT : colors.TEXT}
+                  />
+                </TouchableOpacity>
+              ) : null}
+              <TouchableOpacity
+                style={[
+                  styles.iconCircle,
+                  {
+                    backgroundColor: colors.CARD,
+                    borderColor: colors.GRAY_LIGHT,
+                  },
+                ]}
+                onPress={handleShare}
+              >
+                <MaterialCommunityIcons
+                  name="share-variant"
+                  size={20}
+                  color={colors.TEXT}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+        <View style={styles.emptyState}>
+          <Text style={[styles.emptyTitle, { color: colors.TEXT }]}>
+            Properti tidak ditemukan.
+          </Text>
+          <Text style={[styles.emptyCaption, { color: colors.GREY }]}>
+            Coba kembali dan pilih properti lain.
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={[styles.screen, { backgroundColor: colors.BACKGROUND }]}>
+      <StatusBar
+        translucent
+        backgroundColor="transparent"
+        barStyle={
+          colors.BACKGROUND === '#0D1B2D' ? 'light-content' : 'dark-content'
+        }
+      />
+      <View
+        style={[
+          styles.stickyHeader,
+          { paddingTop: insets.top + 8, paddingHorizontal: 16 },
+        ]}
+        pointerEvents="box-none"
+      >
+        <View style={styles.stickyHeaderRow}>
+          <TouchableOpacity
+            style={[
+              styles.iconCircle,
+              {
+                backgroundColor: colors.CARD,
+                borderColor: colors.GRAY_LIGHT,
+              },
+            ]}
+            onPress={() => navigation.goBack()}
+          >
+            <MaterialCommunityIcons
+              name="chevron-left"
+              size={22}
+              color={colors.TEXT}
+            />
+          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            {user?.uid ? (
+              <TouchableOpacity
+                style={[
+                  styles.iconCircle,
+                  {
+                    backgroundColor: colors.CARD,
+                    borderColor: colors.GRAY_LIGHT,
+                  },
+                ]}
+                onPress={handleToggleFavorite}
+              >
+                <MaterialCommunityIcons
+                  name={isFavorite ? 'heart' : 'heart-outline'}
+                  size={20}
+                  color={isFavorite ? colors.ALERT : colors.TEXT}
+                />
+              </TouchableOpacity>
+            ) : null}
             <TouchableOpacity
               style={[
                 styles.iconCircle,
@@ -458,6 +359,7 @@ const DetailPropertyScreen = () => {
                   borderColor: colors.GRAY_LIGHT,
                 },
               ]}
+              onPress={handleShare}
             >
               <MaterialCommunityIcons
                 name="share-variant"
@@ -466,6 +368,33 @@ const DetailPropertyScreen = () => {
               />
             </TouchableOpacity>
           </View>
+        </View>
+      </View>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingTop: Sizes.statusBar + 6,
+          paddingBottom: 100,
+          backgroundColor: colors.BACKGROUND,
+        }}
+      >
+        <View style={[styles.heroContainer, { backgroundColor: colors.CARD }]}>
+          <FlatList
+            data={displayImages}
+            renderItem={renderImage}
+            keyExtractor={(uri, index) =>
+              uri ? `${uri}-${index}` : `placeholder-${index}`
+            }
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={e => {
+              const index = Math.round(
+                e.nativeEvent.contentOffset.x / SCREEN_WIDTH,
+              );
+              setActiveIndex(index);
+            }}
+          />
           {images.length > 1 && (
             <View style={styles.dots}>
               {images.map((_, idx) => (
@@ -665,6 +594,10 @@ const DetailPropertyScreen = () => {
             {formatPrice(item?.price)}
           </Text>
 
+          <View style={styles.adSlot}>
+            <GlobalBannerAd />
+          </View>
+
           <Text
             style={[styles.sectionTitle, { marginTop: 16, color: colors.TEXT }]}
           >
@@ -682,6 +615,19 @@ const DetailPropertyScreen = () => {
             >
               {item?.address || 'Alamat belum diisi'}
             </Text>
+            {hasCoords ? (
+              <TouchableOpacity
+                style={styles.mapLinkButton}
+                onPress={openExternalMap}
+                activeOpacity={0.8}
+              >
+                <MaterialCommunityIcons
+                  name="directions"
+                  size={18}
+                  color={colors.PRIMARY}
+                />
+              </TouchableOpacity>
+            ) : null}
           </View>
 
           <View style={styles.metaRow}>
@@ -767,9 +713,6 @@ const DetailPropertyScreen = () => {
           </TouchableOpacity>
         </View>
       )}
-      <View style={{ marginVertical: 10 }}>
-        <GlobalBannerAd />
-      </View>
     </View>
   );
 };
@@ -798,13 +741,23 @@ const createStyles = colors =>
       height: SCREEN_WIDTH * 0.7,
       resizeMode: 'cover',
     },
-    heroOverlay: {
+    stickyHeader: {
       position: 'absolute',
-      top: Sizes.statusBar + 22,
-      left: 16,
-      right: 16,
+      top: 0,
+      left: 0,
+      right: 0,
+      zIndex: 10,
+      elevation: 10,
+    },
+    stickyHeaderRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    headerActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
     },
     iconCircle: {
       width: 38,
@@ -813,6 +766,25 @@ const createStyles = colors =>
       justifyContent: 'center',
       alignItems: 'center',
       borderWidth: 1,
+    },
+    emptyState: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 24,
+      paddingTop: Sizes.statusBar + 80,
+    },
+    emptyTitle: {
+      fontFamily: Fonts.fontSemiBold,
+      fontSize: 18,
+      marginBottom: 8,
+      textAlign: 'center',
+    },
+    emptyCaption: {
+      fontFamily: Fonts.fontRegular,
+      fontSize: 13,
+      textAlign: 'center',
+      lineHeight: 18,
     },
     dots: {
       position: 'absolute',
@@ -955,11 +927,31 @@ const createStyles = colors =>
       fontFamily: Fonts.fontBold,
       marginBottom: 4,
     },
+    adSlot: {
+      marginTop: 12,
+      paddingVertical: 6,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 14,
+      backgroundColor: colors.CARD,
+      borderWidth: 1,
+      borderColor: colors.GRAY_LIGHT,
+    },
     metaRow: {
       flexDirection: 'row',
       alignItems: 'center',
       marginBottom: 8,
       gap: 8,
+    },
+    mapLinkButton: {
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.HAZE,
+      borderWidth: 1,
+      borderColor: colors.GRAY_LIGHT,
     },
     metaText: {
       fontFamily: Fonts.fontRegular,

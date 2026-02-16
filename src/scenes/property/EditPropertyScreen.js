@@ -143,36 +143,42 @@ const EditPropertyScreen = () => {
 
   // --- FIELDS APARTEMEN ---
   const [tower, setTower] = useState(
-    item?.tower 
-      ? (typeof item.tower === 'object' ? item.tower.name || item.tower.value || '' : String(item.tower))
-      : ''
+    item?.tower
+      ? typeof item.tower === 'object'
+        ? item.tower.name || item.tower.value || ''
+        : String(item.tower)
+      : '',
   );
   const [floorNumber, setFloorNumber] = useState(
-    item?.floorNumber 
-      ? (typeof item.floorNumber === 'object' ? String(item.floorNumber.name || item.floorNumber.value || '') : String(item.floorNumber))
-      : ''
+    item?.floorNumber
+      ? typeof item.floorNumber === 'object'
+        ? String(item.floorNumber.name || item.floorNumber.value || '')
+        : String(item.floorNumber)
+      : '',
   );
   const [unitNumber, setUnitNumber] = useState(
-    item?.unitNumber 
-      ? (typeof item.unitNumber === 'object' ? item.unitNumber.name || item.unitNumber.value || '' : String(item.unitNumber))
-      : ''
+    item?.unitNumber
+      ? typeof item.unitNumber === 'object'
+        ? item.unitNumber.name || item.unitNumber.value || ''
+        : String(item.unitNumber)
+      : '',
   );
   const [unitType, setUnitType] = useState(
-    item?.unitType 
-      ? (typeof item.unitType === 'object' && item.unitType.id 
-          ? item.unitType 
-          : { id: item.unitType, name: item.unitType })
-      : null
+    item?.unitType
+      ? typeof item.unitType === 'object' && item.unitType.id
+        ? item.unitType
+        : { id: item.unitType, name: item.unitType }
+      : null,
   );
   const [maintenanceFee, setMaintenanceFee] = useState(
     item?.maintenanceFee ? String(item.maintenanceFee) : '',
   );
   const [balcony, setBalcony] = useState(
-    item?.balcony 
-      ? (typeof item.balcony === 'object' && item.balcony.id 
-          ? item.balcony 
-          : { id: item.balcony, name: item.balcony })
-      : null
+    item?.balcony
+      ? typeof item.balcony === 'object' && item.balcony.id
+        ? item.balcony
+        : { id: item.balcony, name: item.balcony }
+      : null,
   );
   const [apartmentFacilities, setApartmentFacilities] = useState(
     item?.apartmentFacilities || '',
@@ -296,7 +302,12 @@ const EditPropertyScreen = () => {
         );
       case 'Apartemen':
         console.log('=== Apartment Validation Debug ===');
-        console.log('buildingArea:', buildingArea, 'valid:', buildingArea.trim() !== '');
+        console.log(
+          'buildingArea:',
+          buildingArea,
+          'valid:',
+          buildingArea.trim() !== '',
+        );
         console.log('bedrooms:', bedrooms, 'valid:', bedrooms.trim() !== '');
         console.log('bathrooms:', bathrooms);
         console.log('floorNumber:', floorNumber);
@@ -304,34 +315,19 @@ const EditPropertyScreen = () => {
         console.log('unitType:', unitType);
         // For apartment, only buildingArea and bedrooms are required
         // Other fields like floorNumber, unitNumber, unitType are optional
-        const isValid = (
-          buildingArea.trim() !== '' &&
-          bedrooms.trim() !== ''
-        );
+        const isValid = buildingArea.trim() !== '' && bedrooms.trim() !== '';
         console.log('Overall apartment validation:', isValid);
         return isValid;
       case 'Tanah':
-        return (
-          landArea.trim() !== ''
-        );
+        return landArea.trim() !== '';
       case 'Ruko':
-        return (
-          landArea.trim() !== '' &&
-          buildingArea.trim() !== ''
-        );
+        return landArea.trim() !== '' && buildingArea.trim() !== '';
       case 'Kantor':
-        return (
-          buildingArea.trim() !== ''
-        );
+        return buildingArea.trim() !== '';
       case 'Kos/Kontrakan':
-        return (
-          totalRooms.trim() !== '' &&
-          roomFacilities.trim() !== ''
-        );
+        return totalRooms.trim() !== '' && roomFacilities.trim() !== '';
       case 'Industri/Gudang':
-        return (
-          buildingArea.trim() !== ''
-        );
+        return buildingArea.trim() !== '';
       default:
         return false;
     }
@@ -691,7 +687,8 @@ const EditPropertyScreen = () => {
       propertyId: item?.id,
       phoneNumber: user?.phoneNumber || null,
       whatsapp: user?.whatsapp || null,
-      contactNumber: contactNumber.trim() || user?.phoneNumber || user?.whatsapp,
+      contactNumber:
+        contactNumber.trim() || user?.phoneNumber || user?.whatsapp,
       propertyTypeId: propertyType?.id,
       propertyTypeName: propertyType?.name,
       propertyName,

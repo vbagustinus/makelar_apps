@@ -67,9 +67,7 @@ const AddPropertyScreen = () => {
   const [status, setStatus] = useState(null);
   const [certificateType, setCertificateType] = useState(null);
   const [address, setAddress] = useState('');
-  const [contactNumber, setContactNumber] = useState(
-    userPhone || userWa || '',
-  );
+  const [contactNumber, setContactNumber] = useState(userPhone || userWa || '');
 
   // State untuk Data Keuangan/Harga
   const [price, setPrice] = useState('');
@@ -161,32 +159,17 @@ const AddPropertyScreen = () => {
           bathrooms.trim() !== ''
         );
       case 'Apartemen':
-        return (
-          buildingArea.trim() !== '' &&
-          bedrooms.trim() !== ''
-        );
+        return buildingArea.trim() !== '' && bedrooms.trim() !== '';
       case 'Tanah':
-        return (
-          landArea.trim() !== ''
-        );
+        return landArea.trim() !== '';
       case 'Ruko':
-        return (
-          landArea.trim() !== '' &&
-          buildingArea.trim() !== ''
-        );
+        return landArea.trim() !== '' && buildingArea.trim() !== '';
       case 'Kantor':
-        return (
-          buildingArea.trim() !== ''
-        );
+        return buildingArea.trim() !== '';
       case 'Kos/Kontrakan':
-        return (
-          totalRooms.trim() !== '' &&
-          roomFacilities.trim() !== ''
-        );
+        return totalRooms.trim() !== '' && roomFacilities.trim() !== '';
       case 'Industri/Gudang':
-        return (
-          buildingArea.trim() !== ''
-        );
+        return buildingArea.trim() !== '';
       default:
         return false;
     }
@@ -374,7 +357,8 @@ const AddPropertyScreen = () => {
     savePropertyData({
       phoneNumber: user?.phoneNumber || null,
       whatsapp: user?.whatsapp || null,
-      contactNumber: contactNumber.trim() || user?.phoneNumber || user?.whatsapp,
+      contactNumber:
+        contactNumber.trim() || user?.phoneNumber || user?.whatsapp,
       propertyTypeId: propertyType?.id,
       propertyTypeName: propertyType?.name,
       propertyName,
@@ -1498,26 +1482,26 @@ const AddPropertyScreen = () => {
             }
             iconName="map-marker-outline" // Ikon diperbarui
             options={formattedVillages} // Menggunakan data yang diformat
-          value={village} // State kelurahan
-          onSelect={setVillage}
-          disabled={!district || formattedVillages.length === 0} // Nonaktif jika kecamatan belum dipilih
-          loading={locationLoading}
-        />
+            value={village} // State kelurahan
+            onSelect={setVillage}
+            disabled={!district || formattedVillages.length === 0} // Nonaktif jika kecamatan belum dipilih
+            loading={locationLoading}
+          />
 
-        <Input
-          label="Kontak Pengiklan (opsional)"
-          placeholder="Nomor telepon/WA yang bisa dihubungi"
-          iconName="phone"
-          keyboardType="phone-pad"
-          value={contactNumber}
-          onChangeText={setContactNumber}
-        />
+          <Input
+            label="Kontak Pengiklan (opsional)"
+            placeholder="Nomor telepon/WA yang bisa dihubungi"
+            iconName="phone"
+            keyboardType="phone-pad"
+            value={contactNumber}
+            onChangeText={setContactNumber}
+          />
 
-        {/* INPUT: Alamat Lengkap */}
-        <Input
-          label="Alamat Lengkap (Jalan, Nomor)"
-          placeholder="Masukkan Alamat Properti"
-          iconName="map-marker-outline"
+          {/* INPUT: Alamat Lengkap */}
+          <Input
+            label="Alamat Lengkap (Jalan, Nomor)"
+            placeholder="Masukkan Alamat Properti"
+            iconName="map-marker-outline"
             value={address}
             onChangeText={setAddress}
             multiline

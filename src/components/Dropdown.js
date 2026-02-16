@@ -29,6 +29,7 @@ export const DropdownSearchable = ({
   const [selectedValue, setSelectedValue] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredOptions, setFilteredOptions] = useState(options);
+  const optionsList = options || [];
   console.log('filteredOptions', label, filteredOptions);
 
   // Sync initial value with internal state
@@ -181,29 +182,45 @@ export const DropdownSearchableDefault = ({
   const [selectedValue, setSelectedValue] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredOptions, setFilteredOptions] = useState(options);
+  const optionsList = options || [];
 
   // Sync initial value with internal state
   useEffect(() => {
-    if (value) {
-      setSelectedValue(value.name || '');
-    }
+    setSelectedValue(value?.name || '');
   }, [value]);
+
+  useEffect(() => {
+    if (!searchTerm) {
+      setFilteredOptions(optionsList);
+      return;
+    }
+    const filtered = optionsList.filter(item =>
+      (item?.name || '').toLowerCase().includes(searchTerm.toLowerCase()),
+    );
+    setFilteredOptions(filtered);
+  }, [optionsList, searchTerm]);
+
+  useEffect(() => {
+    if (!isVisible) {
+      setSearchTerm('');
+      setFilteredOptions(optionsList);
+    }
+  }, [isVisible, optionsList]);
 
   const handleSearch = text => {
     setSearchTerm(text);
-    const filtered = options.filter(item =>
-      item?.name?.toLowerCase().includes(text.toLowerCase()),
+    const filtered = optionsList.filter(item =>
+      (item?.name || '').toLowerCase().includes(text.toLowerCase()),
     );
     setFilteredOptions(filtered);
   };
 
   const handleSelect = item => {
-    console.log(item);
     setSelectedValue(item?.name);
     onSelect(item);
     setIsVisible(false);
     setSearchTerm('');
-    setFilteredOptions(options);
+    setFilteredOptions(optionsList);
   };
 
   return (
@@ -257,8 +274,8 @@ export const DropdownSearchableDefault = ({
 
                 <FlatList
                   data={filteredOptions}
-                  keyExtractor={item =>
-                    String(item?.id || item?.name || Math.random())
+                  keyExtractor={(item, index) =>
+                    String(item?.id || item?.name || index)
                   }
                   renderItem={({ item }) => (
                     <TouchableOpacity

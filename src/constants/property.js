@@ -35,34 +35,34 @@ export const propertyCategories = [
     description: 'Properti untuk penyimpanan, logistik, atau manufaktur.',
   },
 ];
+
 export const propertyStatuses = [
   {
     id: 1,
     name: 'Dijual',
     description: 'Properti ini sedang ditawarkan untuk dibeli.',
-    color: '#007BFF', // Warna biru
+    color: '#007BFF',
   },
   {
     id: 2,
     name: 'Disewakan',
     description:
       'Properti ini sedang ditawarkan untuk disewa (bulanan/tahunan).',
-    color: '#28A745', // Warna hijau
+    color: '#28A745',
   },
   {
     id: 3,
     name: 'Terjual',
     description: 'Properti telah berhasil dijual kepada pembeli baru.',
-    color: '#DC3545', // Warna merah (sudah laku)
+    color: '#DC3545',
   },
   {
     id: 4,
     name: 'Disewakan (Terisi)',
     description: 'Properti telah berhasil disewakan dan saat ini terisi.',
-    color: '#FFC107', // Warna kuning (terisi/inactive)
+    color: '#FFC107',
   },
-  // Anda bisa menambahkan status lain seperti:
-  // { id: 5, name: "Lelang", description: "Properti sedang dalam proses lelang.", color: "#6F42C1" },
+  // Add more status values here if needed.
 ];
 
 export const certificateTypes = [

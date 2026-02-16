@@ -8,18 +8,21 @@ import {
   View,
   StatusBar,
   TextInput,
+  Linking,
+  Platform,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from '@react-native-vector-icons/material-design-icons';
 import { GlobalBannerAd, useInterstitialAd } from '../ads';
 import { useThemeColors } from '../../styles';
-import { Fonts, propertyStatuses } from '../../constants';
+import { Fonts, propertyStatuses, propertyCategories } from '../../constants';
 import usePropertyStore from '../../store/usePropertyStore';
 import { Text } from '../../components';
 import { LoadingPropertiesGlobal } from '../property/LoadingProperties';
 import PropertyGlobalCard from './PropertyGlobalCard';
-import { setItem } from '../../helpers';
+import { getString, setItem } from '../../helpers';
+import MapView, { Marker } from 'react-native-maps';
 
 function GlobalPropertyListScreen() {
   const navigation = useNavigation();
@@ -39,6 +42,8 @@ function GlobalPropertyListScreen() {
 
   const { showAd } = useInterstitialAd();
   const [searchQuery, setSearchQuery] = useState('');
+  const [mapView, setMapView] = useState(false);
+  const [recentSearches, setRecentSearches] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
 
   // Read filters from navigation params
@@ -60,6 +65,19 @@ function GlobalPropertyListScreen() {
       setSearchQuery('');
     }
   }, [filters]);
+
+  useEffect(() => {
+    const stored = getString('globalSearchHistory');
+    if (!stored) return;
+    try {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        setRecentSearches(parsed);
+      }
+    } catch {
+      setRecentSearches([]);
+    }
+  }, []);
 
   // Initial Fetch & Filter Change
   useEffect(() => {
@@ -145,6 +163,65 @@ function GlobalPropertyListScreen() {
 
     return injectAds(data);
   }, [listGlobalProperties, searchQuery, selectedStatus, minPrice, maxPrice]);
+
+  const quickSuggestions = useMemo(
+    () => propertyCategories.map(item => item.name),
+    [],
+  );
+
+  const saveSearchHistory = useCallback(
+    query => {
+      const trimmed = query.trim();
+      if (!trimmed) return;
+      setRecentSearches(prev => {
+        const normalized = trimmed.toLowerCase();
+        const next = [
+          trimmed,
+          ...prev.filter(item => item.toLowerCase() !== normalized),
+        ].slice(0, 8);
+        setItem('globalSearchHistory', JSON.stringify(next));
+        return next;
+      });
+    },
+    [setRecentSearches],
+  );
+
+  const clearSearchHistory = () => {
+    setRecentSearches([]);
+    setItem('globalSearchHistory', JSON.stringify([]));
+  };
+
+  const mapItems = useMemo(() => {
+    const raw = (filteredProperties || []).filter(item => item.type !== 'ad');
+    return raw
+      .map(item => {
+        const lat =
+          Number(item?.latitude) ||
+          Number(item?.lat) ||
+          Number(item?.location?.latitude);
+        const lng =
+          Number(item?.longitude) ||
+          Number(item?.lng) ||
+          Number(item?.location?.longitude);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+          return null;
+        }
+        return { ...item, lat, lng };
+      })
+      .filter(Boolean);
+  }, [filteredProperties]);
+
+  const openExternalMap = item => {
+    const lat = item?.lat;
+    const lng = item?.lng;
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    const label = encodeURIComponent(item?.propertyName || 'Properti');
+    const url =
+      Platform.OS === 'ios'
+        ? `http://maps.apple.com/?ll=${lat},${lng}&q=${label}`
+        : `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+    Linking.openURL(url);
+  };
 
   const handleOpenFilter = () => {
     navigation.navigate('GlobalPropertyFilterScreen', {
@@ -233,6 +310,7 @@ function GlobalPropertyListScreen() {
             placeholderTextColor={colors.GREY}
             value={searchQuery}
             onChangeText={setSearchQuery}
+            onSubmitEditing={() => saveSearchHistory(searchQuery)}
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity onPress={() => setSearchQuery('')}>
@@ -244,6 +322,16 @@ function GlobalPropertyListScreen() {
             </TouchableOpacity>
           )}
         </View>
+        <TouchableOpacity
+          style={styles.filterBtn}
+          onPress={() => setMapView(prev => !prev)}
+        >
+          <MaterialCommunityIcons
+            name={mapView ? 'format-list-bulleted' : 'map-outline'}
+            size={22}
+            color={colors.TEXT}
+          />
+        </TouchableOpacity>
         <TouchableOpacity style={styles.filterBtn} onPress={handleOpenFilter}>
           <MaterialCommunityIcons
             name="tune"
@@ -265,6 +353,53 @@ function GlobalPropertyListScreen() {
             maxPrice) && <View style={styles.badge} />}
         </TouchableOpacity>
       </View>
+
+      {/* Search History & Quick Suggestions */}
+      {!mapView && (recentSearches.length > 0 || quickSuggestions.length) && (
+        <View style={styles.quickRow}>
+          {recentSearches.length > 0 && (
+            <View style={styles.quickSection}>
+              <View style={styles.quickHeader}>
+                <Text style={styles.quickTitle}>Riwayat</Text>
+                <TouchableOpacity onPress={clearSearchHistory}>
+                  <Text style={styles.quickAction}>Hapus</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.quickList}>
+                {recentSearches.map(item => (
+                  <TouchableOpacity
+                    key={item}
+                    style={styles.quickChip}
+                    onPress={() => {
+                      setSearchQuery(item);
+                      saveSearchHistory(item);
+                    }}
+                  >
+                    <Text style={styles.quickChipText}>{item}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+          <View style={styles.quickSection}>
+            <Text style={styles.quickTitle}>Saran cepat</Text>
+            <View style={styles.quickList}>
+              {quickSuggestions.map(item => (
+                <TouchableOpacity
+                  key={item}
+                  style={styles.quickChipAlt}
+                  onPress={() => {
+                    setSearchQuery(item);
+                    saveSearchHistory(item);
+                  }}
+                >
+                  <Text style={styles.quickChipText}>{item}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </View>
+      )}
 
       {/* Filter Chips Display */}
       {(selectedPropertyType || locationFilters) && (
@@ -302,6 +437,32 @@ function GlobalPropertyListScreen() {
 
       {listGlobalPropertiesLoading && !listGlobalProperties.length ? (
         <LoadingPropertiesGlobal />
+      ) : mapView ? (
+        <View style={styles.mapWrapper}>
+          {mapItems.length === 0 ? (
+            renderEmpty()
+          ) : (
+            <MapView
+              style={styles.map}
+              initialRegion={{
+                latitude: mapItems[0].lat,
+                longitude: mapItems[0].lng,
+                latitudeDelta: 0.08,
+                longitudeDelta: 0.08,
+              }}
+            >
+              {mapItems.map(item => (
+                <Marker
+                  key={item.id}
+                  coordinate={{ latitude: item.lat, longitude: item.lng }}
+                  title={item.propertyName || 'Properti'}
+                  description={item.address || item.city?.name || ''}
+                  onPress={() => openExternalMap(item)}
+                />
+              ))}
+            </MapView>
+          )}
+        </View>
       ) : (
         <FlatList
           data={filteredProperties}
@@ -391,6 +552,53 @@ const createStyles = colors =>
       marginLeft: 8,
       position: 'relative',
     },
+    quickRow: {
+      paddingHorizontal: 16,
+      paddingBottom: 8,
+      gap: 10,
+    },
+    quickSection: {
+      gap: 8,
+    },
+    quickHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    quickTitle: {
+      fontSize: 12,
+      fontFamily: Fonts.fontSemiBold,
+      color: colors.TEXT,
+    },
+    quickAction: {
+      fontSize: 12,
+      fontFamily: Fonts.fontSemiBold,
+      color: colors.PRIMARY,
+    },
+    quickList: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    quickChip: {
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 16,
+      backgroundColor: colors.CARD,
+      borderWidth: 1,
+      borderColor: colors.GRAY_LIGHT,
+    },
+    quickChipAlt: {
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 16,
+      backgroundColor: colors.PRIMARY_20,
+    },
+    quickChipText: {
+      fontSize: 12,
+      fontFamily: Fonts.fontMedium,
+      color: colors.TEXT,
+    },
     badge: {
       position: 'absolute',
       top: 8,
@@ -423,6 +631,15 @@ const createStyles = colors =>
     listContent: {
       padding: 12,
       paddingBottom: 40,
+    },
+    mapWrapper: {
+      flex: 1,
+      padding: 12,
+    },
+    map: {
+      flex: 1,
+      borderRadius: 16,
+      overflow: 'hidden',
     },
     columnWrapper: {
       justifyContent: 'space-between',
