@@ -1,0 +1,25 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Property images are publicly readable, upload/delete requires auth.
+    match /properties/{allPaths=**} {
+      allow read: if true;
+      allow write: if signedIn();
+    }
+
+    // User assets: write is owner-only.
+    match /users/{uid}/{allPaths=**} {
+      allow read: if true;
+      allow write: if signedIn() && request.auth.uid == uid;
+    }
+
+    // Deny unknown paths.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

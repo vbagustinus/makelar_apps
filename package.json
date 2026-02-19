@@ -23,8 +23,8 @@
     "build:apk:development": "yarn env:dev && cd android && ./gradlew clean && echo '\n\nCleaning gradle complete / 100%\n' && ./gradlew assembleDevelopmentRelease && killall -9 java && cd ..",
     "build:apk:production": "yarn env:prod && cd android && ./gradlew clean && echo '\n\nCleaning gradle complete / 100%\n' && ./gradlew assembleProductionRelease && killall -9 java && cd ..",
     "build:apk:aab": "yarn env:prod && cd android && ./gradlew clean && echo '\n\nCleaning gradle complete / 100%\n' && cd .. && react-native build-android --mode=release && killall -9 java",
-    "bundle:reset:android": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/",
-    "bundle:reset:ios": "react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle --assets-dest ios",
+    "bundle:reset:android": "react-native bundle --platform android --dev false --entry-file index.ts --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/",
+    "bundle:reset:ios": "react-native bundle --platform ios --dev false --entry-file index.ts --bundle-output ios/main.jsbundle --assets-dest ios",
     "bundle": "yarn install && yarn bundle:reset:android && yarn bundle:reset:ios",
     "android:dev:clean": "cd android && ./gradlew :app:uninstallAll && react-native run-android --mode=developmentdebug --appId=com.makelar_apps",
     "android:dev": "yarn env:dev && react-native run-android --mode=developmentdebug --appId=com.makelar_apps.dev",
@@ -115,10 +115,14 @@
     "@react-native/babel-preset": "0.82.1",
     "@react-native/eslint-config": "0.82.1",
     "@react-native/metro-config": "0.82.1",
+    "@types/jest": "^30.0.0",
+    "@types/react": "^19.2.14",
+    "@types/react-test-renderer": "^19.1.0",
     "eslint": "^8.19.0",
     "jest": "^29.6.3",
     "prettier": "2.8.8",
-    "react-test-renderer": "19.1.1"
+    "react-test-renderer": "19.1.1",
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=20"

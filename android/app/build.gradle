@@ -60,6 +60,13 @@ project.ext.envConfigFiles = [
    development: ".env.development"
 ]
 
+def readEnvValue = { key ->
+    def envFile = rootProject.file(".env")
+    if (!envFile.exists()) return null
+    def matcher = envFile.text =~ /(?m)^${key}=(.*)$/
+    return matcher.find() ? matcher.group(1).trim() : null
+}
+
 /**
  * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
  */
@@ -88,12 +95,18 @@ android {
         applicationId "com.makelar_apps"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 5
-        versionName "1.0.2"
+        versionCode 6
+        versionName "1.0.3"
         resValue 'string', 'build_config_package','com.makelar_apps'
         multiDexEnabled true
         manifestPlaceholders = [
-            appAuthRedirectScheme: 'com.googleusercontent.apps.87496731262-flf5fk25of39fnfiiuvmc4e1ui2qvhai'
+            appAuthRedirectScheme: 'com.googleusercontent.apps.87496731262-flf5fk25of39fnfiiuvmc4e1ui2qvhai',
+            MAPS_API_KEY: (project.findProperty("MAPS_API_KEY")
+                ?: System.getenv("MAPS_API_KEY")
+                ?: System.getenv("GOOGLE_MAPS_API_KEY")
+                ?: readEnvValue("GOOGLE_MAPS_API_KEY")
+                ?: readEnvValue("API_KEY_MAP")
+                ?: "")
         ]   
     }
     splits {

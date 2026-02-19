@@ -1,0 +1,12 @@
+export * from './async';
+export * from './animation';
+export * from './valueManipulation';
+export * from './validation';
+export * from './handler';
+export * from './time';
+export * from './randomColors';
+export * from './language';
+export * from './function';
+// export * from './maskString';
+
+export const isIphoneX = () => false;

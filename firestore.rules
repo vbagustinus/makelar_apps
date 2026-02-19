@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // Public listing is allowed, but only owner can mutate.
+    match /properties/{propertyId} {
+      allow read: if true;
+
+      allow create: if signedIn()
+        && request.resource.data.uid is string
+        && request.resource.data.uid == request.auth.uid;
+
+      allow update: if isOwner(resource.data.uid)
+        && request.resource.data.uid == resource.data.uid;
+
+      allow delete: if isOwner(resource.data.uid);
+    }
+
+    // User profile document can only be read/changed by owner.
+    match /users/{userId} {
+      allow read, create, update, delete: if signedIn() && request.auth.uid == userId;
+    }
+
+    // Deny everything else by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
